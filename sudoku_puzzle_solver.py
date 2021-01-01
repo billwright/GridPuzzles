@@ -4,7 +4,7 @@ import math
 def column_names(puzzle_string):
     puzzle_size = int(math.sqrt(len(puzzle_string)))
     # 65 is the ASCII number for a capital A
-    return ''.join(chr(65 + col_number) for col_number in range(puzzle_size))
+    return ''.join(chr(ord('A') + col_number) for col_number in range(puzzle_size))
 
 
 def row_names(puzzle_string):
@@ -16,17 +16,20 @@ def possible_values(puzzle_string):
     return row_names(puzzle_string)
 
 
-def cross(a, b):
-    return [s + t for s in a for t in b]
+def cross(cols, rows):
+    # We want the addresses ordered by rows, meaning all the addresses in the first row
+    # before going on to the second row. But, we use the column header first in the address.
+    # This addressing mimics spreadsheets
+    return [s + t for t in rows for s in cols]
 
 
 def ordered_cell_addresses(puzzle_string):
-    addresses = []
-    for row in row_names(puzzle_string):
-        for col in column_names(puzzle_string):
-            addresses.append(col + row)
-    return addresses
-    # return cross(column_names, row_names)
+    # addresses = []
+    # for row in row_names(puzzle_string):
+    #     for col in column_names(puzzle_string):
+    #         addresses.append(col + row)
+    # return addresses
+    return cross(column_names(puzzle_string), row_names(puzzle_string))
 
 
 def create_ordered_values_from_puzzle_string_2(puzzle_string):
