@@ -29,6 +29,8 @@ class MyTestCase(unittest.TestCase):
         addresses = sudoku_puzzle_solver.ordered_cell_addresses(puzzle_string)
         self.assertEqual(len(addresses), len(puzzle_string))
         print(addresses)
+        print()
+
 
     def test_creation_cell_addresses_for_9x9(self):
         puzzle_string = self.sudoku_9x9_string
@@ -41,6 +43,8 @@ class MyTestCase(unittest.TestCase):
         addresses = sudoku_puzzle_solver.ordered_cell_addresses(puzzle_string)
         self.assertEqual(len(addresses), len(puzzle_string))
         print(addresses)
+        print()
+
 
     def test_creation_of_values(self):
         values = sudoku_puzzle_solver.create_ordered_values_from_puzzle_string(self.sudoku_4x4_string)
@@ -64,6 +68,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual('3', sudoku_puzzle['B4'])
         self.assertEqual(sudoku_puzzle['D3'], '1234')
 
+        print()
+
     def test_initializing_of_9x9_puzzle(self):
         puzzle_string = self.sudoku_9x9_string
 
@@ -75,6 +81,9 @@ class MyTestCase(unittest.TestCase):
             sudoku_puzzle_solver.row_names(puzzle_string),
             sudoku_puzzle_solver.column_names(puzzle_string))
 
-        self.assertEqual(sudoku_puzzle['C2'], '8')
+        self.assertEqual(sudoku_puzzle['C2'], '5')
         self.assertEqual(sudoku_puzzle['I9'], '8')
         self.assertEqual(sudoku_puzzle['B1'], '123456789')
+
+        print()
+
