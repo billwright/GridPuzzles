@@ -21,10 +21,10 @@ class MyTestCase(unittest.TestCase):
     def test_creation_cell_addresses_for_4x4(self):
         puzzle_string = self.sudoku_4x4_string
         column_names = sudoku_puzzle_solver.column_names(puzzle_string)
-        self.assertEqual(column_names, 'ABCD')
+        self.assertEqual('ABCD', column_names)
 
         row_names = sudoku_puzzle_solver.row_names(puzzle_string)
-        self.assertEqual(row_names, '1234')
+        self.assertEqual('1234', row_names)
 
         addresses = sudoku_puzzle_solver.ordered_cell_addresses(puzzle_string)
         self.assertEqual(len(addresses), len(puzzle_string))
@@ -36,10 +36,10 @@ class MyTestCase(unittest.TestCase):
     def test_creation_cell_addresses_for_9x9(self):
         puzzle_string = self.sudoku_9x9_string
         column_names = sudoku_puzzle_solver.column_names(puzzle_string)
-        self.assertEqual(column_names, 'ABCDEFGHI')
+        self.assertEqual('ABCDEFGHI', column_names)
 
         row_names = sudoku_puzzle_solver.row_names(puzzle_string)
-        self.assertEqual(row_names, '123456789')
+        self.assertEqual('123456789', row_names)
 
         addresses = sudoku_puzzle_solver.ordered_cell_addresses(puzzle_string)
         self.assertEqual(len(addresses), len(puzzle_string))
@@ -48,25 +48,25 @@ class MyTestCase(unittest.TestCase):
 
     def test_creation_of_values(self):
         values = sudoku_puzzle_solver.create_ordered_values_from_puzzle_string(self.sudoku_4x4_string)
-        self.assertEqual(len(values), 16)
+        self.assertEqual(16, len(values))
 
         values = sudoku_puzzle_solver.create_ordered_values_from_puzzle_string(self.sudoku_9x9_string)
-        self.assertEqual(len(values), 81)
+        self.assertEqual(81, len(values))
 
     def test_initializing_of_4x4_puzzle(self):
         puzzle_string = self.sudoku_4x4_string
 
         sudoku_puzzle = sudoku_puzzle_solver.create_puzzle(puzzle_string)
-        self.assertEqual(len(sudoku_puzzle), 16)
+        self.assertEqual(16, len(sudoku_puzzle))
 
         sudoku_puzzle_solver.display_puzzle_simple(
             sudoku_puzzle,
             sudoku_puzzle_solver.row_names(puzzle_string),
             sudoku_puzzle_solver.column_names(puzzle_string))
 
-        self.assertEqual(sudoku_puzzle['A1'], '1')
+        self.assertEqual('1', sudoku_puzzle['A1'])
         self.assertEqual('3', sudoku_puzzle['B4'])
-        self.assertEqual(sudoku_puzzle['D3'], '1234')
+        self.assertEqual('1234', sudoku_puzzle['D3'])
 
         print()
 
@@ -81,8 +81,37 @@ class MyTestCase(unittest.TestCase):
             sudoku_puzzle_solver.row_names(puzzle_string),
             sudoku_puzzle_solver.column_names(puzzle_string))
 
-        self.assertEqual(sudoku_puzzle['C2'], '5')
-        self.assertEqual(sudoku_puzzle['I9'], '8')
-        self.assertEqual(sudoku_puzzle['B1'], '123456789')
+        self.assertEqual('5', sudoku_puzzle['C2'])
+        self.assertEqual('8', sudoku_puzzle['I9'])
+        self.assertEqual('123456789', sudoku_puzzle['B1'])
 
         print()
+
+    def test_box_groupings(self):
+        puzzle_string = self.sudoku_4x4_string
+
+        column_names = sudoku_puzzle_solver.column_names(puzzle_string)
+        row_names = sudoku_puzzle_solver.row_names(puzzle_string)
+
+        box_groupings = sudoku_puzzle_solver.box_groupings(column_names, row_names)
+        expected_box_groupings = [ ['A1', 'B1', 'A2', 'B2'], ['A3', 'B3', 'A4', 'B4'], ['C1', 'D1', 'C2', 'D2'], ['C3', 'D3', 'C4', 'D4']]
+        self.assertEqual(expected_box_groupings, box_groupings)
+
+    def test_column_groupings(self):
+        puzzle_string = self.sudoku_4x4_string
+        column_names = sudoku_puzzle_solver.column_names(puzzle_string)
+        row_names = sudoku_puzzle_solver.row_names(puzzle_string)
+
+        column_groupings = sudoku_puzzle_solver.column_groupings(column_names, row_names)
+        expected_column_groupings = [['A1', 'A2', 'A3', 'A4'], ['B1', 'B2', 'B3', 'B4'], ['C1', 'C2', 'C3', 'C4'], ['D1', 'D2', 'D3', 'D4']]
+        self.assertEqual(expected_column_groupings, column_groupings)
+
+    def test_row_groupings(self):
+        puzzle_string = self.sudoku_4x4_string
+        column_names = sudoku_puzzle_solver.column_names(puzzle_string)
+        row_names = sudoku_puzzle_solver.row_names(puzzle_string)
+
+        row_groupings = sudoku_puzzle_solver.row_groupings(column_names, row_names)
+        expected_row_groupings = [['A1', 'B1', 'C1', 'D1'], ['A2', 'B2', 'C2', 'D2'], ['A3', 'B3', 'C3', 'D3'],['A4', 'B4', 'C4', 'D4']]
+        self.assertEqual(expected_row_groupings, row_groupings)
+

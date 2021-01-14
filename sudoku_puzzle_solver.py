@@ -23,6 +23,38 @@ def cross(cols, rows):
     return [s + t for t in rows for s in cols]
 
 
+def box_groupings(col_names, row_names):
+    box_group_size = int(math.sqrt(len(col_names)))
+    col_name_groups = [col_names[i:i + box_group_size] for i in range(0, len(col_names), box_group_size)]
+    row_name_groups = [row_names[i:i + box_group_size] for i in range(0, len(row_names), box_group_size)]
+    # groups = []
+    # for col_name_group in col_name_groups:
+    #     for row_name_group in row_name_groups:
+    #         groups.append(cross(col_name_group, row_name_group))
+    # return groups
+    return [cross(col_name_group, row_name_group) for col_name_group in col_name_groups for row_name_group in row_name_groups]
+
+
+def column_groupings(col_names, row_names):
+    groups = []
+    for col_name in col_names:
+        col_group = []
+        for row_name in row_names:
+            col_group.append(col_name+row_name)
+        groups.append(col_group)
+    return groups
+
+
+def row_groupings(col_names, row_names):
+    groups = []
+    for row_name in row_names:
+        row_group = []
+        for col_name in col_names:
+            row_group.append(col_name+row_name)
+        groups.append(row_group)
+    return groups
+
+
 def ordered_cell_addresses(puzzle_string):
     # addresses = []
     # for row in row_names(puzzle_string):
