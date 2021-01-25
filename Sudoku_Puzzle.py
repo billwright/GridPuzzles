@@ -53,10 +53,19 @@ class Sudoku_Puzzle(object):
         groups = []
         for row_name in self.row_names:
             row_group = []
-            for col_name in self.col_names:
+            for col_name in self.column_names:
                 row_group.append(col_name+row_name)
             groups.append(row_group)
         return groups
+
+    def get_all_groups(self):
+        return self.row_groupings() + self.column_groupings() + self.box_groupings()
+
+    def get_all_group_values(self):
+        all_group_values = []
+        for group in self.get_all_groups():
+            all_group_values.append([self.get_cell_value(address) for address in group])
+        return all_group_values
 
     def create_puzzle(self, puzzle_string):
         addresses = cross(self.column_names, self.row_names)
@@ -97,5 +106,8 @@ class Sudoku_Puzzle(object):
     def is_solved(self):
         for cell in self.puzzle_dict.values():
             if len(cell) != 1:
+                return False
+        for group in self.get_all_group_values():
+            if len(set(group)) != self.size:
                 return False
         return True

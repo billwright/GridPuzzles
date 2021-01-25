@@ -16,9 +16,9 @@ class TestSudoku(unittest.TestCase):
                                    '1234'
 
     sudoku_solved_4x4_string = '1234' + \
-                               '4123' + \
                                '3412' + \
-                               '2341'
+                               '2143' + \
+                               '4321'
 
     sudoku_9x9_string = '4...6.8..' + \
                         '.754.8...' + \
@@ -57,6 +57,26 @@ class TestSudoku(unittest.TestCase):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         self.assertEqual('24', puzzle.row_boundaries)
 
+    def test_box_groups(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        box_groupings = puzzle.box_groupings()
+        print('Box groupings are:', box_groupings)
+        self.assertEqual(4, len(box_groupings))
+
+    def test_row_groups(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        row_groupings = puzzle.row_groupings()
+        print('Row groupings are:', row_groupings)
+        for group in row_groupings:
+            self.assertEqual(4, len(group))
+        self.assertEqual(4, len(row_groupings))
+
+    def test_all_groups(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        all_groups = puzzle.get_all_groups()
+        print('All groups are:', all_groups)
+        self.assertEqual(12, len(all_groups))
+
     def test_incorrect_sudoku_string(self):
         with self.assertRaises(Exception):
             puzzle = Sudoku_Puzzle(self.sudoku_incorrect_string)
@@ -65,11 +85,11 @@ class TestSudoku(unittest.TestCase):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         self.assertFalse(puzzle.is_solved(), 'Puzzle is wrongly assumed to be solved.')
 
-    def test_puzzle_solved(self):
+    def test_puzzle_seemingly_solved(self):
         puzzle = Sudoku_Puzzle(self.sudoku_not_solved_4x4_string)
         self.assertFalse(puzzle.is_solved(), 'Puzzle is wrongly assumed to NOT be solved.')
 
-    def test_puzzle_solved_really(self):
+    def test_puzzle_really_solved(self):
         puzzle = Sudoku_Puzzle(self.sudoku_solved_4x4_string)
         self.assertTrue(puzzle.is_solved(), 'Puzzle is wrongly assumed to NOT be solved.')
 
