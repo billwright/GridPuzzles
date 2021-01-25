@@ -6,11 +6,12 @@ class Sudoku_Puzzle(object):
     def __init__(self, puzzle_string):
         self.size = int(math.sqrt(len(puzzle_string)))
         self.box_group_size = int(math.sqrt(self.size))
-
+        self.column_boundaries = ''.join([chr(ord('A') + i * self.box_group_size - 1) for i in range(1, self.box_group_size+1)])
+        self.row_boundaries = ''.join([str(i * self.box_group_size) for i in range(1, self.box_group_size+1)])
         self.column_names = ''.join(chr(ord('A') + col_number) for col_number in range(self.size))
         self.row_names = ''.join(str(row_number + 1) for row_number in range(self.size))
 
-        self.puzzle = self.create_puzzle(puzzle_string)
+        self.puzzle_dict = self.create_puzzle(puzzle_string)
 
     def possible_values(self):
         return self.row_names
@@ -56,13 +57,32 @@ class Sudoku_Puzzle(object):
 
         return dict(zip(addresses, values))
 
+    def get_cell_value(self, cell_address):
+        return self.puzzle_dict[cell_address]
+
     def display(self):
-        width = 1 + max(len(s) for s in self.puzzle.values())
+        max_cell_width = 1 + max(len(s) for s in self.puzzle_dict.values())
+
+        # horizontal_grid_line = '   ' + '+'.join(['-' * (width * 3)] * 3)
+        horizontal_grid_line = '  |' + '+'.join(['-' * (max_cell_width * self.box_group_size) + '-'] * self.box_group_size) + '|'
 
         # Print column headings
-        print('   ' + ''.join(col_name.center(width, ' ') for col_name in list(self.column_names)))
+        heading_string = '  |'
+        for col_name in self.column_names:
+            heading_string += col_name.center(max_cell_width, ' ')
+            if col_name in self.column_boundaries:
+                heading_string += ' |'
+        print(heading_string)
+        print(horizontal_grid_line)
 
         # Print each row
         for row_name in self.row_names:
-            row_values = (self.puzzle[col_name + row_name].center(width) for col_name in self.column_names)
-            print(row_name + ' |' + ''.join(row_values))
+            row_string = ''
+            for col_name in self.column_names:
+                row_string += self.puzzle_dict[col_name + row_name].center(max_cell_width)
+                if col_name in self.column_boundaries:
+                    row_string += ' |'
+            print(row_name + ' |' + row_string)
+            if row_name in self.row_boundaries:
+                print(horizontal_grid_line)
+        print()
