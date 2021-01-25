@@ -3,10 +3,22 @@ from Sudoku_Puzzle import Sudoku_Puzzle
 
 
 class TestSudoku(unittest.TestCase):
+    sudoku_incorrect_string = '1...4...321...'
+
     sudoku_4x4_string = '1...' + \
                         '...4' + \
                         '..2.' + \
                         '.3..'
+
+    sudoku_not_solved_4x4_string = '1234' + \
+                                   '1234' + \
+                                   '1234' + \
+                                   '1234'
+
+    sudoku_solved_4x4_string = '1234' + \
+                               '4123' + \
+                               '3412' + \
+                               '2341'
 
     sudoku_9x9_string = '4...6.8..' + \
                         '.754.8...' + \
@@ -44,6 +56,23 @@ class TestSudoku(unittest.TestCase):
     def test_row_boundaries(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         self.assertEqual('24', puzzle.row_boundaries)
+
+    def test_incorrect_sudoku_string(self):
+        with self.assertRaises(Exception):
+            puzzle = Sudoku_Puzzle(self.sudoku_incorrect_string)
+
+    def test_puzzle_not_solved(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        self.assertFalse(puzzle.is_solved(), 'Puzzle is wrongly assumed to be solved.')
+
+    def test_puzzle_solved(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_not_solved_4x4_string)
+        self.assertFalse(puzzle.is_solved(), 'Puzzle is wrongly assumed to NOT be solved.')
+
+    def test_puzzle_solved_really(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_solved_4x4_string)
+        self.assertTrue(puzzle.is_solved(), 'Puzzle is wrongly assumed to NOT be solved.')
+
 
 if __name__ == '__main__':
     unittest.main()

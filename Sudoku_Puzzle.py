@@ -1,9 +1,22 @@
 import math
 
 
+def cross(cols, rows):
+    # We want the addresses ordered by rows, meaning all the addresses in the first row
+    # before going on to the second row. But, we use the column header first in the address.
+    # This addressing mimics spreadsheets
+    return [c + r for r in rows for c in cols]
+
+
 class Sudoku_Puzzle(object):
 
     def __init__(self, puzzle_string):
+        puzzle_square_root = math.sqrt(len(puzzle_string))
+        if puzzle_square_root != int(puzzle_square_root):
+            error_string = f'ERROR: Puzzle string was of length {len(puzzle_string)}, which is not a perfect square'
+            print(error_string)
+            raise ValueError(error_string)
+
         self.size = int(math.sqrt(len(puzzle_string)))
         self.box_group_size = int(math.sqrt(self.size))
         self.column_boundaries = ''.join([chr(ord('A') + i * self.box_group_size - 1) for i in range(1, self.box_group_size+1)])
@@ -16,12 +29,6 @@ class Sudoku_Puzzle(object):
     def possible_values(self):
         return self.row_names
 
-    def cross(self, cols, rows):
-        # We want the addresses ordered by rows, meaning all the addresses in the first row
-        # before going on to the second row. But, we use the column header first in the address.
-        # This addressing mimics spreadsheets
-        return [c + r for r in rows for c in cols]
-
     def box_groupings(self):
         col_name_groups = [self.column_names[i:i + self.box_group_size] for i in range(0, self.size, self.box_group_size)]
         row_name_groups = [self.row_names[i:i + self.box_group_size] for i in range(0, self.size, self.box_group_size)]
@@ -30,7 +37,7 @@ class Sudoku_Puzzle(object):
         #     for row_name_group in row_name_groups:
         #         groups.append(cross(col_name_group, row_name_group))
         # return groups
-        return [self.cross(col_name_group, row_name_group) for col_name_group in col_name_groups
+        return [cross(col_name_group, row_name_group) for col_name_group in col_name_groups
                 for row_name_group in row_name_groups]
 
     def column_groupings(self):
@@ -52,7 +59,7 @@ class Sudoku_Puzzle(object):
         return groups
 
     def create_puzzle(self, puzzle_string):
-        addresses = self.cross(self.column_names, self.row_names)
+        addresses = cross(self.column_names, self.row_names)
         values = [(value if value != '.' else self.possible_values()) for value in puzzle_string]
 
         return dict(zip(addresses, values))
@@ -86,3 +93,9 @@ class Sudoku_Puzzle(object):
             if row_name in self.row_boundaries:
                 print(horizontal_grid_line)
         print()
+
+    def is_solved(self):
+        for cell in self.puzzle_dict.values():
+            if len(cell) != 1:
+                return False
+        return True
