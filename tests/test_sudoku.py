@@ -150,7 +150,7 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
         self.assertEqual(52, puzzle.get_current_puzzle_count())
 
-        puzzle.search_and_reduce_singletons()
+        puzzle.solve()
         puzzle.display()
         self.assertEqual(16, puzzle.get_current_puzzle_count())
         self.assertTrue(puzzle.is_solved())
@@ -165,6 +165,8 @@ class TestSudoku(unittest.TestCase):
 
     def test_find_doubles(self):
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
+        puzzle.search_and_reduce_singletons()
+        puzzle.search_and_reduce_singletons()
         puzzle.search_and_reduce_singletons()
         puzzle.display()
 

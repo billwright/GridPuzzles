@@ -1,4 +1,5 @@
 import math
+from termcolor import colored
 
 
 def cross(cols, rows):
@@ -97,11 +98,15 @@ class Sudoku_Puzzle(object):
         print(heading_string)
         print(horizontal_grid_line)
 
+        doubles = self.get_double_addresses()
+
         # Print each row
         for row_name in self.row_names:
             row_string = ''
             for col_name in self.column_names:
-                row_string += self.puzzle_dict[col_name + row_name].center(max_cell_width)
+                cell_address = col_name + row_name
+                cell_color = 'blue' if (cell_address in doubles) else 'green'
+                row_string += colored(self.get_cell_value(cell_address).center(max_cell_width), cell_color)
                 if col_name in self.column_boundaries:
                     row_string += ' |'
             print(row_name + ' |' + row_string)
@@ -166,6 +171,13 @@ class Sudoku_Puzzle(object):
                     if (potential_match, possible_double_address) not in doubles:
                         doubles.append((possible_double_address, potential_match))
         return doubles
+
+    def get_double_addresses(self):
+        addresses = []
+        for double in self.find_doubles():
+            addresses.append(double[0])
+            addresses.append(double[1])
+        return set(addresses)
 
     def remove_values_from_cell(self, address, values):
         for value in values:
