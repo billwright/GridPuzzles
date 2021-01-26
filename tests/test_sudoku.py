@@ -163,6 +163,34 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
         self.assertTrue(puzzle.is_solved())
 
+    def test_find_doubles(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
+        puzzle.search_and_reduce_singletons()
+        puzzle.display()
+
+        cells_with_values_of_size_two = puzzle.get_cells_with_value_size(2)
+        print('cells with value of size 2:', cells_with_values_of_size_two)
+
+        doubles = puzzle.find_doubles()
+        print('doubles are:', doubles)
+        self.assertEqual(7, len(doubles))
+
+        self.assertIn(('E4', 'E6'), doubles)
+        self.assertIn(('F7', 'F9'), doubles)
+        self.assertIn(('E8', 'D9'), doubles)
+        self.assertIn(('G2', 'G7'), doubles)
+
+        puzzle.search_and_reduce_doubles()
+        puzzle.display()
+
+    def test_solve_9x9_puzzle(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
+        puzzle.display()
+
+        puzzle.solve()
+        puzzle.display()
+        self.assertTrue(puzzle.is_solved())
+
 
 if __name__ == '__main__':
     unittest.main()

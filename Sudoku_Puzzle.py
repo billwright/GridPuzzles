@@ -93,6 +93,7 @@ class Sudoku_Puzzle(object):
             heading_string += col_name.center(max_cell_width, ' ')
             if col_name in self.column_boundaries:
                 heading_string += ' |'
+        print()
         print(heading_string)
         print(horizontal_grid_line)
 
@@ -148,14 +149,49 @@ class Sudoku_Puzzle(object):
         value_sizes = [len(self.get_cell_value(address)) for address in self.get_all_cell_addresses()]
         return sum(value_sizes)
 
+    def get_cells_with_value_size(self, value_size):
+        return [address for address in self.get_all_cell_addresses() if len(self.get_cell_value(address)) == value_size]
+
+    def find_singletons(self):
+        return self.get_cells_with_value_size(1)
+
+    def find_doubles(self):
+        doubles = []
+        for possible_double_address in self.get_cells_with_value_size(2):
+            cell_value = self.get_cell_value(possible_double_address)
+            cell_associates = self.get_associated_cells(possible_double_address)
+            for potential_match in cell_associates:
+                if cell_value == self.get_cell_value(potential_match):
+                    # Check if the reverse of this tuple is already in our list
+                    if (potential_match, possible_double_address) not in doubles:
+                        doubles.append((possible_double_address, potential_match))
+        return doubles
+
+    def remove_values_from_cell(self, address, values):
+        for value in values:
+            self.remove_from_values(address, value)
+
+    def search_and_reduce_doubles(self):
+        while True:
+            current_puzzle_size = self.get_current_puzzle_count()
+            print('Looking to reduce doubles... The current puzzle size is', current_puzzle_size)
+            for double in self.find_doubles():
+                # Get groups of first address in the double (it doesn't matter which address we use)
+                common_groups = [group for group in self.get_groups_for_cell(double[0]) if double[1] in group]
+                for group in common_groups:
+                    for address in group:
+                        if address not in double:
+                            self.remove_values_from_cell(address, self.get_cell_value(double[0]))
+            if current_puzzle_size == self.get_current_puzzle_count():
+                # Break out of the loop, since there was no change in the puzzle size
+                break
+
     def search_and_reduce_singletons(self):
         while True:
             current_puzzle_size = self.get_current_puzzle_count()
-            print('The current puzzle size is', current_puzzle_size)
-            for address in self.get_all_cell_addresses():
-                cell_value = self.get_cell_value(address)
-                if len(cell_value) == 1:
-                    self.remove_value_from_cell_associates(address, cell_value)
+            print('Looking to reduce singletons... The current puzzle size is', current_puzzle_size)
+            for address in self.find_singletons():
+                self.remove_value_from_cell_associates(address, self.get_cell_value(address))
             if current_puzzle_size == self.get_current_puzzle_count():
                 # Break out of the loop, since there was no change in the puzzle size
                 break
