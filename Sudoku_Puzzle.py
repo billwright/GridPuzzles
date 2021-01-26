@@ -19,8 +19,9 @@ class Sudoku_Puzzle(object):
 
         self.size = int(math.sqrt(len(puzzle_string)))
         self.box_group_size = int(math.sqrt(self.size))
-        self.column_boundaries = ''.join([chr(ord('A') + i * self.box_group_size - 1) for i in range(1, self.box_group_size+1)])
-        self.row_boundaries = ''.join([str(i * self.box_group_size) for i in range(1, self.box_group_size+1)])
+        self.column_boundaries = ''.join(
+            [chr(ord('A') + i * self.box_group_size - 1) for i in range(1, self.box_group_size + 1)])
+        self.row_boundaries = ''.join([str(i * self.box_group_size) for i in range(1, self.box_group_size + 1)])
         self.column_names = ''.join(chr(ord('A') + col_number) for col_number in range(self.size))
         self.row_names = ''.join(str(row_number + 1) for row_number in range(self.size))
 
@@ -30,7 +31,8 @@ class Sudoku_Puzzle(object):
         return self.row_names
 
     def box_groupings(self):
-        col_name_groups = [self.column_names[i:i + self.box_group_size] for i in range(0, self.size, self.box_group_size)]
+        col_name_groups = [self.column_names[i:i + self.box_group_size] for i in
+                           range(0, self.size, self.box_group_size)]
         row_name_groups = [self.row_names[i:i + self.box_group_size] for i in range(0, self.size, self.box_group_size)]
         # groups = []
         # for col_name_group in col_name_groups:
@@ -45,7 +47,7 @@ class Sudoku_Puzzle(object):
         for col_name in self.column_names:
             col_group = []
             for row_name in self.row_names:
-                col_group.append(col_name+row_name)
+                col_group.append(col_name + row_name)
             groups.append(col_group)
         return groups
 
@@ -54,7 +56,7 @@ class Sudoku_Puzzle(object):
         for row_name in self.row_names:
             row_group = []
             for col_name in self.column_names:
-                row_group.append(col_name+row_name)
+                row_group.append(col_name + row_name)
             groups.append(row_group)
         return groups
 
@@ -67,8 +69,11 @@ class Sudoku_Puzzle(object):
             all_group_values.append([self.get_cell_value(address) for address in group])
         return all_group_values
 
+    def get_all_cell_addresses(self):
+        return cross(self.column_names, self.row_names)
+
     def create_puzzle(self, puzzle_string):
-        addresses = cross(self.column_names, self.row_names)
+        addresses = self.get_all_cell_addresses()
         values = [(value if value != '.' else self.possible_values()) for value in puzzle_string]
 
         return dict(zip(addresses, values))
@@ -79,8 +84,8 @@ class Sudoku_Puzzle(object):
     def display(self):
         max_cell_width = 1 + max(len(s) for s in self.puzzle_dict.values())
 
-        # horizontal_grid_line = '   ' + '+'.join(['-' * (width * 3)] * 3)
-        horizontal_grid_line = '  |' + '+'.join(['-' * (max_cell_width * self.box_group_size) + '-'] * self.box_group_size) + '|'
+        horizontal_grid_line = '  |' + '+'.join(
+            ['-' * (max_cell_width * self.box_group_size) + '-'] * self.box_group_size) + '|'
 
         # Print column headings
         heading_string = '  |'
@@ -101,6 +106,7 @@ class Sudoku_Puzzle(object):
             print(row_name + ' |' + row_string)
             if row_name in self.row_boundaries:
                 print(horizontal_grid_line)
+        print('The current puzzle count is', self.get_current_puzzle_count())
         print()
 
     def is_solved(self):
@@ -111,3 +117,48 @@ class Sudoku_Puzzle(object):
             if len(set(group)) != self.size:
                 return False
         return True
+
+    def get_groups_for_cell(self, cell_address):
+        return [group for group in self.get_all_groups() if cell_address in group]
+
+    def get_associated_cells(self, cell_address):
+        groups = self.get_groups_for_cell(cell_address)
+        associated_cells = []
+        for group in groups:
+            for address in group:
+                if address != cell_address:
+                    associated_cells.append(address)
+        return set(associated_cells)
+
+    def remove_from_values(self, cell_address, value):
+        current_cell_values = self.get_cell_value(cell_address)
+        self.puzzle_dict[cell_address] = current_cell_values.replace(value, '')
+
+    def remove_value_from_cell_associates(self, cell_address, value):
+        associated_cells = self.get_associated_cells(cell_address)
+        for address in associated_cells:
+            self.remove_from_values(address, value)
+
+    def get_current_puzzle_count(self):
+        # This is a metric indicating how close the puzzle is to being solved.
+        # A solved puzzle has a size of nxn, as it has only one value in each cell.
+        # The maximum value would be n x n x n, but that would never occur as it
+        # would correspond to a completely empty puzzle.
+        # values_sizes = [(len(self.get_cell_value(address)) for address in self.get_all_cell_addresses()]
+        value_sizes = [len(self.get_cell_value(address)) for address in self.get_all_cell_addresses()]
+        return sum(value_sizes)
+
+    def search_and_reduce_singletons(self):
+        while True:
+            current_puzzle_size = self.get_current_puzzle_count()
+            print('The current puzzle size is', current_puzzle_size)
+            for address in self.get_all_cell_addresses():
+                cell_value = self.get_cell_value(address)
+                if len(cell_value) == 1:
+                    self.remove_value_from_cell_associates(address, cell_value)
+            if current_puzzle_size == self.get_current_puzzle_count():
+                # Break out of the loop, since there was no change in the puzzle size
+                break
+
+    def solve(self):
+        self.search_and_reduce_singletons()

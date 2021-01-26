@@ -93,6 +93,76 @@ class TestSudoku(unittest.TestCase):
         puzzle = Sudoku_Puzzle(self.sudoku_solved_4x4_string)
         self.assertTrue(puzzle.is_solved(), 'Puzzle is wrongly assumed to NOT be solved.')
 
+    def test_get_cell_groups(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        puzzle.display()
+
+        # Confirm choices are there before elimination
+        self.assertTrue('1' in puzzle.get_cell_value('B1'))
+        self.assertTrue('1' in puzzle.get_cell_value('A2'))
+        self.assertTrue('1' in puzzle.get_cell_value('B2'))
+
+        cell_address = 'A1'
+        cell_groups = puzzle.get_groups_for_cell(cell_address)
+        print('All groups for cell', cell_address, ' are', cell_groups)
+        self.assertEqual(3, len(cell_groups))
+
+    def test_get_cell_associates(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        puzzle.display()
+
+        cell_address = 'A1'
+        associated_cells = puzzle.get_associated_cells(cell_address)
+        print('Associated cells are:', associated_cells)
+
+        # For a 4x4 puzzle there are 7 associated cells to each cell.
+        # Three from the row, three from the column, and one extra one from the box group (two are already included)
+        self.assertEqual(7, len(associated_cells))
+
+    def test_remove_value_from_cell_associates(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        # Display initial state of the puzzle
+        puzzle.display()
+
+        cell_address = 'A1'
+        puzzle.remove_value_from_cell_associates(cell_address, puzzle.get_cell_value(cell_address))
+        # Now display simplified state of the puzzle
+        puzzle.display()
+
+        # Confirm the value has been removed from all other cells in the associated groups
+        self.assertFalse('1' in puzzle.get_cell_value('B1'))
+        self.assertFalse('1' in puzzle.get_cell_value('A2'))
+        self.assertFalse('1' in puzzle.get_cell_value('B2'))
+
+    def test_get_current_puzzle_size(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_solved_4x4_string)
+        puzzle_count = puzzle.get_current_puzzle_count()
+        print('The current puzzle count is', puzzle_count)
+        self.assertEqual(16, puzzle_count)
+
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        puzzle_count = puzzle.get_current_puzzle_count()
+        print('The current puzzle count is', puzzle_count)
+        self.assertEqual(52, puzzle_count)
+
+    def test_solve_simple_puzzle(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        puzzle.display()
+        self.assertEqual(52, puzzle.get_current_puzzle_count())
+
+        puzzle.search_and_reduce_singletons()
+        puzzle.display()
+        self.assertEqual(16, puzzle.get_current_puzzle_count())
+        self.assertTrue(puzzle.is_solved())
+
+    def test_solve_4x4_puzzle(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        puzzle.display()
+
+        puzzle.solve()
+        puzzle.display()
+        self.assertTrue(puzzle.is_solved())
+
 
 if __name__ == '__main__':
     unittest.main()
