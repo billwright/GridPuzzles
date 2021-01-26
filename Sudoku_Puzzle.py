@@ -82,36 +82,44 @@ class Sudoku_Puzzle(object):
     def get_cell_value(self, cell_address):
         return self.puzzle_dict[cell_address]
 
-    def display(self):
-        max_cell_width = 1 + max(len(s) for s in self.puzzle_dict.values())
+    def get_max_cell_width(self):
+        return 1 + max(len(s) for s in self.puzzle_dict.values())
 
-        horizontal_grid_line = '  |' + '+'.join(
-            ['-' * (max_cell_width * self.box_group_size) + '-'] * self.box_group_size) + '|'
+    def get_horizontal_grid_line(self):
+        return '  |' + '+'.join(
+            ['-' * (self.get_max_cell_width() * self.box_group_size) + '-'] * self.box_group_size) + '|'
 
-        # Print column headings
+    def get_display_header(self):
         heading_string = '  |'
         for col_name in self.column_names:
-            heading_string += col_name.center(max_cell_width, ' ')
+            heading_string += col_name.center(self.get_max_cell_width(), ' ')
             if col_name in self.column_boundaries:
                 heading_string += ' |'
-        print()
-        print(heading_string)
-        print(horizontal_grid_line)
+        return heading_string
 
+    def get_display_row(self, row_name):
         doubles = self.get_double_addresses()
+
+        row_string = ''
+        for col_name in self.column_names:
+            cell_address = col_name + row_name
+            cell_color = 'blue' if (cell_address in doubles) else 'green'
+            row_string += colored(self.get_cell_value(cell_address).center(self.get_max_cell_width()), cell_color)
+            if col_name in self.column_boundaries:
+                row_string += ' |'
+        return row_name + ' |' + row_string
+
+    def display(self):
+        # Print column headings
+        print()
+        print(self.get_display_header())
+        print(self.get_horizontal_grid_line())
 
         # Print each row
         for row_name in self.row_names:
-            row_string = ''
-            for col_name in self.column_names:
-                cell_address = col_name + row_name
-                cell_color = 'blue' if (cell_address in doubles) else 'green'
-                row_string += colored(self.get_cell_value(cell_address).center(max_cell_width), cell_color)
-                if col_name in self.column_boundaries:
-                    row_string += ' |'
-            print(row_name + ' |' + row_string)
+            print(self.get_display_row(row_name))
             if row_name in self.row_boundaries:
-                print(horizontal_grid_line)
+                print(self.get_horizontal_grid_line())
         print('The current puzzle count is', self.get_current_puzzle_count())
         print()
 
