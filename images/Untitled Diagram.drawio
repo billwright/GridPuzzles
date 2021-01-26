@@ -1,1 +1,51 @@
-<mxfile host="app.diagrams.net" modified="2021-01-26T18:36:07.383Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36" etag="01P2qgHuuXwhxF-Wm7ij" version="14.2.7" type="github"><diagram name="Page-1" id="10a91c8b-09ff-31b1-d368-03940ed4cc9e">7VvBcpswEP0ajumAZDAcYzdJD22nM5lpp0cVZKCRkUeWY7tfX2EERlacAE6KOlEuYVeLkPY9S9pn7MD5cnfH0Cr7QhNMHOAmOwd+dADwJm4o/pWefeUJoqhypCxPZNDRcZ//wdLpSu8mT/BaCeSUEp6vVGdMiwLHXPEhxuhWDVtQoj51hVKsOe5jRHTvjzzhmfR6rnts+ITzNJOPDn3Z8AvFDymjm0I+zwFwcfirmpeo7kvGrzOU0G3LBW8cOGeU8upquZtjUua2Tlt13+2Z1mbcDBe8yw0BCCPohWHsLtAUBuBK9vCIyEbmYk6LJOc5LeSI+b7O0jbLOb5fobi0t4IJDpxlfEmE5YnLQxpwIq1mpqVB0C9MZk2u5pRQJpoKWuAylDP60CS+jF/Qgt+iZU5KPn3HLEEFkm5JHk+kboZInhbCiMXssehwpqejnh9mHO9aLpmeO0yXmLO9CJGtQc1JSeUa6W2LFzWaWYsSgfQhScW06fkIh7iQiHREB2joOCAgvMzZCgmAgrS8biFWNYrntNvfJ5ATqALpTcdEElokByM5DU1CcqIh+ZVquBwT76qIvJR2xPh1uaGd+G7zcoCHzg62TLkvbFwkJ3cITyteWK3o35jzvbTRhlPhooxnNKUFIp8pXdVcGUaAc2Cv6YbF+Pk9SMwrxfxMjPz84ETZyM9S5sr9AF0XqLSRfTBMEM8f1a3/KYrI3r/RXMzmGEIXi7UY5ymHmkEMo5Wv0eqnOBFZXr0xr0B/XvmRQqsrzzOZV6HdeAZvPBCoGw8Ix9x4IovkYCT9iUlI1iXGC1Bex2+Co3sJjmDk6iwyCke9erY4dsIxDI3C0dbZw6H0AhVKGPljQmkL7Qskk8goKPVK25ZEF5ZE8rZnSyJZMfQoidQ6uwHOzILI0yttK+C8PauiC1llOKkCu1a9NqtgB1bVlVQfWgU1lZr1ymhh0Jva9WoMZnm9meWBSGVWDZ2hxNKlQbtmXcissAuz+mvOosgK/6szlq5V2jXrHzCr/7dkIJycnLOAycQCunJaq2vvUUabqvW6746pogGrhg6EsXnJyAwcu6mhFkddP9PeHRsVx25SqMVR/7YwNApHq4O+/qshXSQr0FNcEBUgnMKTc3pg9HHKaqHjMKunuPAEswwnltVDX59ZXWSr+vDWnVmuC0/XLLNLQKuHjsOsnuKCYWuWMI8/s6nCj79lgjd/AQ==</diagram></mxfile>
+<mxfile host="app.diagrams.net" modified="2021-01-26T18:41:02.415Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36" etag="70hQFYpY5yDnFy_CKZT_" version="14.2.7" type="github">
+  <diagram name="Page-1" id="10a91c8b-09ff-31b1-d368-03940ed4cc9e">
+    <mxGraphModel dx="1615" dy="1064" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="62893188c0fa7362-1" value="Is the puzzle solved?" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="610" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-2" value="&lt;span&gt;Are we stuck?&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="430" y="170" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-3" value="&lt;span&gt;Success!&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="770" y="295" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-4" value="Yes" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-1" target="62893188c0fa7362-3" edge="1">
+          <mxGeometry x="-0.3002" y="13" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62893188c0fa7362-5" value="No" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-1" target="62893188c0fa7362-2" edge="1">
+          <mxGeometry x="-0.359" y="-11" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="IMevLQ-Gpax8BWUYB3iY-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="62893188c0fa7362-8" target="62893188c0fa7362-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-8" value="&lt;span&gt;Make a copy of the puzzle&lt;br&gt;Make a guess&lt;br&gt;&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="290" y="270" width="170" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="IMevLQ-Gpax8BWUYB3iY-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="62893188c0fa7362-9" target="62893188c0fa7362-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-9" value="&lt;span&gt;Reduce some more&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="580" y="295" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-14" value="Yes" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-2" target="62893188c0fa7362-8" edge="1">
+          <mxGeometry x="-0.2" y="-14" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62893188c0fa7362-15" value="No" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-2" target="62893188c0fa7362-9" edge="1">
+          <mxGeometry x="-0.2" y="14" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
