@@ -2,6 +2,7 @@ import math
 from termcolor import colored
 from Cell import Cell
 import copy
+from Blanking_Cell_Exception import Blanking_Cell_Exception
 
 
 def cross(cols, rows):
@@ -253,8 +254,8 @@ class Sudoku_Puzzle(object):
                     return solved_puzzle
                 else:
                     print(f'Our guess of {current_guess_value} for Cell {cell_to_guess.address} was wrong. Trying the next guess...')
-            except Exception as error:
-                print("Our guess was wrong! Backing up and trying the next guess for cell", cell_to_guess)
+            except Blanking_Cell_Exception as error:
+                print(error.message, error.cell)
 
         print(f"Could not find a solution when guessing values for Cell {cell_to_guess}. We have to back up to our previous Cell we guessed on...")
         return None
