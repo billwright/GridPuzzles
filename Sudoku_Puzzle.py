@@ -188,10 +188,6 @@ class Sudoku_Puzzle(object):
             addresses.append(double[1])
         return set(addresses)
 
-    def remove_values_from_cell(self, address, values):
-        for value in values:
-            self.remove_from_values(address, value)
-
     def search_and_reduce_singletons(self):
         for cell in self.find_singletons():
             self.remove_value_from_cell_associates(cell)

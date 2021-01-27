@@ -210,7 +210,7 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
         self.assertTrue(puzzle.is_solved())
 
-    def test_solve_6_start_9x9_puzzle(self):
+    def test_solve_6_star_9x9_puzzle(self):
         puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
         puzzle.display()
 
