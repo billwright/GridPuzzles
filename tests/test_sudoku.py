@@ -159,7 +159,7 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
         self.assertEqual(52, puzzle.get_current_puzzle_count())
 
-        puzzle.solve()
+        puzzle.reduce()
         puzzle.display()
         self.assertEqual(16, puzzle.get_current_puzzle_count())
         self.assertTrue(puzzle.is_solved())
@@ -168,7 +168,7 @@ class TestSudoku(unittest.TestCase):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         puzzle.display()
 
-        puzzle.solve()
+        puzzle.reduce()
         puzzle.display()
         self.assertTrue(puzzle.is_solved())
 
@@ -206,17 +206,27 @@ class TestSudoku(unittest.TestCase):
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
         puzzle.display()
 
-        puzzle.solve()
+        puzzle.reduce()
         puzzle.display()
         self.assertTrue(puzzle.is_solved())
+
+    def test_get_sorted_cells(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
+        puzzle.display()
+
+        sorted_cells = puzzle.get_all_cells_sorted_by_size()
+        print("Sorted cells (by size):", sorted_cells)
+
+        # Test that the first cell is shorter than the last cell
+        self.assertLess(sorted_cells[0].get_size(), sorted_cells[-1].get_size())
 
     def test_solve_6_star_9x9_puzzle(self):
         puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
         puzzle.display()
 
-        puzzle.solve()
-        puzzle.display()
-        self.assertTrue(puzzle.is_solved())
+        solved_puzzle = puzzle.search()
+        solved_puzzle.display()
+        self.assertTrue(solved_puzzle.is_solved())
 
 
 if __name__ == '__main__':

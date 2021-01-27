@@ -1,6 +1,7 @@
 import math
 from termcolor import colored
 from Cell import Cell
+import copy
 
 
 def cross(cols, rows):
@@ -164,6 +165,15 @@ class Sudoku_Puzzle(object):
     def get_all_cells(self):
         return self.puzzle_dict.values()
 
+    def get_all_cells_sorted_by_size(self):
+        return sorted(self.get_all_cells())
+
+    def get_guessing_cell(self):
+        for cell in self.get_all_cells_sorted_by_size():
+            if cell.get_size() > 1:
+                return cell
+        raise Exception('We should never get here. If all cells are of size 1, then we should not be guessing')
+
     def get_cells_with_value_size(self, value_size):
         return [cell for cell in self.get_all_cells() if cell.get_size() == value_size]
 
@@ -201,13 +211,50 @@ class Sudoku_Puzzle(object):
                     if cell not in double:
                         cell.remove_values(double[0].values)
 
-    def solve(self):
+    def reduce(self):
         while True:
             current_puzzle_size = self.get_current_puzzle_count()
-            print('Looking to reduce singletons... The current puzzle size is', current_puzzle_size)
 
+            # print('Looking to reduce singletons... The current puzzle size is', current_puzzle_size)
             self.search_and_reduce_singletons()
+            # print('Looking to reduce doublets... The current puzzle size is', current_puzzle_size)
             self.search_and_reduce_doubles()
             if current_puzzle_size == self.get_current_puzzle_count():
                 # Break out of the loop, since there was no change in the puzzle size
                 break
+
+    def search(self):
+        """Using depth-first search to solve the sudoku.
+        This methods returns True if the puzzle is solved, otherwise False"""
+
+        # Solve as much as we can using singletons, doublets, etc.
+        self.reduce()
+
+        if self.is_solved():
+            print("Puzzle is solved!")
+            return self
+
+        # We are stuck and need to guess. Let's choose one of the unfilled cells with the fewest possibilities
+        cell_to_guess = self.get_guessing_cell()
+        print("I'm guessing the value of cell:", cell_to_guess)
+
+        # We'll guess each value of the possible values until we find a solution
+        for current_guess_value in cell_to_guess.values:
+            print("I'm guessing value:", current_guess_value)
+            puzzle_with_guess = copy.deepcopy(self)
+            cell_to_guess_in_copied_puzzle = puzzle_with_guess.get_cell(cell_to_guess.address)
+            cell_to_guess_in_copied_puzzle.values = current_guess_value
+
+            # Here's the tricky part, recursively call this same method, but we're calling it on a different object
+            # Note that this is NOT self.search(), but puzzle_with_guess.search().
+            try:
+                solved_puzzle = puzzle_with_guess.search()
+                if solved_puzzle is not None:
+                    return solved_puzzle
+                else:
+                    print(f'Our guess of {current_guess_value} for Cell {cell_to_guess.address} was wrong. Trying the next guess...')
+            except Exception as error:
+                print("Our guess was wrong! Backing up and trying the next guess for cell", cell_to_guess)
+
+        print(f"Could not find a solution when guessing values for Cell {cell_to_guess}. We have to back up to our previous Cell we guessed on...")
+        return None
