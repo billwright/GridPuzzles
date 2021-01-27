@@ -57,7 +57,7 @@ def eliminate_triples(values):
     for unit in unit_list:
         triples = [[box1, box2, box3] for box1 in unit for box2 in unit for box3 in unit if (box1 != box2) and (box1 != box3) and (box2 != box3)]
         for triple in triples:
-            if values[triple[0]] == values[triple[1]] and (values[triple[0]] == values[triple[2]]) and (values[pair[0]]) == 3:
+            if values[triple[0]] == values[triple[1]] and (values[triple[0]] == values[triple[2]]) and (values[triple[0]]) == 3:
                 for peer in unit:
                     if peer != triple[0] and peer != triple[1] and peer != triple[2]:
                         print("Found triple: " + str(triple) + ", in unit: " + str(unit))
