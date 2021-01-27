@@ -30,6 +30,16 @@ class TestSudoku(unittest.TestCase):
                         '...6.394.' + \
                         '..3.2...8'
 
+    sudoku_6_star_9x9_string = '15.2...67' + \
+                               '8.7.5614.' + \
+                               '4....3..2' + \
+                               '....2..1.' + \
+                               '.........' + \
+                               '216....3.' + \
+                               '.3.....2.' + \
+                               '....4....' + \
+                               '57...1..4'
+
     def test_4x4_grid_creation(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         puzzle.display()
@@ -187,6 +197,14 @@ class TestSudoku(unittest.TestCase):
 
     def test_solve_9x9_puzzle(self):
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
+        puzzle.display()
+
+        puzzle.solve()
+        puzzle.display()
+        self.assertTrue(puzzle.is_solved())
+
+    def test_solve_6_start_9x9_puzzle(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
         puzzle.display()
 
         puzzle.solve()
