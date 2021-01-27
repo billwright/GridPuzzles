@@ -1,5 +1,6 @@
 import math
 from termcolor import colored
+from Cell import Cell
 
 
 def cross(cols, rows):
@@ -35,20 +36,19 @@ class Sudoku_Puzzle(object):
         col_name_groups = [self.column_names[i:i + self.box_group_size] for i in
                            range(0, self.size, self.box_group_size)]
         row_name_groups = [self.row_names[i:i + self.box_group_size] for i in range(0, self.size, self.box_group_size)]
-        # groups = []
-        # for col_name_group in col_name_groups:
-        #     for row_name_group in row_name_groups:
-        #         groups.append(cross(col_name_group, row_name_group))
-        # return groups
-        return [cross(col_name_group, row_name_group) for col_name_group in col_name_groups
-                for row_name_group in row_name_groups]
+        groups = []
+        for col_name_group in col_name_groups:
+            for row_name_group in row_name_groups:
+                group = [self.get_cell(address) for address in cross(col_name_group, row_name_group)]
+                groups.append(group)
+        return groups
 
     def column_groupings(self):
         groups = []
         for col_name in self.column_names:
             col_group = []
             for row_name in self.row_names:
-                col_group.append(col_name + row_name)
+                col_group.append(self.get_cell(col_name + row_name))
             groups.append(col_group)
         return groups
 
@@ -57,7 +57,7 @@ class Sudoku_Puzzle(object):
         for row_name in self.row_names:
             row_group = []
             for col_name in self.column_names:
-                row_group.append(col_name + row_name)
+                row_group.append(self.get_cell(col_name + row_name))
             groups.append(row_group)
         return groups
 
@@ -67,7 +67,7 @@ class Sudoku_Puzzle(object):
     def get_all_group_values(self):
         all_group_values = []
         for group in self.get_all_groups():
-            all_group_values.append([self.get_cell_value(address) for address in group])
+            all_group_values.append([cell.values for cell in group])
         return all_group_values
 
     def get_all_cell_addresses(self):
@@ -77,13 +77,16 @@ class Sudoku_Puzzle(object):
         addresses = self.get_all_cell_addresses()
         values = [(value if value != '.' else self.possible_values()) for value in puzzle_string]
 
-        return dict(zip(addresses, values))
+        puzzle_dictionary = {}
+        for (address, values) in zip(addresses, values):
+            puzzle_dictionary[address] = Cell(address, values)
+        return puzzle_dictionary
 
-    def get_cell_value(self, cell_address):
+    def get_cell(self, cell_address):
         return self.puzzle_dict[cell_address]
 
     def get_max_cell_width(self):
-        return 1 + max(len(s) for s in self.puzzle_dict.values())
+        return 1 + max(cell.get_size() for cell in self.get_all_cells())
 
     def get_horizontal_grid_line(self):
         return '  |' + '+'.join(
@@ -104,7 +107,7 @@ class Sudoku_Puzzle(object):
         for col_name in self.column_names:
             cell_address = col_name + row_name
             cell_color = 'blue' if (cell_address in doubles) else 'green'
-            row_string += colored(self.get_cell_value(cell_address).center(self.get_max_cell_width()), cell_color)
+            row_string += colored(self.get_cell(cell_address).values.center(self.get_max_cell_width()), cell_color)
             if col_name in self.column_boundaries:
                 row_string += ' |'
         return row_name + ' |' + row_string
@@ -124,8 +127,8 @@ class Sudoku_Puzzle(object):
         print()
 
     def is_solved(self):
-        for cell in self.puzzle_dict.values():
-            if len(cell) != 1:
+        for cell in self.get_all_cells():
+            if cell.get_size() != 1:
                 return False
         for group in self.get_all_group_values():
             if len(set(group)) != self.size:
@@ -135,23 +138,19 @@ class Sudoku_Puzzle(object):
     def get_groups_for_cell(self, cell_address):
         return [group for group in self.get_all_groups() if cell_address in group]
 
-    def get_associated_cells(self, cell_address):
-        groups = self.get_groups_for_cell(cell_address)
+    def get_associated_cells(self, cell):
+        groups = self.get_groups_for_cell(cell)
         associated_cells = []
         for group in groups:
-            for address in group:
-                if address != cell_address:
-                    associated_cells.append(address)
+            for current_cell in group:
+                if current_cell != cell:
+                    associated_cells.append(current_cell)
         return set(associated_cells)
 
-    def remove_from_values(self, cell_address, value):
-        current_cell_values = self.get_cell_value(cell_address)
-        self.puzzle_dict[cell_address] = current_cell_values.replace(value, '')
-
-    def remove_value_from_cell_associates(self, cell_address, value):
-        associated_cells = self.get_associated_cells(cell_address)
-        for address in associated_cells:
-            self.remove_from_values(address, value)
+    def remove_value_from_cell_associates(self, cell):
+        associated_cells = self.get_associated_cells(cell)
+        for curr_cell in associated_cells:
+            curr_cell.remove_values(cell.values)
 
     def get_current_puzzle_count(self):
         # This is a metric indicating how close the puzzle is to being solved.
@@ -159,25 +158,27 @@ class Sudoku_Puzzle(object):
         # The maximum value would be n x n x n, but that would never occur as it
         # would correspond to a completely empty puzzle.
         # values_sizes = [(len(self.get_cell_value(address)) for address in self.get_all_cell_addresses()]
-        value_sizes = [len(self.get_cell_value(address)) for address in self.get_all_cell_addresses()]
+        value_sizes = [cell.get_size() for cell in self.get_all_cells()]
         return sum(value_sizes)
 
+    def get_all_cells(self):
+        return self.puzzle_dict.values()
+
     def get_cells_with_value_size(self, value_size):
-        return [address for address in self.get_all_cell_addresses() if len(self.get_cell_value(address)) == value_size]
+        return [cell for cell in self.get_all_cells() if cell.get_size() == value_size]
 
     def find_singletons(self):
         return self.get_cells_with_value_size(1)
 
     def find_doubles(self):
         doubles = []
-        for possible_double_address in self.get_cells_with_value_size(2):
-            cell_value = self.get_cell_value(possible_double_address)
-            cell_associates = self.get_associated_cells(possible_double_address)
+        for possible_double_cell in self.get_cells_with_value_size(2):
+            cell_associates = self.get_associated_cells(possible_double_cell)
             for potential_match in cell_associates:
-                if cell_value == self.get_cell_value(potential_match):
+                if possible_double_cell.values == potential_match.values:
                     # Check if the reverse of this tuple is already in our list
-                    if (potential_match, possible_double_address) not in doubles:
-                        doubles.append((possible_double_address, potential_match))
+                    if (potential_match, possible_double_cell) not in doubles:
+                        doubles.append((possible_double_cell, potential_match))
         return doubles
 
     def get_double_addresses(self):
@@ -192,17 +193,17 @@ class Sudoku_Puzzle(object):
             self.remove_from_values(address, value)
 
     def search_and_reduce_singletons(self):
-        for address in self.find_singletons():
-            self.remove_value_from_cell_associates(address, self.get_cell_value(address))
+        for cell in self.find_singletons():
+            self.remove_value_from_cell_associates(cell)
 
     def search_and_reduce_doubles(self):
         for double in self.find_doubles():
             # Get groups of first address in the double (it doesn't matter which address we use)
             common_groups = [group for group in self.get_groups_for_cell(double[0]) if double[1] in group]
             for group in common_groups:
-                for address in group:
-                    if address not in double:
-                        self.remove_values_from_cell(address, self.get_cell_value(double[0]))
+                for cell in group:
+                    if cell not in double:
+                        cell.remove_values(double[0].values)
 
     def solve(self):
         while True:

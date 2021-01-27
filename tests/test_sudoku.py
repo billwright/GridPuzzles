@@ -44,20 +44,20 @@ class TestSudoku(unittest.TestCase):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         puzzle.display()
 
-        self.assertEqual('1', puzzle.get_cell_value('A1'), 'Cell value is incorrect')
-        self.assertEqual('4', puzzle.get_cell_value('D2'), 'Cell value is incorrect')
-        self.assertEqual('3', puzzle.get_cell_value('B4'), 'Cell value is incorrect')
-        self.assertEqual('1234', puzzle.get_cell_value('D4'), 'Cell value is incorrect')
+        self.assertEqual('1', puzzle.get_cell('A1').values, 'Cell value is incorrect')
+        self.assertEqual('4', puzzle.get_cell('D2').values, 'Cell value is incorrect')
+        self.assertEqual('3', puzzle.get_cell('B4').values, 'Cell value is incorrect')
+        self.assertEqual('1234', puzzle.get_cell('D4').values, 'Cell value is incorrect')
 
     def test_9x9_grid_creation(self):
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
         puzzle.display()
 
-        self.assertEqual('4', puzzle.get_cell_value('A1'), 'Cell value is incorrect')
-        self.assertEqual('4', puzzle.get_cell_value('D2'), 'Cell value is incorrect')
-        self.assertEqual('123456789', puzzle.get_cell_value('B4'), 'Cell value is incorrect')
-        self.assertEqual('3', puzzle.get_cell_value('D4'), 'Cell value is incorrect')
-        self.assertEqual('8', puzzle.get_cell_value('I9'), 'Cell value is incorrect')
+        self.assertEqual('4', puzzle.get_cell('A1').values, 'Cell value is incorrect')
+        self.assertEqual('4', puzzle.get_cell('D2').values, 'Cell value is incorrect')
+        self.assertEqual('123456789', puzzle.get_cell('B4').values, 'Cell value is incorrect')
+        self.assertEqual('3', puzzle.get_cell('D4').values, 'Cell value is incorrect')
+        self.assertEqual('8', puzzle.get_cell('I9').values, 'Cell value is incorrect')
 
     def test_column_boundaries(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
@@ -89,7 +89,7 @@ class TestSudoku(unittest.TestCase):
 
     def test_incorrect_sudoku_string(self):
         with self.assertRaises(Exception):
-            puzzle = Sudoku_Puzzle(self.sudoku_incorrect_string)
+            Sudoku_Puzzle(self.sudoku_incorrect_string)
 
     def test_puzzle_not_solved(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
@@ -108,21 +108,20 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
 
         # Confirm choices are there before elimination
-        self.assertTrue('1' in puzzle.get_cell_value('B1'))
-        self.assertTrue('1' in puzzle.get_cell_value('A2'))
-        self.assertTrue('1' in puzzle.get_cell_value('B2'))
+        self.assertTrue('1' in puzzle.get_cell('A2').values)
+        self.assertTrue('1' in puzzle.get_cell('B2').values)
 
-        cell_address = 'A1'
-        cell_groups = puzzle.get_groups_for_cell(cell_address)
-        print('All groups for cell', cell_address, ' are', cell_groups)
+        cell = puzzle.get_cell('A1')
+        cell_groups = puzzle.get_groups_for_cell(cell)
+        print('All groups for cell', cell, ' are', cell_groups)
         self.assertEqual(3, len(cell_groups))
 
     def test_get_cell_associates(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         puzzle.display()
 
-        cell_address = 'A1'
-        associated_cells = puzzle.get_associated_cells(cell_address)
+        cell = puzzle.get_cell('A1')
+        associated_cells = puzzle.get_associated_cells(cell)
         print('Associated cells are:', associated_cells)
 
         # For a 4x4 puzzle there are 7 associated cells to each cell.
@@ -134,15 +133,15 @@ class TestSudoku(unittest.TestCase):
         # Display initial state of the puzzle
         puzzle.display()
 
-        cell_address = 'A1'
-        puzzle.remove_value_from_cell_associates(cell_address, puzzle.get_cell_value(cell_address))
+        cell = puzzle.get_cell('A1')
+        puzzle.remove_value_from_cell_associates(cell)
         # Now display simplified state of the puzzle
         puzzle.display()
 
         # Confirm the value has been removed from all other cells in the associated groups
-        self.assertFalse('1' in puzzle.get_cell_value('B1'))
-        self.assertFalse('1' in puzzle.get_cell_value('A2'))
-        self.assertFalse('1' in puzzle.get_cell_value('B2'))
+        self.assertFalse('1' in puzzle.get_cell('B1').values)
+        self.assertFalse('1' in puzzle.get_cell('A2').values)
+        self.assertFalse('1' in puzzle.get_cell('B2').values)
 
     def test_get_current_puzzle_size(self):
         puzzle = Sudoku_Puzzle(self.sudoku_solved_4x4_string)
@@ -187,10 +186,18 @@ class TestSudoku(unittest.TestCase):
         print('doubles are:', doubles)
         self.assertEqual(7, len(doubles))
 
-        self.assertIn(('E4', 'E6'), doubles)
-        self.assertIn(('F7', 'F9'), doubles)
-        self.assertIn(('E8', 'D9'), doubles)
-        self.assertIn(('G2', 'G7'), doubles)
+        E4 = puzzle.get_cell('E4')
+        E6 = puzzle.get_cell('E6')
+        F7 = puzzle.get_cell('F7')
+        F9 = puzzle.get_cell('F9')
+        E8 = puzzle.get_cell('E8')
+        D9 = puzzle.get_cell('D9')
+        G2 = puzzle.get_cell('G2')
+        G7 = puzzle.get_cell('G7')
+        self.assertIn((E4, E6), doubles)
+        self.assertIn((F7, F9), doubles)
+        self.assertIn((E8, D9), doubles)
+        self.assertIn((G2, G7), doubles)
 
         puzzle.search_and_reduce_doubles()
         puzzle.display()
