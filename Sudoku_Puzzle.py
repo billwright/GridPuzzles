@@ -260,7 +260,8 @@ class Sudoku_Puzzle(object):
             # self.search_and_reduce_singletons()
             # print('Looking to reduce doublets... The current puzzle size is', current_puzzle_size)
             # self.search_and_reduce_doubles()
-            self.search_and_reduce_matchlets([1, 2])
+            # self.search_and_reduce_matchlets([1, 2])
+            self.search_and_reduce_matchlets()
             updated_puzzle_size = self.get_current_puzzle_count()
             if current_puzzle_size == updated_puzzle_size:
                 # Break out of the loop, since there was no change in the puzzle size
