@@ -1,5 +1,6 @@
 import unittest
 from Cell import Cell
+from Blanking_Cell_Exception import Blanking_Cell_Exception
 
 
 class TestCell(unittest.TestCase):
@@ -23,6 +24,25 @@ class TestCell(unittest.TestCase):
         self.assertEqual(4, cell.get_size())
         cell = Cell('A1', '3')
         self.assertEqual(1, cell.get_size())
+
+    def test_protection_against_no_values(self):
+        with self.assertRaises(Blanking_Cell_Exception):
+            Cell('A1', '')
+
+        cell = Cell('A1', '1234')
+        with self.assertRaises(AttributeError):
+            cell.values = ''
+
+        with self.assertRaises(Blanking_Cell_Exception):
+            cell.set_values('')
+
+        with self.assertRaises(Blanking_Cell_Exception):
+            cell.remove_values('1234')
+
+        cell = Cell('A1', '14')
+        with self.assertRaises(Blanking_Cell_Exception):
+            cell.remove_values('1234')
+
 
 
 
