@@ -127,7 +127,7 @@ class TestSudoku(unittest.TestCase):
         self.assertEqual(12, len(all_groups))
 
     def test_incorrect_sudoku_string(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValueError):
             Sudoku_Puzzle(self.sudoku_incorrect_string)
 
     def test_puzzle_not_solved(self):
