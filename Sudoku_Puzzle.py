@@ -90,11 +90,11 @@ class Sudoku_Puzzle(object):
         return 1 + max(cell.get_size() for cell in self.get_all_cells())
 
     def get_horizontal_grid_line(self):
-        return '  |' + '+'.join(
+        return '    |' + '+'.join(
             ['-' * (self.get_max_cell_width() * self.box_group_size) + '-'] * self.box_group_size) + '|'
 
     def get_display_header(self):
-        heading_string = '  |'
+        heading_string = '    |'
         for col_name in self.column_names:
             heading_string += col_name.center(self.get_max_cell_width(), ' ')
             if col_name in self.column_boundaries:
