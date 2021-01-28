@@ -1,5 +1,7 @@
 import unittest
 from Sudoku_Puzzle import Sudoku_Puzzle
+import random
+import math
 
 
 class TestSudoku(unittest.TestCase):
@@ -241,13 +243,41 @@ class TestSudoku(unittest.TestCase):
             solved_puzzle.display()
             self.assertTrue(solved_puzzle.is_solved())
 
-    def test_creating_puzzle_by_solving_blank_puzzle(self):
-        puzzle = Sudoku_Puzzle(self.blank_puzzle_template)
+    def test_solve_16x16_puzzle(self):
+        puzzle = Sudoku_Puzzle(puzzle_string)
         puzzle.display()
 
         solved_puzzle = puzzle.search()
         solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
+
+    def test_creating_puzzles_solving_them(self):
+
+        number_of_puzzles_per_clue_number = 10  # Number of puzzles to make and solve of each size/clue_number tuple
+        maximum_number_of_clues = 10            # The most clues to make is 10, but for 4x4 that is clipped below to be 3
+        puzzle_sizes = [4, 9]                   # create puzzles of size 4x4 and 9x9
+
+        for puzzle_size in puzzle_sizes:
+            blank_puzzle = '.' * (puzzle_size**2)       # This creates a blank puzzle string of the correct size
+            max_clues = math.min(int(puzzle_size ** 2/7), maximum_number_of_clues)
+            print(f'Testing puzzles of size {puzzle_size}, with a maximum of {max_clues}')
+
+            for clue_number in range(1, max_clues+1):
+                for test_number in range(1, number_of_puzzles_per_clue_number):
+                    puzzle = Sudoku_Puzzle(blank_puzzle)
+                    # Create n values randomly:
+                    for i in range(1, clue_number+1):
+                        row = str(random.randint(1, puzzle_size))
+                        column = chr(ord('A') + random.randint(0, puzzle_size-1))
+                        value = str(random.randint(1, puzzle_size))
+
+                        seed_cell = puzzle.get_cell(column+row)
+                        seed_cell.values = value
+
+                    puzzle.display()
+                    solved_puzzle = puzzle.search()
+                    solved_puzzle.display()
+                    self.assertTrue(solved_puzzle.is_solved())
 
 
 if __name__ == '__main__':
