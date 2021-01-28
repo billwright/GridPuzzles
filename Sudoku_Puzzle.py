@@ -23,16 +23,15 @@ class Sudoku_Puzzle(object):
 
         self.size = int(math.sqrt(len(puzzle_string)))
         self.box_group_size = int(math.sqrt(self.size))
-        self.column_boundaries = ''.join(
-            [chr(ord('A') + i * self.box_group_size - 1) for i in range(1, self.box_group_size + 1)])
-        self.row_boundaries = ''.join([str(i * self.box_group_size) for i in range(1, self.box_group_size + 1)])
-        self.column_names = ''.join(chr(ord('A') + col_number) for col_number in range(self.size))
-        self.row_names = ''.join(str(row_number + 1) for row_number in range(self.size))
+        self.column_boundaries = [chr(ord('A') + i * self.box_group_size - 1) for i in range(1, self.box_group_size + 1)]
+        self.row_boundaries = [str(i * self.box_group_size) for i in range(1, self.box_group_size + 1)]
+        self.column_names = [chr(ord('A') + col_number) for col_number in range(self.size)]
+        self.row_names = [str(row_number + 1) for row_number in range(self.size)]
 
         self.puzzle_dict = self.create_puzzle(puzzle_string)
 
     def possible_values(self):
-        return self.row_names
+        return '1234567890ABCDEF'[0:self.size]
 
     def box_groupings(self):
         col_name_groups = [self.column_names[i:i + self.box_group_size] for i in
@@ -112,7 +111,7 @@ class Sudoku_Puzzle(object):
             row_string += colored(self.get_cell(cell_address).values.center(self.get_max_cell_width()), cell_color)
             if col_name in self.column_boundaries:
                 row_string += ' |'
-        return row_name + ' |' + row_string
+        return row_name.center(3) + ' |' + row_string
 
     def display(self):
         # Print column headings
@@ -173,6 +172,7 @@ class Sudoku_Puzzle(object):
         for cell in self.get_all_cells_sorted_by_size():
             if cell.get_size() > 1:
                 return cell
+        self.display()
         raise Exception('We should never get here. If all cells are of size 1, then we should not be guessing')
 
     def get_cells_with_value_size(self, value_size):
@@ -191,6 +191,20 @@ class Sudoku_Puzzle(object):
                     if (potential_match, possible_double_cell) not in doubles:
                         doubles.append((possible_double_cell, potential_match))
         return doubles
+
+    def find_matchlets(self):
+        matchlets = []  # This is a list of matchlets, which are always tuples
+        all_matched_cells = []  # A flat list to remember all matches cells to avoid duplicates
+
+        for possible_match_cell in self.get_all_cells():
+            for cell_group in self.get_groups_for_cell():
+                matchlet = [cell for cell in cell_group if cell.values == possible_match_cell.values]
+                previously_matched_cells = [cell for cell in matchlet if cell in all_matched_cells]
+                if len(previously_matched_cells) == 0:
+                    matchlets.append(tuple(matchlet))
+                    for cell in matchlet:
+                        all_matched_cells.append(cell)
+        return matchlets
 
     def get_double_addresses(self):
         addresses = []
@@ -244,7 +258,7 @@ class Sudoku_Puzzle(object):
             print("I'm guessing value:", current_guess_value)
             puzzle_with_guess = copy.deepcopy(self)
             cell_to_guess_in_copied_puzzle = puzzle_with_guess.get_cell(cell_to_guess.address)
-            cell_to_guess_in_copied_puzzle.values = current_guess_value
+            cell_to_guess_in_copied_puzzle.set_values(current_guess_value)
 
             # Here's the tricky part, recursively call this same method, but we're calling it on a different object
             # Note that this is NOT self.search(), but puzzle_with_guess.search().

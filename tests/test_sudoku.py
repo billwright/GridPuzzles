@@ -100,11 +100,11 @@ class TestSudoku(unittest.TestCase):
 
     def test_column_boundaries(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
-        self.assertEqual('BD', puzzle.column_boundaries)
+        self.assertEqual(['B', 'D'], puzzle.column_boundaries)
 
     def test_row_boundaries(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
-        self.assertEqual('24', puzzle.row_boundaries)
+        self.assertEqual(['2', '4'], puzzle.row_boundaries)
 
     def test_box_groups(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
@@ -260,6 +260,28 @@ class TestSudoku(unittest.TestCase):
             solved_puzzle.display()
             self.assertTrue(solved_puzzle.is_solved())
 
+    def test_puzzle_generation(self):
+
+        # Test bounds of 4x4 puzzle
+        puzzle = Sudoku_Puzzle(self.sudoku_not_solved_4x4_string)
+        cells_with_zero = [cell for cell in puzzle.get_all_cells() if '0' in cell.values]
+        self.assertEqual(0, len(cells_with_zero))
+        cells_with_5 = [cell for cell in puzzle.get_all_cells() if '5' in cell.values]
+        self.assertEqual(0, len(cells_with_5))
+
+        # Test bounds of 9x9 puzzle
+        puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
+        cells_with_zero = [cell for cell in puzzle.get_all_cells() if '0' in cell.values]
+        self.assertEqual(0, len(cells_with_zero))
+        cells_with_a = [cell for cell in puzzle.get_all_cells() if 'A' in cell.values]
+        self.assertEqual(0, len(cells_with_a))
+
+        # Test bounds of 16x16 puzzle (0 is valid in this puzzle)
+        puzzle = Sudoku_Puzzle(self.sudoku_16x16_string)
+        cells_with_g = [cell for cell in puzzle.get_all_cells() if 'G' in cell.values]
+        self.assertEqual(0, len(cells_with_g))
+
+    # @unittest.skip
     @unittest.expectedFailure
     def test_solve_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.sudoku_16x16_string)
