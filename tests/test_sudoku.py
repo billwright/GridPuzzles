@@ -40,6 +40,26 @@ class TestSudoku(unittest.TestCase):
                                '....4....' + \
                                '57...1..4'
 
+    blank_puzzle_template = '.........' + \
+                            '.........' + \
+                            '.........' + \
+                            '.........' + \
+                            '.........' + \
+                            '.........' + \
+                            '.........' + \
+                            '.........' + \
+                            '.........'
+
+    another_expert_puzzle = '....729.4' + \
+                            '6..8.....' + \
+                            '.2.5....3' + \
+                            '..5......' + \
+                            '....1....' + \
+                            '.74.2...1' + \
+                            '..3.84...' + \
+                            '..83..7..' + \
+                            '..6.....2'
+
     def test_4x4_grid_creation(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         puzzle.display()
@@ -202,14 +222,6 @@ class TestSudoku(unittest.TestCase):
         puzzle.search_and_reduce_doubles()
         puzzle.display()
 
-    def test_solve_9x9_puzzle(self):
-        puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
-        puzzle.display()
-
-        puzzle.reduce()
-        puzzle.display()
-        self.assertTrue(puzzle.is_solved())
-
     def test_get_sorted_cells(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         puzzle.display()
@@ -220,8 +232,17 @@ class TestSudoku(unittest.TestCase):
         # Test that the first cell is shorter than the last cell
         self.assertLess(sorted_cells[0].get_size(), sorted_cells[-1].get_size())
 
-    def test_solve_6_star_9x9_puzzle(self):
-        puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
+    def test_solve_9x9_puzzles(self):
+        for puzzle_string in [self.sudoku_9x9_string, self.sudoku_6_star_9x9_string, self.another_expert_puzzle]:
+            puzzle = Sudoku_Puzzle(puzzle_string)
+            puzzle.display()
+
+            solved_puzzle = puzzle.search()
+            solved_puzzle.display()
+            self.assertTrue(solved_puzzle.is_solved())
+
+    def test_creating_puzzle_by_solving_blank_puzzle(self):
+        puzzle = Sudoku_Puzzle(self.blank_puzzle_template)
         puzzle.display()
 
         solved_puzzle = puzzle.search()
