@@ -281,8 +281,7 @@ class TestSudoku(unittest.TestCase):
         cells_with_g = [cell for cell in puzzle.get_all_cells() if 'G' in cell.values]
         self.assertEqual(0, len(cells_with_g))
 
-    # @unittest.skip
-    @unittest.expectedFailure
+    @unittest.skip
     def test_solve_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.sudoku_16x16_string)
         puzzle.display()
@@ -330,6 +329,46 @@ class TestSudoku(unittest.TestCase):
                     solved_puzzle.display()
 
         print(f'Out of {total_number_of_puzzles_generated} puzzles generated, {total_number_of_puzzles_solved} were solved')
+
+    def test_finding_matchlets(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
+        puzzle.reduce()
+        matchlets = puzzle.find_matchlets()
+
+        puzzle.display()
+        for matchlet_size in range(1, 5):
+            filtered_matchlets = [matchlet for matchlet in matchlets if len(matchlet) == matchlet_size]
+            print(f'     {matchlet_size}-sized matchlets: {len(filtered_matchlets)}, and they are: {filtered_matchlets}')
+        self.assertGreater(len(matchlets), 0)
+
+        # Make sure each matchlet has the right size, based on the values and that all
+        # values are the same.
+        for matchlet in matchlets:
+            self.assertEqual(len(matchlet), len(matchlet[0].values))
+            matchlet_values = matchlet[0].values
+            for cell in matchlet:
+                self.assertEqual(cell.values, matchlet_values)
+
+    def test_reducing_of_matchlets(self):
+        puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
+        puzzle.reduce()
+        matchlets = puzzle.find_matchlets()
+        puzzle.display()
+
+        quadlets = [matchlet for matchlet in matchlets if len(matchlet) == 4]
+        print('Quadlets found:', quadlets)
+        self.assertEqual(1, len(quadlets))
+
+        # See puzzle printout from test to understand these values
+        self.assertEqual('2579', puzzle.get_cell('F8').values)
+
+        # Now reduce this just quadlet
+        puzzle.search_and_reduce_matchlets([4])
+        print('Puzzle was reduced for quadlets.')
+        puzzle.display()
+
+        # See puzzle printout from test to understand these values
+        self.assertEqual('2', puzzle.get_cell('F8').values)
 
 
 if __name__ == '__main__':

@@ -136,8 +136,8 @@ class Sudoku_Puzzle(object):
                 return False
         return True
 
-    def get_groups_for_cell(self, cell_address):
-        return [group for group in self.get_all_groups() if cell_address in group]
+    def get_groups_for_cell(self, cell):
+        return [group for group in self.get_all_groups() if cell in group]
 
     def get_associated_cells(self, cell):
         groups = self.get_groups_for_cell(cell)
@@ -197,13 +197,16 @@ class Sudoku_Puzzle(object):
         all_matched_cells = []  # A flat list to remember all matches cells to avoid duplicates
 
         for possible_match_cell in self.get_all_cells():
-            for cell_group in self.get_groups_for_cell():
+            for cell_group in self.get_groups_for_cell(possible_match_cell):
                 matchlet = [cell for cell in cell_group if cell.values == possible_match_cell.values]
-                previously_matched_cells = [cell for cell in matchlet if cell in all_matched_cells]
-                if len(previously_matched_cells) == 0:
-                    matchlets.append(tuple(matchlet))
-                    for cell in matchlet:
-                        all_matched_cells.append(cell)
+                # Check to make sure this is a matchlet, meaning the size of the values has to equal the number of cells
+                if len(matchlet) == len(possible_match_cell.values):
+                    previously_matched_cells = [cell for cell in matchlet if cell in all_matched_cells]
+                    if len(previously_matched_cells) == 0:
+                        matchlets.append(tuple(matchlet))
+                        for cell in matchlet:
+                            all_matched_cells.append(cell)
+        matchlets.sort(key=len, reverse=True)
         return matchlets
 
     def get_double_addresses(self):
@@ -226,15 +229,40 @@ class Sudoku_Puzzle(object):
                     if cell not in double:
                         cell.remove_values(double[0].values)
 
+    def search_and_reduce_matchlets(self, sizes_to_reduce=None):
+        """This method finds and reduces matchlets in the puzzle
+
+        Attributes:
+            - (list) sizes_to_reduce:  This is optional and if left off, it reduces everything
+                                If specified, it should be a list of matchlet sizes to reduce"""
+
+        for matchlet in self.find_matchlets():
+            if sizes_to_reduce is not None and len(matchlet) not in sizes_to_reduce:
+                print(f'Per the configuration passed to this method, skipping matchlets of size {len(matchlet)}')
+                continue    # Skip this group
+
+            for group in self.get_groups_for_cell(matchlet[0]):
+                all_cells_in_group = True
+                for cell in matchlet:
+                    if cell not in group:
+                        all_cells_in_group = False   # This cell isn't in this group, then this is NOT the common group. Go to next group
+                if all_cells_in_group:
+                    # Reduce other cells in the group
+                    for cell in group:
+                        if cell not in matchlet:
+                            cell.remove_values(matchlet[0].values)
+
     def reduce(self):
         while True:
             current_puzzle_size = self.get_current_puzzle_count()
 
             # print('Looking to reduce singletons... The current puzzle size is', current_puzzle_size)
-            self.search_and_reduce_singletons()
+            # self.search_and_reduce_singletons()
             # print('Looking to reduce doublets... The current puzzle size is', current_puzzle_size)
-            self.search_and_reduce_doubles()
-            if current_puzzle_size == self.get_current_puzzle_count():
+            # self.search_and_reduce_doubles()
+            self.search_and_reduce_matchlets([1, 2])
+            updated_puzzle_size = self.get_current_puzzle_count()
+            if current_puzzle_size == updated_puzzle_size:
                 # Break out of the loop, since there was no change in the puzzle size
                 break
 
