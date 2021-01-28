@@ -35,7 +35,7 @@ class Cell(object):
 
     def remove_values(self, values_to_remove):
         for value_to_remove in values_to_remove:
-            if self._values == values_to_remove:
+            if self._values == value_to_remove:
                 raise Blanking_Cell_Exception(self)
             self._values = self._values.replace(value_to_remove, '')
 
