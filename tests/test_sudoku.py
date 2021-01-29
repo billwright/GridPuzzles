@@ -114,6 +114,30 @@ class TestSudoku(unittest.TestCase):
                             '...64.7....9....' + \
                             '....B.....C..D..'
 
+    #     Solution for above puzzle (solved in 56 minutes):
+    #     |A B C D  |E F G H  |I J K L  |M N O P  |
+    #     |---------+---------+---------+---------|
+    # 1  |E 9 0 4  |3 A 1 2  |C B 8 6  |D 5 F 7  |
+    # 2  |B D 6 5  |7 0 F 8  |A 1 E 4  |C 9 3 2  |
+    # 3  |F A 3 2  |D C 6 B  |9 0 7 5  |8 E 4 1  |
+    # 4  |8 C 7 1  |5 4 9 E  |2 3 D F  |6 B 0 A  |
+    #    |---------+---------+---------+---------|
+    # 5  |4 5 A B  |E 7 3 0  |6 2 9 1  |F C 8 D  |
+    # 6  |3 F D 7  |C 1 2 6  |8 5 4 E  |A 0 B 9  |
+    # 7  |1 E C 9  |8 D B 4  |7 A F 0  |5 2 6 3  |
+    # 8  |6 2 8 0  |9 F A 5  |B D 3 C  |1 4 7 E  |
+    #    |---------+---------+---------+---------|
+    # 9  |9 7 B 8  |2 3 C A  |4 6 0 D  |E 1 5 F  |
+    # 10 |A 1 2 D  |6 5 E F  |3 9 B 7  |0 8 C 4  |
+    # 11 |C 3 4 F  |0 B 8 D  |1 E 5 A  |2 7 9 6  |
+    # 12 |0 6 5 E  |1 9 4 7  |F C 2 8  |3 A D B  |
+    #    |---------+---------+---------+---------|
+    # 13 |7 4 E 3  |A 8 D C  |0 F 1 B  |9 6 2 5  |
+    # 14 |D B 9 C  |F E 0 1  |5 7 6 2  |4 3 A 8  |
+    # 15 |5 0 1 6  |4 2 7 3  |D 8 A 9  |B F E C  |
+    # 16 |2 8 F A  |B 6 5 9  |E 4 C 3  |7 D 1 0  |
+    #    |---------+---------+---------+---------|
+
     expert_16x16 = 'C...9.AE...8....' + \
                    '31...0..B.5..A6.' + \
                    '4.09.....2..8..3' + \
@@ -347,7 +371,7 @@ class TestSudoku(unittest.TestCase):
         solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
 
-    # @unittest.skip('The level confirmed puzzle takes a LONG time')
+    @unittest.skip('The level confirmed puzzle takes a 56 minutes to solve')
     def test_solve_16x16_puzzles(self):
         puzzle = Sudoku_Puzzle(self.level_confirmed_16x16)
         puzzle.display()
@@ -376,7 +400,7 @@ class TestSudoku(unittest.TestCase):
         cells_with_g = [cell for cell in puzzle.get_all_cells() if 'G' in cell.values]
         self.assertEqual(0, len(cells_with_g))
 
-    # @unittest.skip(because this takes a long time)
+    @unittest.skip('because this takes a long time')
     def test_solve_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.once_solved_16x16_string)
         puzzle.display()
@@ -385,7 +409,7 @@ class TestSudoku(unittest.TestCase):
         solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
 
-    # @unittest.skip(I haven't run this yet)
+    # @unittest.skip('I haven't run this yet')
     def test_solve_expert_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.expert_16x16)
         puzzle.display()
