@@ -255,13 +255,14 @@ class Sudoku_Puzzle(object):
     def reduce(self):
         while True:
             current_puzzle_size = self.get_current_puzzle_count()
+            print("Puzzle size is currently:", current_puzzle_size)
 
             # print('Looking to reduce singletons... The current puzzle size is', current_puzzle_size)
-            # self.search_and_reduce_singletons()
+            self.search_and_reduce_singletons()
             # print('Looking to reduce doublets... The current puzzle size is', current_puzzle_size)
-            # self.search_and_reduce_doubles()
+            self.search_and_reduce_doubles()
             # self.search_and_reduce_matchlets([1, 2])
-            self.search_and_reduce_matchlets()
+            # self.search_and_reduce_matchlets()
             updated_puzzle_size = self.get_current_puzzle_count()
             if current_puzzle_size == updated_puzzle_size:
                 # Break out of the loop, since there was no change in the puzzle size
@@ -280,11 +281,11 @@ class Sudoku_Puzzle(object):
 
         # We are stuck and need to guess. Let's choose one of the unfilled cells with the fewest possibilities
         cell_to_guess = self.get_guessing_cell()
-        print("I'm guessing the value of cell:", cell_to_guess)
+        # print("I'm guessing the value of cell:", cell_to_guess)
 
         # We'll guess each value of the possible values until we find a solution
         for current_guess_value in cell_to_guess.values:
-            print("I'm guessing value:", current_guess_value)
+            # print("I'm guessing value:", current_guess_value)
             puzzle_with_guess = copy.deepcopy(self)
             cell_to_guess_in_copied_puzzle = puzzle_with_guess.get_cell(cell_to_guess.address)
             cell_to_guess_in_copied_puzzle.set_values(current_guess_value)
@@ -296,9 +297,9 @@ class Sudoku_Puzzle(object):
                 if solved_puzzle is not None:
                     return solved_puzzle
                 else:
-                    print(f'Our guess of {current_guess_value} for Cell {cell_to_guess.address} was wrong. Trying the next guess...')
+                    print(f'Our guess of {current_guess_value} for Cell {cell_to_guess.address} was wrong.')
             except Blanking_Cell_Exception as error:
                 print(error.message, error.cell)
 
-        print(f"Could not find a solution when guessing values for Cell {cell_to_guess}. We have to back up to our previous Cell we guessed on...")
+        # print(f"Could not find a solution when guessing values for Cell {cell_to_guess}. Backing up...")
         return None

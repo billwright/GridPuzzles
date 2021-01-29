@@ -1,7 +1,8 @@
-import unittest
-from Sudoku_Puzzle import Sudoku_Puzzle
 import random
+import unittest
+
 from Blanking_Cell_Exception import Blanking_Cell_Exception
+from Sudoku_Puzzle import Sudoku_Puzzle
 
 
 class TestSudoku(unittest.TestCase):
@@ -62,22 +63,90 @@ class TestSudoku(unittest.TestCase):
                             '..83..7..' + \
                             '..6.....2'
 
-    sudoku_16x16_string = '261.D9.A.....7..' + \
-                          '5...F...0E......' + \
-                          '.B.7C6...D...0.9' + \
-                          'CDE.3..B5F......' + \
-                          '6....D.4C3E.8..A' + \
-                          '....B0...6...F23' + \
-                          '.FD...A9..0....E' + \
-                          '9..C...E4..B.1..' + \
-                          '..4.1..6B...A..7' + \
-                          '7....F..24...95.' + \
-                          'BA2...9...1E....' + \
-                          'E..9.C70A.3....4' + \
-                          '......2D7..F.E8B' + \
-                          'D.6...5...839.C.' + \
-                          '......3C...0...2' + \
-                          '..A.....6.C4.370'
+    blank_16x16 = '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................' + \
+                  '................'
+
+    beginner_16x16 = '8F...A7D..C3...E' + \
+                     '....BC.9068.5...' + \
+                     'C...........6D8.' + \
+                     'B...F....A.1....' + \
+                     '2.4..8....EF.A15' + \
+                     '.9516...2..4C7.D' + \
+                     'FD.0...E.7.9..4.' + \
+                     'A....75.D..6....' + \
+                     '...4..F81.7..26B' + \
+                     '..BA96D..4...1.3' + \
+                     '....4....5.2..9.' + \
+                     '.E..5..7.F3.....' + \
+                     'E..6..42.D..8.B.' + \
+                     '.....D.....71...' + \
+                     '..C.89.031.E742.' + \
+                     '4..B7....2..A9.6'
+
+    level_confirmed_16x16 = 'E...3.1.CB86.5..' + \
+                            '.D...0.8A......2' + \
+                            'F...DC.....58...' + \
+                            '....5.9E2.D...0A' + \
+                            '4.AB..3......C8.' + \
+                            '.FD...2..5.E..B.' + \
+                            '..C9.DB...F...6.' + \
+                            '6.8...A5.D..1.7E' + \
+                            '.7....CA4......F' + \
+                            '....65...9B.0..4' + \
+                            'C..F.B8.1E5.2.9.' + \
+                            '...E19..F..8...B' + \
+                            '74E...D.....96..' + \
+                            '...CF...5.6.4...' + \
+                            '...64.7....9....' + \
+                            '....B.....C..D..'
+
+    expert_16x16 = 'C...9.AE...8....' + \
+                   '31...0..B.5..A6.' + \
+                   '4.09.....2..8..3' + \
+                   '.....7.B...1..4.' + \
+                   '.A7.4...E.1..0.D' + \
+                   '.9.D6..7.A..B2..' + \
+                   '..C.1.59.B..A...' + \
+                   '...5B3...D.CF47.' + \
+                   '..A..CE....5....' + \
+                   '....28...4B.D9..' + \
+                   '534......C....02' + \
+                   '....3.....9..E..' + \
+                   '..............5.' + \
+                   'A..3..4.C...2..E' + \
+                   '..8072.3.5F....6' + \
+                   '2....A8F79E3.D..'
+
+    once_solved_16x16_string = '261.D9.A.....7..' + \
+                               '5...F...0E......' + \
+                               '.B.7C6...D...0.9' + \
+                               'CDE.3..B5F......' + \
+                               '6....D.4C3E.8..A' + \
+                               '....B0...6...F23' + \
+                               '.FD...A9..0....E' + \
+                               '9..C...E4..B.1..' + \
+                               '..4.1..6B...A..7' + \
+                               '7....F..24...95.' + \
+                               'BA2...9...1E....' + \
+                               'E..9.C70A.3....4' + \
+                               '......2D7..F.E8B' + \
+                               'D.6...5...839.C.' + \
+                               '......3C...0...2' + \
+                               '..A.....6.C4.370'
 
     def test_4x4_grid_creation(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
@@ -260,8 +329,34 @@ class TestSudoku(unittest.TestCase):
             solved_puzzle.display()
             self.assertTrue(solved_puzzle.is_solved())
 
-    def test_puzzle_generation(self):
+    @unittest.skip('The level confirmed puzzle takes a LONG time')
+    def test_solve_16x16_puzzles(self):
+        for puzzle_string in [self.beginner_16x16, self.level_confirmed_16x16]:
+            puzzle = Sudoku_Puzzle(puzzle_string)
+            puzzle.display()
 
+            solved_puzzle = puzzle.search()
+            solved_puzzle.display()
+            self.assertTrue(solved_puzzle.is_solved())
+
+    def test_solve_beginner_16x16_puzzles(self):
+        puzzle = Sudoku_Puzzle(self.beginner_16x16)
+        puzzle.display()
+
+        solved_puzzle = puzzle.search()
+        solved_puzzle.display()
+        self.assertTrue(solved_puzzle.is_solved())
+
+    # @unittest.skip('The level confirmed puzzle takes a LONG time')
+    def test_solve_16x16_puzzles(self):
+        puzzle = Sudoku_Puzzle(self.level_confirmed_16x16)
+        puzzle.display()
+
+        solved_puzzle = puzzle.search()
+        solved_puzzle.display()
+        self.assertTrue(solved_puzzle.is_solved())
+
+    def test_puzzle_generation(self):
         # Test bounds of 4x4 puzzle
         puzzle = Sudoku_Puzzle(self.sudoku_not_solved_4x4_string)
         cells_with_zero = [cell for cell in puzzle.get_all_cells() if '0' in cell.values]
@@ -281,42 +376,51 @@ class TestSudoku(unittest.TestCase):
         cells_with_g = [cell for cell in puzzle.get_all_cells() if 'G' in cell.values]
         self.assertEqual(0, len(cells_with_g))
 
-    @unittest.skip
+    # @unittest.skip(because this takes a long time)
     def test_solve_16x16_puzzle(self):
-        puzzle = Sudoku_Puzzle(self.sudoku_16x16_string)
+        puzzle = Sudoku_Puzzle(self.once_solved_16x16_string)
         puzzle.display()
 
         solved_puzzle = puzzle.search()
         solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
 
-    @unittest.skip
+    # @unittest.skip(I haven't run this yet)
+    def test_solve_expert_16x16_puzzle(self):
+        puzzle = Sudoku_Puzzle(self.expert_16x16)
+        puzzle.display()
+
+        solved_puzzle = puzzle.search()
+        solved_puzzle.display()
+        self.assertTrue(solved_puzzle.is_solved())
+
+    @unittest.skip('this test takes 3 minutes or so, so skipping most of the time')
     def test_creating_puzzles_solving_them(self):
 
         number_of_puzzles_per_clue_number = 10  # Number of puzzles to make and solve of each size/clue_number tuple
-        maximum_number_of_clues = 10            # The most clues to make is 10, but for 4x4 that is clipped below to be 3
-        puzzle_sizes = [4, 9]                   # create puzzles of size 4x4 and 9x9
+        maximum_number_of_clues = 10  # The most clues to make is 10, but for 4x4 that is clipped below to be 3
+        puzzle_sizes = [4, 9]  # create puzzles of size 4x4 and 9x9
 
         total_number_of_puzzles_generated = 0
         total_number_of_puzzles_solved = 0
 
         for puzzle_size in puzzle_sizes:
-            blank_puzzle = '.' * (puzzle_size**2)       # This creates a blank puzzle string of the correct size
-            max_clues = min([int(puzzle_size ** 2/5), maximum_number_of_clues])
+            blank_puzzle = '.' * (puzzle_size ** 2)  # This creates a blank puzzle string of the correct size
+            max_clues = min([int(puzzle_size ** 2 / 5), maximum_number_of_clues])
             print(f'Testing puzzles of size {puzzle_size}, with a maximum of {max_clues}')
 
-            for clue_number in range(1, max_clues+1):
+            for clue_number in range(1, max_clues + 1):
                 for test_number in range(1, number_of_puzzles_per_clue_number):
                     puzzle = Sudoku_Puzzle(blank_puzzle)
                     total_number_of_puzzles_generated += 1
 
                     # Create n values randomly:
-                    for i in range(1, clue_number+1):
+                    for i in range(1, clue_number + 1):
                         row = str(random.randint(1, puzzle_size))
-                        column = chr(ord('A') + random.randint(0, puzzle_size-1))
+                        column = chr(ord('A') + random.randint(0, puzzle_size - 1))
                         value = str(random.randint(1, puzzle_size))
 
-                        seed_cell = puzzle.get_cell(column+row)
+                        seed_cell = puzzle.get_cell(column + row)
                         seed_cell.values = value
 
                     puzzle.display()
@@ -328,7 +432,8 @@ class TestSudoku(unittest.TestCase):
                         print("Probably created an invalid puzzle. Moving on...")
                     solved_puzzle.display()
 
-        print(f'Out of {total_number_of_puzzles_generated} puzzles generated, {total_number_of_puzzles_solved} were solved')
+        print(
+            f'Out of {total_number_of_puzzles_generated} puzzles generated, {total_number_of_puzzles_solved} were solved')
 
     def test_finding_matchlets(self):
         puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
@@ -338,7 +443,8 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
         for matchlet_size in range(1, 5):
             filtered_matchlets = [matchlet for matchlet in matchlets if len(matchlet) == matchlet_size]
-            print(f'     {matchlet_size}-sized matchlets: {len(filtered_matchlets)}, and they are: {filtered_matchlets}')
+            print(
+                f'     {matchlet_size}-sized matchlets: {len(filtered_matchlets)}, and they are: {filtered_matchlets}')
         self.assertGreater(len(matchlets), 0)
 
         # Make sure each matchlet has the right size, based on the values and that all
