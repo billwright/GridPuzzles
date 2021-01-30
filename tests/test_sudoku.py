@@ -177,20 +177,20 @@ class TestSudoku(unittest.TestCase):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         puzzle.display()
 
-        self.assertEqual('1', puzzle.get_cell('A1').values, 'Cell value is incorrect')
-        self.assertEqual('4', puzzle.get_cell('D2').values, 'Cell value is incorrect')
-        self.assertEqual('3', puzzle.get_cell('B4').values, 'Cell value is incorrect')
-        self.assertEqual('1234', puzzle.get_cell('D4').values, 'Cell value is incorrect')
+        self.assertEqual('1', puzzle.get_cell('A1').candidates, 'Cell value is incorrect')
+        self.assertEqual('4', puzzle.get_cell('D2').candidates, 'Cell value is incorrect')
+        self.assertEqual('3', puzzle.get_cell('B4').candidates, 'Cell value is incorrect')
+        self.assertEqual('1234', puzzle.get_cell('D4').candidates, 'Cell value is incorrect')
 
     def test_9x9_grid_creation(self):
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
         puzzle.display()
 
-        self.assertEqual('4', puzzle.get_cell('A1').values, 'Cell value is incorrect')
-        self.assertEqual('4', puzzle.get_cell('D2').values, 'Cell value is incorrect')
-        self.assertEqual('123456789', puzzle.get_cell('B4').values, 'Cell value is incorrect')
-        self.assertEqual('3', puzzle.get_cell('D4').values, 'Cell value is incorrect')
-        self.assertEqual('8', puzzle.get_cell('I9').values, 'Cell value is incorrect')
+        self.assertEqual('4', puzzle.get_cell('A1').candidates, 'Cell value is incorrect')
+        self.assertEqual('4', puzzle.get_cell('D2').candidates, 'Cell value is incorrect')
+        self.assertEqual('123456789', puzzle.get_cell('B4').candidates, 'Cell value is incorrect')
+        self.assertEqual('3', puzzle.get_cell('D4').candidates, 'Cell value is incorrect')
+        self.assertEqual('8', puzzle.get_cell('I9').candidates, 'Cell value is incorrect')
 
     def test_column_boundaries(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
@@ -241,8 +241,8 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
 
         # Confirm choices are there before elimination
-        self.assertTrue('1' in puzzle.get_cell('A2').values)
-        self.assertTrue('1' in puzzle.get_cell('B2').values)
+        self.assertTrue('1' in puzzle.get_cell('A2').candidates)
+        self.assertTrue('1' in puzzle.get_cell('B2').candidates)
 
         cell = puzzle.get_cell('A1')
         cell_groups = puzzle.get_groups_for_cell(cell)
@@ -267,14 +267,14 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
 
         cell = puzzle.get_cell('A1')
-        puzzle.remove_value_from_cell_associates(cell)
+        puzzle.remove_candidates_from_cell_associates(cell)
         # Now display simplified state of the puzzle
         puzzle.display()
 
         # Confirm the value has been removed from all other cells in the associated groups
-        self.assertFalse('1' in puzzle.get_cell('B1').values)
-        self.assertFalse('1' in puzzle.get_cell('A2').values)
-        self.assertFalse('1' in puzzle.get_cell('B2').values)
+        self.assertFalse('1' in puzzle.get_cell('B1').candidates)
+        self.assertFalse('1' in puzzle.get_cell('A2').candidates)
+        self.assertFalse('1' in puzzle.get_cell('B2').candidates)
 
     def test_get_current_puzzle_size(self):
         puzzle = Sudoku_Puzzle(self.sudoku_solved_4x4_string)
@@ -300,13 +300,13 @@ class TestSudoku(unittest.TestCase):
     # noinspection PyPep8Naming
     def test_find_doubles(self):
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
-        puzzle.search_and_reduce_singletons()
-        puzzle.search_and_reduce_singletons()
-        puzzle.search_and_reduce_singletons()
+        puzzle.search_and_reduce_singlets()
+        puzzle.search_and_reduce_singlets()
+        puzzle.search_and_reduce_singlets()
         puzzle.display()
 
-        cells_with_values_of_size_two = puzzle.get_cells_with_value_size(2)
-        print('cells with value of size 2:', cells_with_values_of_size_two)
+        cells_with_candidates_of_size_two = puzzle.get_cells_with_candidates_size(2)
+        print('cells with candidates of size 2:', cells_with_candidates_of_size_two)
 
         doubles = puzzle.find_doubles()
         print('doubles are:', doubles)
@@ -325,7 +325,7 @@ class TestSudoku(unittest.TestCase):
         self.assertIn((E8, D9), doubles)
         self.assertIn((G2, G7), doubles)
 
-        puzzle.search_and_reduce_doubles()
+        puzzle.search_and_reduce_doublets()
         puzzle.display()
 
     def test_get_sorted_cells(self):
@@ -376,21 +376,21 @@ class TestSudoku(unittest.TestCase):
     def test_puzzle_generation(self):
         # Test bounds of 4x4 puzzle
         puzzle = Sudoku_Puzzle(self.sudoku_not_solved_4x4_string)
-        cells_with_zero = [cell for cell in puzzle.get_all_cells() if '0' in cell.values]
+        cells_with_zero = [cell for cell in puzzle.get_all_cells() if '0' in cell.candidates]
         self.assertEqual(0, len(cells_with_zero))
-        cells_with_5 = [cell for cell in puzzle.get_all_cells() if '5' in cell.values]
+        cells_with_5 = [cell for cell in puzzle.get_all_cells() if '5' in cell.candidates]
         self.assertEqual(0, len(cells_with_5))
 
         # Test bounds of 9x9 puzzle
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
-        cells_with_zero = [cell for cell in puzzle.get_all_cells() if '0' in cell.values]
+        cells_with_zero = [cell for cell in puzzle.get_all_cells() if '0' in cell.candidates]
         self.assertEqual(0, len(cells_with_zero))
-        cells_with_a = [cell for cell in puzzle.get_all_cells() if 'A' in cell.values]
+        cells_with_a = [cell for cell in puzzle.get_all_cells() if 'A' in cell.candidates]
         self.assertEqual(0, len(cells_with_a))
 
         # Test bounds of 16x16 puzzle (0 is valid in this puzzle)
         puzzle = Sudoku_Puzzle(self.beginner_16x16)
-        cells_with_g = [cell for cell in puzzle.get_all_cells() if 'G' in cell.values]
+        cells_with_g = [cell for cell in puzzle.get_all_cells() if 'G' in cell.candidates]
         self.assertEqual(0, len(cells_with_g))
 
     # This takes 10m29s to solve with new exclusion code. But reducing only singlets and doublets')
@@ -457,14 +457,14 @@ class TestSudoku(unittest.TestCase):
                     puzzle = Sudoku_Puzzle(blank_puzzle)
                     total_number_of_puzzles_generated += 1
 
-                    # Create n values randomly:
+                    # Create n candidates randomly:
                     for i in range(1, clue_number + 1):
                         row = str(random.randint(1, puzzle_size))
                         column = chr(ord('A') + random.randint(0, puzzle_size - 1))
-                        value = str(random.randint(1, puzzle_size))
+                        candidate = str(random.randint(1, puzzle_size))
 
                         seed_cell = puzzle.get_cell(column + row)
-                        seed_cell.values = value
+                        seed_cell.candidates = candidate
 
                     puzzle.display()
                     try:
@@ -493,20 +493,20 @@ class TestSudoku(unittest.TestCase):
         # Make sure each matchlet has the right size, based on the values and that all
         # values are the same.
         for matchlet in matchlets:
-            self.assertEqual(len(matchlet), len(matchlet[0].values))
-            matchlet_values = matchlet[0].values
+            self.assertEqual(len(matchlet), len(matchlet[0].candidates))
+            matchlet_candidates = matchlet[0].candidates
             for cell in matchlet:
-                self.assertEqual(cell.values, matchlet_values)
+                self.assertEqual(cell.candidates, matchlet_candidates)
 
     def test_reducing_of_matchlets(self):
         puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
         puzzle.search_and_reduce_matchlets([1, 2])
 
         # Set up a quadlet:
-        puzzle.get_cell('F4').set_values('5789')
-        puzzle.get_cell('F5').set_values('5789')
-        puzzle.get_cell('F6').set_values('5789')
-        puzzle.get_cell('F7').set_values('5789')
+        puzzle.get_cell('F4').set_candidates('5789')
+        puzzle.get_cell('F5').set_candidates('5789')
+        puzzle.get_cell('F6').set_candidates('5789')
+        puzzle.get_cell('F7').set_candidates('5789')
         matchlets = puzzle.find_matchlets()
         puzzle.display()
 
@@ -516,7 +516,7 @@ class TestSudoku(unittest.TestCase):
 
         # See puzzle printout from test to understand these values
         test_cell = puzzle.get_cell('F8')
-        test_cell.set_values('2579')
+        test_cell.set_candidates('2579')
 
         # Now reduce this just quadlet
         puzzle.search_and_reduce_matchlets([4])
@@ -524,7 +524,7 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
 
         # See puzzle printout from test to understand these values
-        self.assertEqual('2', puzzle.get_cell('F8').values)
+        self.assertEqual('2', puzzle.get_cell('F8').candidates)
 
     # noinspection PyPep8Naming
     def test_finding_exclusions(self):
@@ -550,7 +550,7 @@ class TestSudoku(unittest.TestCase):
         # This method searches this group for any exclusions and then reduces them.
         puzzle.search_and_reduce_exclusions_in_group(exclusion_group)
 
-        self.assertEqual(cell_to_be_reduced.values, '9')
+        self.assertEqual(cell_to_be_reduced.candidates, '9')
 
         # Now let's test a simpler case, but check every cell for consistency
         A1 = Cell('A1', '1')
@@ -560,10 +560,10 @@ class TestSudoku(unittest.TestCase):
         exclusion_group = [A1, B1, C1, D1]
 
         exclusion_cells = puzzle.search_and_reduce_exclusions_in_group(exclusion_group)
-        self.assertEqual('1', A1.values)
-        self.assertEqual('4', B1.values)
-        self.assertEqual('3', C1.values)
-        self.assertEqual('23', D1.values)
+        self.assertEqual('1', A1.candidates)
+        self.assertEqual('4', B1.candidates)
+        self.assertEqual('3', C1.candidates)
+        self.assertEqual('23', D1.candidates)
 
 
 if __name__ == '__main__':

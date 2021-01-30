@@ -30,7 +30,7 @@ class Sudoku_Puzzle(object):
 
         self.puzzle_dict = self.create_puzzle(puzzle_string)
 
-    def possible_values(self):
+    def possible_candidates(self):
         return '1234567890ABCDEF'[0:self.size]
 
     def box_groupings(self):
@@ -65,22 +65,22 @@ class Sudoku_Puzzle(object):
     def get_all_groups(self):
         return self.row_groupings() + self.column_groupings() + self.box_groupings()
 
-    def get_all_group_values(self):
-        all_group_values = []
+    def get_all_group_candidates(self):
+        all_group_candidates = []
         for group in self.get_all_groups():
-            all_group_values.append([cell.values for cell in group])
-        return all_group_values
+            all_group_candidates.append([cell.candidates for cell in group])
+        return all_group_candidates
 
     def get_all_cell_addresses(self):
         return cross(self.column_names, self.row_names)
 
     def create_puzzle(self, puzzle_string):
         addresses = self.get_all_cell_addresses()
-        values = [(value if value != '.' else self.possible_values()) for value in puzzle_string]
+        candidates = [(candidate if candidate != '.' else self.possible_candidates()) for candidate in puzzle_string]
 
         puzzle_dictionary = {}
-        for (address, values) in zip(addresses, values):
-            puzzle_dictionary[address] = Cell(address, values)
+        for (address, candidates) in zip(addresses, candidates):
+            puzzle_dictionary[address] = Cell(address, candidates)
         return puzzle_dictionary
 
     def get_cell(self, cell_address):
@@ -108,7 +108,7 @@ class Sudoku_Puzzle(object):
         for col_name in self.column_names:
             cell_address = col_name + row_name
             cell_color = 'blue' if (cell_address in doubles) else 'green'
-            row_string += colored(self.get_cell(cell_address).values.center(self.get_max_cell_width()), cell_color)
+            row_string += colored(self.get_cell(cell_address).candidates.center(self.get_max_cell_width()), cell_color)
             if col_name in self.column_boundaries:
                 row_string += ' |'
         return row_name.center(3) + ' |' + row_string
@@ -131,7 +131,7 @@ class Sudoku_Puzzle(object):
         for cell in self.get_all_cells():
             if cell.get_size() != 1:
                 return False
-        for group in self.get_all_group_values():
+        for group in self.get_all_group_candidates():
             if len(set(group)) != self.size:
                 return False
         return True
@@ -148,10 +148,10 @@ class Sudoku_Puzzle(object):
                     associated_cells.append(current_cell)
         return set(associated_cells)
 
-    def remove_value_from_cell_associates(self, cell):
+    def remove_candidates_from_cell_associates(self, cell):
         associated_cells = self.get_associated_cells(cell)
         for curr_cell in associated_cells:
-            curr_cell.remove_values(cell.values)
+            curr_cell.remove_candidates(cell.candidates)
 
     def get_current_puzzle_count(self):
         # This is a metric indicating how close the puzzle is to being solved.
@@ -159,8 +159,8 @@ class Sudoku_Puzzle(object):
         # The maximum value would be n x n x n, but that would never occur as it
         # would correspond to a completely empty puzzle.
         # values_sizes = [(len(self.get_cell_value(address)) for address in self.get_all_cell_addresses()]
-        value_sizes = [cell.get_size() for cell in self.get_all_cells()]
-        return sum(value_sizes)
+        candidates_sizes = [cell.get_size() for cell in self.get_all_cells()]
+        return sum(candidates_sizes)
 
     def get_all_cells(self):
         return self.puzzle_dict.values()
@@ -175,18 +175,18 @@ class Sudoku_Puzzle(object):
         self.display()
         raise Exception('We should never get here. If all cells are of size 1, then we should not be guessing')
 
-    def get_cells_with_value_size(self, value_size):
-        return [cell for cell in self.get_all_cells() if cell.get_size() == value_size]
+    def get_cells_with_candidates_size(self, candidates_size):
+        return [cell for cell in self.get_all_cells() if cell.get_size() == candidates_size]
 
-    def find_singletons(self):
-        return self.get_cells_with_value_size(1)
+    def find_singlets(self):
+        return self.get_cells_with_candidates_size(1)
 
     def find_doubles(self):
         doubles = []
-        for possible_double_cell in self.get_cells_with_value_size(2):
+        for possible_double_cell in self.get_cells_with_candidates_size(2):
             cell_associates = self.get_associated_cells(possible_double_cell)
             for potential_match in cell_associates:
-                if possible_double_cell.values == potential_match.values:
+                if possible_double_cell.candidates == potential_match.candidates:
                     # Check if the reverse of this tuple is already in our list
                     if (potential_match, possible_double_cell) not in doubles:
                         doubles.append((possible_double_cell, potential_match))
@@ -198,9 +198,9 @@ class Sudoku_Puzzle(object):
 
         for possible_match_cell in self.get_all_cells():
             for cell_group in self.get_groups_for_cell(possible_match_cell):
-                matchlet = [cell for cell in cell_group if cell.values == possible_match_cell.values]
+                matchlet = [cell for cell in cell_group if cell.candidates == possible_match_cell.candidates]
                 # Check to make sure this is a matchlet, meaning the size of the values has to equal the number of cells
-                if len(matchlet) == len(possible_match_cell.values):
+                if len(matchlet) == len(possible_match_cell.candidates):
                     previously_matched_cells = [cell for cell in matchlet if cell in all_matched_cells]
                     if len(previously_matched_cells) == 0:
                         matchlets.append(tuple(matchlet))
@@ -216,18 +216,18 @@ class Sudoku_Puzzle(object):
             addresses.append(double[1])
         return set(addresses)
 
-    def search_and_reduce_singletons(self):
-        for cell in self.find_singletons():
-            self.remove_value_from_cell_associates(cell)
+    def search_and_reduce_singlets(self):
+        for cell in self.find_singlets():
+            self.remove_candidates_from_cell_associates(cell)
 
-    def search_and_reduce_doubles(self):
+    def search_and_reduce_doublets(self):
         for double in self.find_doubles():
             # Get groups of first address in the double (it doesn't matter which address we use)
             common_groups = [group for group in self.get_groups_for_cell(double[0]) if double[1] in group]
             for group in common_groups:
                 for cell in group:
                     if cell not in double:
-                        cell.remove_values(double[0].values)
+                        cell.remove_candidates(double[0].candidates)
 
     def search_and_reduce_matchlets(self, sizes_to_reduce=None):
         """This method finds and reduces matchlets in the puzzle
@@ -250,7 +250,7 @@ class Sudoku_Puzzle(object):
                     # Reduce other cells in the group
                     for cell in group:
                         if cell not in matchlet:
-                            cell.remove_values(matchlet[0].values)
+                            cell.remove_candidates(matchlet[0].candidates)
 
     @staticmethod
     def search_and_reduce_exclusions_in_group(group):
@@ -258,13 +258,13 @@ class Sudoku_Puzzle(object):
 
         candidate_cell_map = dict()    # Here we keep track of each candidate and which cells it appears in
         for cell in group:
-            for candidate in cell.values:
+            for candidate in cell.candidates:
                 if candidate not in candidate_cell_map.keys():
                     candidate_cell_map[candidate] = []
                 candidate_cell_map[candidate].append(cell)
         exclusions = [(candidate, exclusion_cells) for (candidate, exclusion_cells) in candidate_cell_map.items() if len(exclusion_cells) == 1]
         for (candidate, exclusion_cells) in exclusions:
-            exclusion_cells[0].set_values(candidate)
+            exclusion_cells[0].set_candidates(candidate)
 
     def search_and_reduce_exclusive_cells(self):
         for group in self.get_all_groups():
@@ -278,8 +278,8 @@ class Sudoku_Puzzle(object):
             self.search_and_reduce_exclusive_cells()
             self.display()
 
-            # self.search_and_reduce_singletons()
-            # self.search_and_reduce_doubles()
+            # self.search_and_reduce_singlets()
+            # self.search_and_reduce_doublets()
             # self.search_and_reduce_matchlets([1, 2])
             self.search_and_reduce_matchlets()
             updated_puzzle_size = self.get_current_puzzle_count()
@@ -291,7 +291,7 @@ class Sudoku_Puzzle(object):
         """Using depth-first search to solve the sudoku.
         This methods returns True if the puzzle is solved, otherwise False"""
 
-        # Solve as much as we can using singletons, doublets, etc.
+        # Solve as much as we can using singlets, doublets, etc.
         self.reduce()
 
         if self.is_solved():
@@ -303,11 +303,11 @@ class Sudoku_Puzzle(object):
         # print("I'm guessing the value of cell:", cell_to_guess)
 
         # We'll guess each value of the possible values until we find a solution
-        for current_guess_value in cell_to_guess.values:
-            # print("I'm guessing value:", current_guess_value)
+        for current_guess_candidates in cell_to_guess.candidates:
+            # print("I'm guessing value:", current_guess_candidates)
             puzzle_with_guess = copy.deepcopy(self)
             cell_to_guess_in_copied_puzzle = puzzle_with_guess.get_cell(cell_to_guess.address)
-            cell_to_guess_in_copied_puzzle.set_values(current_guess_value)
+            cell_to_guess_in_copied_puzzle.set_candidates(current_guess_candidates)
 
             # Here's the tricky part, recursively call this same method, but we're calling it on a different object
             # Note that this is NOT self.search(), but puzzle_with_guess.search().
@@ -316,7 +316,7 @@ class Sudoku_Puzzle(object):
                 if solved_puzzle is not None:
                     return solved_puzzle
                 else:
-                    print(f'Our guess of {current_guess_value} for Cell {cell_to_guess.address} was wrong.')
+                    print(f'Our guess of {current_guess_candidates} for Cell {cell_to_guess.address} was wrong.')
             except Blanking_Cell_Exception as error:
                 print(error.message, error.cell)
 
