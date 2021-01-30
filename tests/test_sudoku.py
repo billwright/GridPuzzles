@@ -393,8 +393,9 @@ class TestSudoku(unittest.TestCase):
         cells_with_g = [cell for cell in puzzle.get_all_cells() if 'G' in cell.values]
         self.assertEqual(0, len(cells_with_g))
 
-    @unittest.skip('because this takes a long time')
-    def test_once_solve_16x16_puzzle(self):
+    # This takes 10m29s to solve with new exclusion code. But reducing only singlets and doublets')
+    @unittest.skip('because this takes 7m54s to solve with new exclusion code and all matchlet reducing')
+    def test_hardest_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.once_solved_16x16_string)
         puzzle.display()
 
@@ -402,7 +403,8 @@ class TestSudoku(unittest.TestCase):
         solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
 
-    @unittest.skip('Code solved this in 12 hours and 14 minutes!')
+    # Without exclusions, this puzzle took 12 hours and 14 minutes to solve.
+    # With exclusion finding and reducing it now takes 5 seconds.
     def test_solve_expert_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.expert_16x16)
         puzzle.display()
