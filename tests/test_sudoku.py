@@ -2,6 +2,7 @@ import random
 import unittest
 
 from Blanking_Cell_Exception import Blanking_Cell_Exception
+from Cell import Cell
 from Sudoku_Puzzle import Sudoku_Puzzle
 
 
@@ -43,15 +44,15 @@ class TestSudoku(unittest.TestCase):
                                '....4....' + \
                                '57...1..4'
 
-    blank_puzzle_template = '.........' + \
-                            '.........' + \
-                            '.........' + \
-                            '.........' + \
-                            '.........' + \
-                            '.........' + \
-                            '.........' + \
-                            '.........' + \
-                            '.........'
+    blank_9x9_puzzle_template = '.........' + \
+                                '.........' + \
+                                '.........' + \
+                                '.........' + \
+                                '.........' + \
+                                '.........' + \
+                                '.........' + \
+                                '.........' + \
+                                '.........'
 
     another_expert_puzzle = '....729.4' + \
                             '6..8.....' + \
@@ -304,6 +305,7 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
         self.assertTrue(puzzle.is_solved())
 
+    # noinspection PyPep8Naming
     def test_find_doubles(self):
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
         puzzle.search_and_reduce_singletons()
@@ -372,7 +374,7 @@ class TestSudoku(unittest.TestCase):
         self.assertTrue(solved_puzzle.is_solved())
 
     @unittest.skip('The level confirmed puzzle takes a 56 minutes to solve')
-    def test_solve_16x16_puzzles(self):
+    def test_solve_intermediate_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.level_confirmed_16x16)
         puzzle.display()
 
@@ -396,12 +398,12 @@ class TestSudoku(unittest.TestCase):
         self.assertEqual(0, len(cells_with_a))
 
         # Test bounds of 16x16 puzzle (0 is valid in this puzzle)
-        puzzle = Sudoku_Puzzle(self.sudoku_16x16_string)
+        puzzle = Sudoku_Puzzle(self.beginner_16x16)
         cells_with_g = [cell for cell in puzzle.get_all_cells() if 'G' in cell.values]
         self.assertEqual(0, len(cells_with_g))
 
     @unittest.skip('because this takes a long time')
-    def test_solve_16x16_puzzle(self):
+    def test_once_solve_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.once_solved_16x16_string)
         puzzle.display()
 
@@ -452,9 +454,9 @@ class TestSudoku(unittest.TestCase):
                         solved_puzzle = puzzle.search()
                         self.assertTrue(solved_puzzle.is_solved())
                         total_number_of_puzzles_solved += 1
-                    except Blanking_Cell_Exception as error:
+                        solved_puzzle.display()
+                    except Blanking_Cell_Exception:
                         print("Probably created an invalid puzzle. Moving on...")
-                    solved_puzzle.display()
 
         print(
             f'Out of {total_number_of_puzzles_generated} puzzles generated, {total_number_of_puzzles_solved} were solved')
@@ -508,6 +510,31 @@ class TestSudoku(unittest.TestCase):
 
         # See puzzle printout from test to understand these values
         self.assertEqual('2', puzzle.get_cell('F8').values)
+
+    def test_finding_exclusions(self):
+        # To test this code, we'll pass in a pre-populated, with candidates, group.
+        # This simplifies setup for testing and we don't have to setup entire boards.
+
+        cell_to_be_reduced = Cell('B7', '359')
+        exclusion_group = [
+            Cell('B1', '7'),
+            Cell('B2', '2358'),
+            Cell('B3', '238'),
+            Cell('B4', '23'),
+            Cell('B5', '6'),
+            Cell('B6', '1'),
+            cell_to_be_reduced,  # This is the only cell in this group with a '9' and should be reduced to a '9'
+            Cell('B8', '58'),
+            Cell('B9', '4')
+        ]
+
+        # The puzzle string passed to this constructor doesn't matter and will not affect this test
+        puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
+
+        # This method searches this group for any exclusions and then reduces them.
+        puzzle.search_and_reduce_exclusions_in_group(exclusion_group)
+
+        self.assertEqual(cell_to_be_reduced.values, '9')
 
 
 if __name__ == '__main__':

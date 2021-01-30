@@ -252,6 +252,19 @@ class Sudoku_Puzzle(object):
                         if cell not in matchlet:
                             cell.remove_values(matchlet[0].values)
 
+    @staticmethod
+    def search_and_reduce_exclusions_in_group(group):
+        candidate_cell_map = dict()    # Here we keep track of each candidate and which cells it appears in
+        for cell in group:
+            if cell.get_size() > 1:
+                for candidate in cell.values:
+                    if candidate not in candidate_cell_map.keys():
+                        candidate_cell_map[candidate] = []
+                    candidate_cell_map[candidate].append(cell)
+        exclusions = [(candidate, exclusion_cells) for (candidate, exclusion_cells) in candidate_cell_map.items() if len(exclusion_cells) == 1]
+        for (candidate, exclusion_cells) in exclusions:
+            exclusion_cells[0].set_values(candidate)
+
     def reduce(self):
         while True:
             current_puzzle_size = self.get_current_puzzle_count()
