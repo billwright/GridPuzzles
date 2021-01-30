@@ -297,14 +297,6 @@ class TestSudoku(unittest.TestCase):
         self.assertEqual(16, puzzle.get_current_puzzle_count())
         self.assertTrue(puzzle.is_solved())
 
-    def test_solve_4x4_puzzle(self):
-        puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
-        puzzle.display()
-
-        puzzle.reduce()
-        puzzle.display()
-        self.assertTrue(puzzle.is_solved())
-
     # noinspection PyPep8Naming
     def test_find_doubles(self):
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
@@ -355,7 +347,6 @@ class TestSudoku(unittest.TestCase):
             solved_puzzle.display()
             self.assertTrue(solved_puzzle.is_solved())
 
-    @unittest.skip('The level confirmed puzzle takes a LONG time')
     def test_solve_16x16_puzzles(self):
         for puzzle_string in [self.beginner_16x16, self.level_confirmed_16x16]:
             puzzle = Sudoku_Puzzle(puzzle_string)
@@ -373,7 +364,7 @@ class TestSudoku(unittest.TestCase):
         solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
 
-    @unittest.skip('The level confirmed puzzle takes a 56 minutes to solve')
+    # This puzzle took 56 minutes to solve, without exclusions. With exclusions: 4 seconds!
     def test_solve_intermediate_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.level_confirmed_16x16)
         puzzle.display()
@@ -411,7 +402,7 @@ class TestSudoku(unittest.TestCase):
         solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
 
-    # @unittest.skip('I haven't run this yet')
+    @unittest.skip('Code solved this in 12 hours and 14 minutes!')
     def test_solve_expert_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.expert_16x16)
         puzzle.display()
@@ -419,6 +410,30 @@ class TestSudoku(unittest.TestCase):
         solved_puzzle = puzzle.search()
         solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
+
+    # Solution to the above test:
+    #     |A B C D  |E F G H  |I J K L  |M N O P  |
+    #     |---------+---------+---------+---------|
+    #  1  |C F 5 B  |9 4 A E  |6 3 D 8  |7 1 2 0  |
+    #  2  |3 1 D 7  |8 0 F 2  |B E 5 4  |9 A 6 C  |
+    #  3  |4 E 0 9  |5 1 6 C  |F 2 7 A  |8 B D 3  |
+    #  4  |6 8 2 A  |D 7 3 B  |9 0 C 1  |E 5 4 F  |
+    #     |---------+---------+---------+---------|
+    #  5  |B A 7 2  |4 F C 8  |E 6 1 9  |5 0 3 D  |
+    #  6  |8 9 3 D  |6 E 0 7  |5 A 4 F  |B 2 C 1  |
+    #  7  |F 0 C 4  |1 D 5 9  |2 B 3 7  |A 6 E 8  |
+    #  8  |1 6 E 5  |B 3 2 A  |8 D 0 C  |F 4 7 9  |
+    #     |---------+---------+---------+---------|
+    #  9  |9 D A 6  |F C E 0  |1 7 2 5  |4 3 8 B  |
+    #  10 |0 C 1 E  |2 8 7 5  |3 4 B 6  |D 9 F A  |
+    #  11 |5 3 4 F  |A 9 B 1  |D C 8 E  |6 7 0 2  |
+    #  12 |7 2 B 8  |3 6 D 4  |A F 9 0  |C E 1 5  |
+    #     |---------+---------+---------+---------|
+    #  13 |D 4 9 C  |E B 1 6  |0 8 A 2  |3 F 5 7  |
+    #  14 |A 7 F 3  |0 5 4 D  |C 1 6 B  |2 8 9 E  |
+    #  15 |E B 8 0  |7 2 9 3  |4 5 F D  |1 C A 6  |
+    #  16 |2 5 6 1  |C A 8 F  |7 9 E 3  |0 D B 4  |
+    #     |---------+---------+---------+---------|
 
     @unittest.skip('this test takes 3 minutes or so, so skipping most of the time')
     def test_creating_puzzles_solving_them(self):
@@ -481,8 +496,6 @@ class TestSudoku(unittest.TestCase):
             for cell in matchlet:
                 self.assertEqual(cell.values, matchlet_values)
 
-    # This test is no longer relevant in its current state, as I don't have puzzle that
-    # give the desired state.
     def test_reducing_of_matchlets(self):
         puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
         puzzle.search_and_reduce_matchlets([1, 2])
@@ -511,6 +524,7 @@ class TestSudoku(unittest.TestCase):
         # See puzzle printout from test to understand these values
         self.assertEqual('2', puzzle.get_cell('F8').values)
 
+    # noinspection PyPep8Naming
     def test_finding_exclusions(self):
         # To test this code, we'll pass in a pre-populated, with candidates, group.
         # This simplifies setup for testing and we don't have to setup entire boards.
@@ -535,6 +549,19 @@ class TestSudoku(unittest.TestCase):
         puzzle.search_and_reduce_exclusions_in_group(exclusion_group)
 
         self.assertEqual(cell_to_be_reduced.values, '9')
+
+        # Now let's test a simpler case, but check every cell for consistency
+        A1 = Cell('A1', '1')
+        B1 = Cell('B1', '24')  # The only exclusion cell is here, for candidate 4
+        C1 = Cell('C1', '3')
+        D1 = Cell('D1', '23')
+        exclusion_group = [A1, B1, C1, D1]
+
+        exclusion_cells = puzzle.search_and_reduce_exclusions_in_group(exclusion_group)
+        self.assertEqual('1', A1.values)
+        self.assertEqual('4', B1.values)
+        self.assertEqual('3', C1.values)
+        self.assertEqual('23', D1.values)
 
 
 if __name__ == '__main__':

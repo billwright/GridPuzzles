@@ -254,21 +254,29 @@ class Sudoku_Puzzle(object):
 
     @staticmethod
     def search_and_reduce_exclusions_in_group(group):
+        """This method will modify the cells in the group, if exclusive cells are found."""
+
         candidate_cell_map = dict()    # Here we keep track of each candidate and which cells it appears in
         for cell in group:
-            if cell.get_size() > 1:
-                for candidate in cell.values:
-                    if candidate not in candidate_cell_map.keys():
-                        candidate_cell_map[candidate] = []
-                    candidate_cell_map[candidate].append(cell)
+            for candidate in cell.values:
+                if candidate not in candidate_cell_map.keys():
+                    candidate_cell_map[candidate] = []
+                candidate_cell_map[candidate].append(cell)
         exclusions = [(candidate, exclusion_cells) for (candidate, exclusion_cells) in candidate_cell_map.items() if len(exclusion_cells) == 1]
         for (candidate, exclusion_cells) in exclusions:
             exclusion_cells[0].set_values(candidate)
+
+    def search_and_reduce_exclusive_cells(self):
+        for group in self.get_all_groups():
+            self.search_and_reduce_exclusions_in_group(group)
 
     def reduce(self):
         while True:
             current_puzzle_size = self.get_current_puzzle_count()
             print("Puzzle size is currently:", current_puzzle_size)
+
+            self.search_and_reduce_exclusive_cells()
+            self.display()
 
             # print('Looking to reduce singletons... The current puzzle size is', current_puzzle_size)
             self.search_and_reduce_singletons()
