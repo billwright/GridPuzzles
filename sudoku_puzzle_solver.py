@@ -85,7 +85,7 @@ def create_puzzle(sudoku_puzzle_string):
 
 
 def display_puzzle_simple(puzzle, row_names, column_names):
-    width = 1 + max(len(s) for s in puzzle.values())
+    width = 1 + max(len(s) for s in puzzle.candidates())
     print('   ' + ''.join(col_name.center(width, ' ') for col_name in list(column_names)))
     for row_name in row_names:
         row_values = (puzzle[col_name + row_name].center(width) for col_name in column_names)
@@ -98,7 +98,7 @@ def display_puzzle(puzzle):
     Input: The sudoku in dictionary form
     Output: None
     """
-    width = 1 + max(len(s) for s in puzzle.values())
+    width = 1 + max(len(s) for s in puzzle.candidates())
     horizontal_grid_line = '   ' + '+'.join(['-' * (width * 3)] * 3)
 
     # First print header
