@@ -6,7 +6,7 @@ class Blanking_Cell_Exception(Exception):
         message -- reason for exception
     """
 
-    def __init__(self, cell_tyring_to_blank, msg='You are not allowed to remove all the values from a Cell!'):
-        self.cell = cell_tyring_to_blank
+    def __init__(self, cell_trying_to_blank, msg='You are not allowed to remove all the values from a Cell!'):
+        self.cell = cell_trying_to_blank
         self.message = msg
 

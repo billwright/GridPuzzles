@@ -1,8 +1,13 @@
-import math
-from termcolor import colored
-from Cell import Cell
 import copy
+import math
+
+from termcolor import colored
+
 from Blanking_Cell_Exception import Blanking_Cell_Exception
+from Duplicate_Cell_Exception import Duplicate_Cell_Exception
+from Cell import Cell
+from Group import Group
+from Matchlet import Matchlet
 
 
 def cross(cols, rows):
@@ -27,48 +32,51 @@ class Sudoku_Puzzle(object):
         self.row_boundaries = [str(i * self.box_group_size) for i in range(1, self.box_group_size + 1)]
         self.column_names = [chr(ord('A') + col_number) for col_number in range(self.size)]
         self.row_names = [str(row_number + 1) for row_number in range(self.size)]
-
         self.puzzle_dict = self.create_puzzle(puzzle_string)
+        self.row_groups = self.create_row_groups()
+        self.column_groups = self.create_column_groups()
+        self.box_groups = self.create_box_groups()
 
     def possible_candidates(self):
         return '1234567890ABCDEF'[0:self.size]
 
-    def box_groupings(self):
+    def create_box_groups(self):
         col_name_groups = [self.column_names[i:i + self.box_group_size] for i in
                            range(0, self.size, self.box_group_size)]
         row_name_groups = [self.row_names[i:i + self.box_group_size] for i in range(0, self.size, self.box_group_size)]
         groups = []
         for col_name_group in col_name_groups:
             for row_name_group in row_name_groups:
-                group = [self.get_cell(address) for address in cross(col_name_group, row_name_group)]
-                groups.append(group)
+                group_cells = [self.get_cell(address) for address in cross(col_name_group, row_name_group)]
+                group_name = f'Box {col_name_group}-{row_name_group}'
+                groups.append(Group(group_name, group_cells))
         return groups
 
-    def column_groupings(self):
+    def create_column_groups(self):
         groups = []
         for col_name in self.column_names:
-            col_group = []
+            col_cells = []
             for row_name in self.row_names:
-                col_group.append(self.get_cell(col_name + row_name))
-            groups.append(col_group)
+                col_cells.append(self.get_cell(col_name + row_name))
+            groups.append(Group(f'Column {col_name}', col_cells))
         return groups
 
-    def row_groupings(self):
+    def create_row_groups(self):
         groups = []
         for row_name in self.row_names:
-            row_group = []
+            row_cells = []
             for col_name in self.column_names:
-                row_group.append(self.get_cell(col_name + row_name))
-            groups.append(row_group)
+                row_cells.append(self.get_cell(col_name + row_name))
+            groups.append(Group(f'Row {row_name}', row_cells))
         return groups
 
     def get_all_groups(self):
-        return self.row_groupings() + self.column_groupings() + self.box_groupings()
+        return self.row_groups + self.column_groups + self.box_groups
 
     def get_all_group_candidates(self):
         all_group_candidates = []
         for group in self.get_all_groups():
-            all_group_candidates.append([cell.candidates for cell in group])
+            all_group_candidates.append(group.get_all_candidates())
         return all_group_candidates
 
     def get_all_cell_addresses(self):
@@ -128,13 +136,20 @@ class Sudoku_Puzzle(object):
         print()
 
     def is_solved(self):
+        self.check_consistency()
         for cell in self.get_all_cells():
             if cell.get_size() != 1:
                 return False
-        for group in self.get_all_group_candidates():
-            if len(set(group)) != self.size:
-                return False
+        # Check to make sure each group only consists of unique values
+        for group in self.get_all_groups():
+            all_group_candidates = group.get_all_candidates()
+            if len(set(all_group_candidates)) != self.size:
+                raise Exception(f'ERROR! I found a group with a duplicated value: {group}')
         return True
+
+    def check_consistency(self):
+        for group in self.get_all_groups():
+            group.check_consistency()
 
     def get_groups_for_cell(self, cell):
         return [group for group in self.get_all_groups() if cell in group]
@@ -143,12 +158,13 @@ class Sudoku_Puzzle(object):
         groups = self.get_groups_for_cell(cell)
         associated_cells = []
         for group in groups:
-            for current_cell in group:
-                if current_cell != cell:
-                    associated_cells.append(current_cell)
+            associated_cells.extend(group.get_associated_cells(cell))
         return set(associated_cells)
 
     def remove_candidates_from_cell_associates(self, cell):
+        if len(cell.candidates) != 1:
+            raise Exception("We should only call this method with a singleton cell")
+
         associated_cells = self.get_associated_cells(cell)
         for curr_cell in associated_cells:
             curr_cell.remove_candidates(cell.candidates)
@@ -193,19 +209,10 @@ class Sudoku_Puzzle(object):
         return doubles
 
     def find_matchlets(self):
-        matchlets = []  # This is a list of matchlets, which are always tuples
-        all_matched_cells = []  # A flat list to remember all matches cells to avoid duplicates
+        matchlets = []
+        for group in self.get_all_groups():
+            matchlets.extend(group.find_matchlets())
 
-        for possible_match_cell in self.get_all_cells():
-            for cell_group in self.get_groups_for_cell(possible_match_cell):
-                matchlet = [cell for cell in cell_group if cell.candidates == possible_match_cell.candidates]
-                # Check to make sure this is a matchlet, meaning the size of the values has to equal the number of cells
-                if len(matchlet) == len(possible_match_cell.candidates):
-                    previously_matched_cells = [cell for cell in matchlet if cell in all_matched_cells]
-                    if len(previously_matched_cells) == 0:
-                        matchlets.append(tuple(matchlet))
-                        for cell in matchlet:
-                            all_matched_cells.append(cell)
         matchlets.sort(key=len, reverse=True)
         return matchlets
 
@@ -241,58 +248,58 @@ class Sudoku_Puzzle(object):
                 print(f'Per the configuration passed to this method, skipping matchlets of size {len(matchlet)}')
                 continue    # Skip this group
 
-            for group in self.get_groups_for_cell(matchlet[0]):
-                all_cells_in_group = True
-                for cell in matchlet:
-                    if cell not in group:
-                        all_cells_in_group = False   # This cell isn't in this group, then this is NOT the common group. Go to next group
-                if all_cells_in_group:
-                    # Reduce other cells in the group
-                    for cell in group:
-                        if cell not in matchlet:
-                            cell.remove_candidates(matchlet[0].candidates)
+            matchlet.reduce()
 
-    @staticmethod
-    def search_and_reduce_exclusions_in_group(group):
-        """This method will modify the cells in the group, if exclusive cells are found."""
-
-        candidate_cell_map = dict()    # Here we keep track of each candidate and which cells it appears in
-        for cell in group:
-            for candidate in cell.candidates:
-                if candidate not in candidate_cell_map.keys():
-                    candidate_cell_map[candidate] = []
-                candidate_cell_map[candidate].append(cell)
-        exclusions = [(candidate, exclusion_cells) for (candidate, exclusion_cells) in candidate_cell_map.items() if len(exclusion_cells) == 1]
-        for (candidate, exclusion_cells) in exclusions:
-            exclusion_cells[0].set_candidates(candidate)
+            # for group in self.get_groups_for_cell(matchlet[0]):
+            #     all_cells_in_group = True
+            #     for cell in matchlet:
+            #         if cell not in group:
+            #             all_cells_in_group = False   # This cell isn't in this group, then this is NOT the common group. Go to next group
+            #     if all_cells_in_group:
+            #         # Reduce other cells in the group
+            #         for cell in group:
+            #             if cell not in matchlet:
+            #                 cell.remove_candidates(matchlet[0].candidates)
 
     def search_and_reduce_exclusive_cells(self):
         for group in self.get_all_groups():
-            self.search_and_reduce_exclusions_in_group(group)
+            # print(f'Looking for exclusions in {group}')
+            group.search_and_reduce_exclusions()
 
     def reduce(self):
-        while True:
-            current_puzzle_size = self.get_current_puzzle_count()
-            print("Puzzle size is currently:", current_puzzle_size)
+        current_puzzle_size = self.get_current_puzzle_count()
+        if self.is_solved():
+            raise Exception('We should never get here. The puzzle is already solved or invalid')
 
+        while True:
             self.search_and_reduce_exclusive_cells()
             self.display()
+            if self.is_solved():
+                return
 
             # self.search_and_reduce_singlets()
             # self.search_and_reduce_doublets()
             # self.search_and_reduce_matchlets([1, 2])
             self.search_and_reduce_matchlets()
+
             updated_puzzle_size = self.get_current_puzzle_count()
-            if current_puzzle_size == updated_puzzle_size:
+            if self.is_solved() or current_puzzle_size == updated_puzzle_size:
                 # Break out of the loop, since there was no change in the puzzle size
-                break
+                return
+            print(f"Reduced puzzle from {current_puzzle_size} down to {updated_puzzle_size}")
+            current_puzzle_size = updated_puzzle_size
 
     def search(self):
         """Using depth-first search to solve the sudoku.
         This methods returns True if the puzzle is solved, otherwise False"""
+        if self.is_solved():
+            raise Exception('We should never get here. The puzzle is already solved or invalid')
 
         # Solve as much as we can using singlets, doublets, etc.
         self.reduce()
+
+        current_puzzle_size = self.get_current_puzzle_count()
+        print(f"Checking for a solved puzzle. The current count is {current_puzzle_size}")
 
         if self.is_solved():
             print("Puzzle is solved!")
@@ -319,6 +326,8 @@ class Sudoku_Puzzle(object):
                     print(f'Our guess of {current_guess_candidates} for Cell {cell_to_guess.address} was wrong.')
             except Blanking_Cell_Exception as error:
                 print(error.message, error.cell)
+            except Duplicate_Cell_Exception as error:
+                print(error.message)
 
         # print(f"Could not find a solution when guessing values for Cell {cell_to_guess}. Backing up...")
         return None

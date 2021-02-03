@@ -2,10 +2,13 @@ import random
 import unittest
 
 from Blanking_Cell_Exception import Blanking_Cell_Exception
+from Duplicate_Cell_Exception import Duplicate_Cell_Exception
 from Cell import Cell
+from Group import Group
 from Sudoku_Puzzle import Sudoku_Puzzle
 
 
+# noinspection PyPep8Naming
 class TestSudoku(unittest.TestCase):
     sudoku_incorrect_string = '1...4...321...'
 
@@ -13,6 +16,11 @@ class TestSudoku(unittest.TestCase):
                         '...4' + \
                         '..2.' + \
                         '.3..'
+
+    blank_4x4 = '....' + \
+                '....' + \
+                '....' + \
+                '....'
 
     sudoku_not_solved_4x4_string = '1234' + \
                                    '1234' + \
@@ -202,13 +210,13 @@ class TestSudoku(unittest.TestCase):
 
     def test_box_groups(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
-        box_groupings = puzzle.box_groupings()
+        box_groupings = puzzle.box_groups
         print('Box groupings are:', box_groupings)
         self.assertEqual(4, len(box_groupings))
 
     def test_row_groups(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
-        row_groupings = puzzle.row_groupings()
+        row_groupings = puzzle.row_groups
         print('Row groupings are:', row_groupings)
         for group in row_groupings:
             self.assertEqual(4, len(group))
@@ -230,7 +238,8 @@ class TestSudoku(unittest.TestCase):
 
     def test_puzzle_seemingly_solved(self):
         puzzle = Sudoku_Puzzle(self.sudoku_not_solved_4x4_string)
-        self.assertFalse(puzzle.is_solved(), 'Puzzle is wrongly assumed to NOT be solved.')
+        with self.assertRaises(Duplicate_Cell_Exception):
+            puzzle.is_solved()
 
     def test_puzzle_really_solved(self):
         puzzle = Sudoku_Puzzle(self.sudoku_solved_4x4_string)
@@ -478,6 +487,31 @@ class TestSudoku(unittest.TestCase):
         print(
             f'Out of {total_number_of_puzzles_generated} puzzles generated, {total_number_of_puzzles_solved} were solved')
 
+    def test_simple_matchlet_handling(self):
+        # Give this puzzle:
+        #    | A    B   | C   D   |
+        #    |----------+---------|
+        # 1  | 1234 1234|23   23  |
+        # 2  | 1234 1234|1234 1234|
+        #    |----------+---------|
+        # 3  | 1234 1234|1234 1234|
+        # 4  | 1234 1234|1234 1234|
+        #    |----------+---------|
+        #
+        # We have the same two candidates ('23') in cells C1 and D1. They create
+        # two different matchlets: one for Row 1 and one for Box CD-12.
+
+        puzzle = Sudoku_Puzzle(self.blank_4x4)
+        C1 = puzzle.get_cell('C1')
+        C1.set_candidates('23')
+        D1 = puzzle.get_cell('D1')
+        D1.set_candidates('23')
+
+        matchlets = puzzle.find_matchlets()
+        print(matchlets)
+
+        self.assertEqual(2, len(matchlets))
+
     def test_finding_matchlets(self):
         puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
         puzzle.reduce()
@@ -527,13 +561,14 @@ class TestSudoku(unittest.TestCase):
         # See puzzle printout from test to understand these values
         self.assertEqual('2', puzzle.get_cell('F8').candidates)
 
-    # noinspection PyPep8Naming
+        # noinspection PyPep8Naming
+
     def test_finding_exclusions(self):
         # To test this code, we'll pass in a pre-populated, with candidates, group.
         # This simplifies setup for testing and we don't have to setup entire boards.
 
         cell_to_be_reduced = Cell('B7', '359')
-        exclusion_group = [
+        exclusion_group = Group('Column B', [
             Cell('B1', '7'),
             Cell('B2', '2358'),
             Cell('B3', '238'),
@@ -543,13 +578,13 @@ class TestSudoku(unittest.TestCase):
             cell_to_be_reduced,  # This is the only cell in this group with a '9' and should be reduced to a '9'
             Cell('B8', '58'),
             Cell('B9', '4')
-        ]
+        ])
 
         # The puzzle string passed to this constructor doesn't matter and will not affect this test
         puzzle = Sudoku_Puzzle(self.sudoku_6_star_9x9_string)
 
         # This method searches this group for any exclusions and then reduces them.
-        puzzle.search_and_reduce_exclusions_in_group(exclusion_group)
+        exclusion_group.search_and_reduce_exclusions()
 
         self.assertEqual(cell_to_be_reduced.candidates, '9')
 
@@ -558,9 +593,9 @@ class TestSudoku(unittest.TestCase):
         B1 = Cell('B1', '24')  # The only exclusion cell is here, for candidate 4
         C1 = Cell('C1', '3')
         D1 = Cell('D1', '23')
-        exclusion_group = [A1, B1, C1, D1]
+        exclusion_group = Group('Row 1', [A1, B1, C1, D1])
 
-        exclusion_cells = puzzle.search_and_reduce_exclusions_in_group(exclusion_group)
+        exclusion_group.search_and_reduce_exclusions()
         self.assertEqual('1', A1.candidates)
         self.assertEqual('4', B1.candidates)
         self.assertEqual('3', C1.candidates)

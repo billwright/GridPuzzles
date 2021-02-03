@@ -52,3 +52,9 @@ class Cell(object):
     @property
     def candidates(self):
         return self._candidates
+
+    def is_singlet(self):
+        return len(self._candidates) == 1
+
+    def is_not_singlet(self):
+        return len(self._candidates) > 1
