@@ -357,7 +357,7 @@ class TestSudoku(unittest.TestCase):
             self.assertTrue(solved_puzzle.is_solved())
 
     def test_solve_16x16_puzzles(self):
-        for puzzle_string in [self.beginner_16x16, self.level_confirmed_16x16]:
+        for puzzle_string in [self.beginner_16x16, self.level_confirmed_16x16, self.expert_16x16]:
             puzzle = Sudoku_Puzzle(puzzle_string)
             puzzle.display()
 
@@ -402,8 +402,10 @@ class TestSudoku(unittest.TestCase):
         cells_with_g = [cell for cell in puzzle.get_all_cells() if 'G' in cell.candidates]
         self.assertEqual(0, len(cells_with_g))
 
-    # This takes 10m29s to solve with new exclusion code. But reducing only singlets and doublets')
-    @unittest.skip('because this takes 7m54s to solve with new exclusion code and all matchlet reducing')
+    # This takes 10m29s to solve with new exclusion code. But reducing only singlets and doublets
+    # This takes 7m54s to solve with new exclusion code and all matchlet reducing.
+    # This takes 2m25s (as of 2/3/2021) with the new refactoring to include Matchlet and Group objects
+    # @unittest.skip('because this takes 2+ minutes to run')
     def test_hardest_16x16_puzzle(self):
         puzzle = Sudoku_Puzzle(self.once_solved_16x16_string)
         puzzle.display()

@@ -1,13 +1,14 @@
 import copy
 import math
-
+import logging
 from termcolor import colored
 
 from Blanking_Cell_Exception import Blanking_Cell_Exception
 from Duplicate_Cell_Exception import Duplicate_Cell_Exception
 from Cell import Cell
 from Group import Group
-from Matchlet import Matchlet
+
+logging.basicConfig(format='%(message)s', filename='sudoku.log', filemode='w', level=logging.INFO)
 
 
 def cross(cols, rows):
@@ -18,6 +19,8 @@ def cross(cols, rows):
 
 
 class Sudoku_Puzzle(object):
+    number_of_guesses = 0       # This is a class or static variable
+    number_of_backtracks = 0    # This is a class or static variable
 
     def __init__(self, puzzle_string):
         puzzle_square_root = math.sqrt(len(puzzle_string))
@@ -132,7 +135,9 @@ class Sudoku_Puzzle(object):
             print(self.get_display_row(row_name))
             if row_name in self.row_boundaries:
                 print(self.get_horizontal_grid_line())
-        print('The current puzzle count is', self.get_current_puzzle_count())
+        print(f'The current puzzle count is {self.get_current_puzzle_count()}')
+        print(f'Number of guesses: {Sudoku_Puzzle.number_of_guesses}')
+        print(f'Number of backtracks: {Sudoku_Puzzle.number_of_backtracks}')
         print()
 
     def is_solved(self):
@@ -188,7 +193,6 @@ class Sudoku_Puzzle(object):
         for cell in self.get_all_cells_sorted_by_size():
             if cell.get_size() > 1:
                 return cell
-        self.display()
         raise Exception('We should never get here. If all cells are of size 1, then we should not be guessing')
 
     def get_cells_with_candidates_size(self, candidates_size):
@@ -245,7 +249,7 @@ class Sudoku_Puzzle(object):
 
         for matchlet in self.find_matchlets():
             if sizes_to_reduce is not None and len(matchlet) not in sizes_to_reduce:
-                print(f'Per the configuration passed to this method, skipping matchlets of size {len(matchlet)}')
+                logging.debug(f'Per the configuration passed to this method, skipping matchlets of size {len(matchlet)}')
                 continue    # Skip this group
 
             matchlet.reduce()
@@ -263,30 +267,27 @@ class Sudoku_Puzzle(object):
 
     def search_and_reduce_exclusive_cells(self):
         for group in self.get_all_groups():
-            # print(f'Looking for exclusions in {group}')
+            logging.debug(f'Looking for exclusions in {group}')
             group.search_and_reduce_exclusions()
 
     def reduce(self):
         current_puzzle_size = self.get_current_puzzle_count()
+        logging.info(current_puzzle_size)
         if self.is_solved():
             raise Exception('We should never get here. The puzzle is already solved or invalid')
 
         while True:
             self.search_and_reduce_exclusive_cells()
-            self.display()
             if self.is_solved():
                 return
 
-            # self.search_and_reduce_singlets()
-            # self.search_and_reduce_doublets()
-            # self.search_and_reduce_matchlets([1, 2])
             self.search_and_reduce_matchlets()
 
             updated_puzzle_size = self.get_current_puzzle_count()
             if self.is_solved() or current_puzzle_size == updated_puzzle_size:
                 # Break out of the loop, since there was no change in the puzzle size
                 return
-            print(f"Reduced puzzle from {current_puzzle_size} down to {updated_puzzle_size}")
+            logging.debug(f"Reduced puzzle from {current_puzzle_size} down to {updated_puzzle_size}")
             current_puzzle_size = updated_puzzle_size
 
     def search(self):
@@ -299,19 +300,21 @@ class Sudoku_Puzzle(object):
         self.reduce()
 
         current_puzzle_size = self.get_current_puzzle_count()
-        print(f"Checking for a solved puzzle. The current count is {current_puzzle_size}")
+        logging.debug(f"Checking for a solved puzzle. The current count is {current_puzzle_size}")
 
         if self.is_solved():
             print("Puzzle is solved!")
+            logging.info(self.get_current_puzzle_count())
             return self
 
         # We are stuck and need to guess. Let's choose one of the unfilled cells with the fewest possibilities
         cell_to_guess = self.get_guessing_cell()
-        # print("I'm guessing the value of cell:", cell_to_guess)
+        logging.debug("I'm guessing the value of cell:", cell_to_guess)
 
         # We'll guess each value of the possible values until we find a solution
-        for current_guess_candidates in cell_to_guess.candidates:
-            # print("I'm guessing value:", current_guess_candidates)
+        for current_guess_candidates in cell_to_guess.candidates[::-1]:
+            logging.debug("I'm guessing value:", current_guess_candidates)
+            Sudoku_Puzzle.number_of_guesses += 1
             puzzle_with_guess = copy.deepcopy(self)
             cell_to_guess_in_copied_puzzle = puzzle_with_guess.get_cell(cell_to_guess.address)
             cell_to_guess_in_copied_puzzle.set_candidates(current_guess_candidates)
@@ -323,11 +326,12 @@ class Sudoku_Puzzle(object):
                 if solved_puzzle is not None:
                     return solved_puzzle
                 else:
-                    print(f'Our guess of {current_guess_candidates} for Cell {cell_to_guess.address} was wrong.')
+                    logging.debug(f'Our guess of {current_guess_candidates} for Cell {cell_to_guess.address} was wrong.')
             except Blanking_Cell_Exception as error:
-                print(error.message, error.cell)
+                logging.debug(error.message, error.cell)
             except Duplicate_Cell_Exception as error:
-                print(error.message)
+                logging.debug(error.message)
 
-        # print(f"Could not find a solution when guessing values for Cell {cell_to_guess}. Backing up...")
+        logging.debug(f"Could not find a solution when guessing values for Cell {cell_to_guess}. Backing up...")
+        Sudoku_Puzzle.number_of_backtracks += 1
         return None
