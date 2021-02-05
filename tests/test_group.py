@@ -1,5 +1,5 @@
 import unittest
-from Group import Group
+from Reducing_Group import Reducing_Group
 from Cell import Cell
 
 
@@ -12,7 +12,7 @@ class TestGroup(unittest.TestCase):
         C1 = Cell('C1', '1234')
         D1 = Cell('D1', '1234')
 
-        group = Group('Row 1', [A1, B1, C1, D1])
+        group = Reducing_Group('Row 1', [A1, B1, C1, D1])
         print(group)
         self.assertIsNotNone(group)
         self.assertEqual(4, len(group))
@@ -34,7 +34,7 @@ class TestGroup(unittest.TestCase):
         C1 = Cell('C1', '2')
         D1 = Cell('D1', '4')
 
-        group = Group('Row 1', [A1, B1, C1, D1])
+        group = Reducing_Group('Row 1', [A1, B1, C1, D1])
         with self.assertRaises(Exception):
             group.check_consistency()
 

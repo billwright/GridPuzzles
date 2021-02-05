@@ -6,21 +6,15 @@ from termcolor import colored
 from Blanking_Cell_Exception import Blanking_Cell_Exception
 from Duplicate_Cell_Exception import Duplicate_Cell_Exception
 from Cell import Cell
-from Group import Group
+from Reducing_Group import Reducing_Group
+from grid_utils import cross
 
 logging.basicConfig(format='%(message)s', filename='sudoku.log', filemode='w', level=logging.INFO)
 
 
-def cross(cols, rows):
-    # We want the addresses ordered by rows, meaning all the addresses in the first row
-    # before going on to the second row. But, we use the column header first in the address.
-    # This addressing mimics spreadsheets
-    return [c + r for r in rows for c in cols]
-
-
 class Sudoku_Puzzle(object):
-    number_of_guesses = 0       # This is a class or static variable
-    number_of_backtracks = 0    # This is a class or static variable
+    number_of_guesses = 0  # This is a class or static variable
+    number_of_backtracks = 0  # This is a class or static variable
 
     def __init__(self, puzzle_string):
         puzzle_square_root = math.sqrt(len(puzzle_string))
@@ -31,7 +25,8 @@ class Sudoku_Puzzle(object):
 
         self.size = int(math.sqrt(len(puzzle_string)))
         self.box_group_size = int(math.sqrt(self.size))
-        self.column_boundaries = [chr(ord('A') + i * self.box_group_size - 1) for i in range(1, self.box_group_size + 1)]
+        self.column_boundaries = [chr(ord('A') + i * self.box_group_size - 1) for i in
+                                  range(1, self.box_group_size + 1)]
         self.row_boundaries = [str(i * self.box_group_size) for i in range(1, self.box_group_size + 1)]
         self.column_names = [chr(ord('A') + col_number) for col_number in range(self.size)]
         self.row_names = [str(row_number + 1) for row_number in range(self.size)]
@@ -52,7 +47,7 @@ class Sudoku_Puzzle(object):
             for row_name_group in row_name_groups:
                 group_cells = [self.get_cell(address) for address in cross(col_name_group, row_name_group)]
                 group_name = f'Box {col_name_group}-{row_name_group}'
-                groups.append(Group(group_name, group_cells))
+                groups.append(Reducing_Group(group_name, group_cells))
         return groups
 
     def create_column_groups(self):
@@ -61,7 +56,7 @@ class Sudoku_Puzzle(object):
             col_cells = []
             for row_name in self.row_names:
                 col_cells.append(self.get_cell(col_name + row_name))
-            groups.append(Group(f'Column {col_name}', col_cells))
+            groups.append(Reducing_Group(f'Column {col_name}', col_cells))
         return groups
 
     def create_row_groups(self):
@@ -70,7 +65,7 @@ class Sudoku_Puzzle(object):
             row_cells = []
             for col_name in self.column_names:
                 row_cells.append(self.get_cell(col_name + row_name))
-            groups.append(Group(f'Row {row_name}', row_cells))
+            groups.append(Reducing_Group(f'Row {row_name}', row_cells))
         return groups
 
     def get_all_groups(self):
@@ -249,8 +244,9 @@ class Sudoku_Puzzle(object):
 
         for matchlet in self.find_matchlets():
             if sizes_to_reduce is not None and len(matchlet) not in sizes_to_reduce:
-                logging.debug(f'Per the configuration passed to this method, skipping matchlets of size {len(matchlet)}')
-                continue    # Skip this group
+                logging.debug(
+                    f'Per the configuration passed to this method, skipping matchlets of size {len(matchlet)}')
+                continue  # Skip this group
 
             matchlet.reduce()
 
@@ -326,7 +322,8 @@ class Sudoku_Puzzle(object):
                 if solved_puzzle is not None:
                     return solved_puzzle
                 else:
-                    logging.debug(f'Our guess of {current_guess_candidates} for Cell {cell_to_guess.address} was wrong.')
+                    logging.debug(
+                        f'Our guess of {current_guess_candidates} for Cell {cell_to_guess.address} was wrong.')
             except Blanking_Cell_Exception as error:
                 logging.debug(error.message, error.cell)
             except Duplicate_Cell_Exception as error:

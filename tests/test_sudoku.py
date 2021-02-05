@@ -4,7 +4,7 @@ import unittest
 from Blanking_Cell_Exception import Blanking_Cell_Exception
 from Duplicate_Cell_Exception import Duplicate_Cell_Exception
 from Cell import Cell
-from Group import Group
+from Reducing_Group import Reducing_Group
 from Sudoku_Puzzle import Sudoku_Puzzle
 
 
@@ -570,7 +570,7 @@ class TestSudoku(unittest.TestCase):
         # This simplifies setup for testing and we don't have to setup entire boards.
 
         cell_to_be_reduced = Cell('B7', '359')
-        exclusion_group = Group('Column B', [
+        exclusion_group = Reducing_Group('Column B', [
             Cell('B1', '7'),
             Cell('B2', '2358'),
             Cell('B3', '238'),
@@ -595,7 +595,7 @@ class TestSudoku(unittest.TestCase):
         B1 = Cell('B1', '24')  # The only exclusion cell is here, for candidate 4
         C1 = Cell('C1', '3')
         D1 = Cell('D1', '23')
-        exclusion_group = Group('Row 1', [A1, B1, C1, D1])
+        exclusion_group = Reducing_Group('Row 1', [A1, B1, C1, D1])
 
         exclusion_group.search_and_reduce_exclusions()
         self.assertEqual('1', A1.candidates)
