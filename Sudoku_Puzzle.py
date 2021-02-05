@@ -13,6 +13,7 @@ logging.basicConfig(format='%(message)s', filename='sudoku.log', filemode='w', l
 
 
 class Sudoku_Puzzle(object):
+    # TODO: Rename this class to just Sudoku
     number_of_guesses = 0  # This is a class or static variable
     number_of_backtracks = 0  # This is a class or static variable
 

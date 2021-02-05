@@ -6,6 +6,11 @@ class Kenken(object):
     def __init__(self, puzzle_group_definitions):
         self.size = self.calculate_size(puzzle_group_definitions)
         self.calculation_groups = [Calculation_Group(group_def, self.size) for group_def in puzzle_group_definitions]
+        # TODO: add row and column groups
+        # TODO: Implement the display() method
+        # TODO: implement get_all_groups()
+        # TODO: Create superclass for GridSolver and move get_all_groups() up there
+        # TODO: Move reduce and search methods to superclass
 
     def calculate_size(self, puzzle_group_definitions):
         addresses = []
