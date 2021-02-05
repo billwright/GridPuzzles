@@ -39,7 +39,7 @@ class TestCalculationGroup(unittest.TestCase):
         self.assertEqual(2, len(group.cells))
 
         group_cell = group.cells[0]
-        self.assertEqual('123', group_cell.candidates)
+        self.assertEqual(['1', '2', '3'], group_cell.candidates)
 
         operator = '+'
         required_result = 7
@@ -50,10 +50,9 @@ class TestCalculationGroup(unittest.TestCase):
         self.assertEqual(3, len(group.cells))
 
         group_cell = group.cells[0]
-        self.assertEqual('1234', group_cell.candidates)
+        self.assertEqual(['1', '2', '3', '4'], group_cell.candidates)
 
-    @unittest.skip
-    def test_reduce(self):
+    def test_reduce_on_2_cell_plus(self):
         operator = '+'
         required_result = 7
         group_definition = (operator, required_result, ['A1', 'A2'])
@@ -62,11 +61,103 @@ class TestCalculationGroup(unittest.TestCase):
 
         # Before reduction
         group_cell = group.cells[0]
-        self.assertEqual('1234', group_cell.candidates)
+        self.assertEqual(['1', '2', '3', '4'], group_cell.candidates)
 
         # After reduction
-        valid_combinations = group.reduce()
-        self.assertEqual('34', group_cell.candidates)
+        reduced_cells = group.reduce()
+        print(reduced_cells)
+        self.assertEqual(['3', '4'], group_cell.candidates)
+
+    def test_reduce_on_3_cell_plus(self):
+        operator = '+'
+        required_result = 7
+        group_definition = (operator, required_result, ['A1', 'A2', 'A3'])
+        puzzle_size = 4
+        group = Calculation_Group(group_definition, puzzle_size)
+
+        # Before reduction
+        group_cell = group.cells[0]
+        self.assertEqual(['1', '2', '3', '4'], group_cell.candidates)
+
+        # After reduction
+        reduced_cells = group.reduce()
+        print(reduced_cells)
+        self.assertEqual(['1', '2', '3', '4'], group_cell.candidates)
+
+    def test_reduce_on_3_cell_multiply(self):
+        operator = '*'
+        required_result = 6
+        group_definition = (operator, required_result, ['A1', 'A2', 'A3'])
+        puzzle_size = 4
+        group = Calculation_Group(group_definition, puzzle_size)
+
+        # Before reduction
+        group_cell = group.cells[0]
+        self.assertEqual(['1', '2', '3', '4'], group_cell.candidates)
+
+        # After reduction
+        reduced_cells = group.reduce()
+        print(reduced_cells)
+        self.assertEqual(['1', '2', '3'], group_cell.candidates)
+
+        # Now let's try a 6x6 puzzle with the same group
+        puzzle_size = 6
+        group = Calculation_Group(group_definition, puzzle_size)
+
+        # Before reduction
+        group_cell = group.cells[0]
+        self.assertEqual(['1', '2', '3', '4', '5', '6'], group_cell.candidates)
+
+        # After reduction
+        reduced_cells = group.reduce()
+        print(reduced_cells)
+        self.assertEqual(['1', '2', '3', '6'], group_cell.candidates)
+
+    def test_reduce_on_subtraction(self):
+        operator = '-'
+        required_result = 3
+        group_definition = (operator, required_result, ['A1', 'A2'])
+        puzzle_size = 4
+        group = Calculation_Group(group_definition, puzzle_size)
+
+        # After reduction
+        reduced_cells = group.reduce()
+        print(reduced_cells)
+        self.assertEqual(['1', '4'], reduced_cells[0].candidates)
+
+        # Now let's try a 6x6 puzzle with the same group
+        puzzle_size = 6
+        required_result = 4
+        group_definition = (operator, required_result, ['A1', 'A2'])
+        group = Calculation_Group(group_definition, puzzle_size)
+
+        # After reduction
+        reduced_cells = group.reduce()
+        print(reduced_cells)
+        self.assertEqual(['1', '2', '5', '6'], reduced_cells[0].candidates)
+
+    def test_reduce_on_division(self):
+        operator = '/'
+        required_result = 3
+        group_definition = (operator, required_result, ['A1', 'A2'])
+        puzzle_size = 4
+        group = Calculation_Group(group_definition, puzzle_size)
+
+        # After reduction
+        reduced_cells = group.reduce()
+        print(reduced_cells)
+        self.assertEqual(['1', '3'], reduced_cells[0].candidates)
+
+        # Now let's try a 6x6 puzzle with the same group
+        puzzle_size = 6
+        required_result = 3
+        group_definition = (operator, required_result, ['A1', 'A2'])
+        group = Calculation_Group(group_definition, puzzle_size)
+
+        # After reduction
+        reduced_cells = group.reduce()
+        print(reduced_cells)
+        self.assertEqual(['1', '2', '3', '6'], reduced_cells[0].candidates)
 
 
 if __name__ == '__main__':
