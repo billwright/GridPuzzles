@@ -2,11 +2,10 @@ from math import sqrt
 
 from Calculation_Group import Calculation_Group
 from Grid_Puzzle import Grid_Puzzle
+from termcolor import colored
 
-# TODO: Create superclass for Grid_Puzzle and move methods up there
-# TODO: Move reduce and search methods to superclass
-# TODO: Color required result and operator
-# TODO: Color candidates
+# TODO: Solve KenKen
+# TODO: Revisit switch to a list of one-character strings for candidates instead of just a string
 
 
 class Kenken(Grid_Puzzle):
@@ -118,11 +117,11 @@ class Kenken(Grid_Puzzle):
         if first_row:
             if current_cell == current_group.cells[0]:
                 result_and_op = str(current_group.required_result) + current_group.operator
-                line += result_and_op.ljust(cell_width)
+                line += colored(result_and_op.ljust(cell_width), 'red')
             else:
                 line += ' '*cell_width
         else:
-            line += current_cell.candidates_string().center(cell_width)
+            line += colored(current_cell.candidates_string().center(cell_width), 'green')
         cell_to_the_right = self.get_cell_to_right(current_cell)
         if current_group == self.get_calculation_group_for_cell(cell_to_the_right):
             line += '|'
