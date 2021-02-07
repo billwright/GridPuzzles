@@ -146,3 +146,7 @@ class Kenken(Grid_Puzzle):
         else:
             line += "‖"
         return line
+
+    def custom_reduce(self):
+        for group in self.calculation_groups:
+            group.reduce()

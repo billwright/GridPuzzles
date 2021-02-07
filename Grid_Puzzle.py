@@ -11,18 +11,20 @@ logging.basicConfig(format='%(message)s', filename='grid-puzzle.log', filemode='
 class Grid_Puzzle(object):
     number_of_guesses = 0  # This is a class or static variable
     number_of_backtracks = 0  # This is a class or static variable
+    minimum_cell_display_width = 5
+    cell_display_padding = 2
 
     def __init__(self, puzzle_definition):
-        self.definition = puzzle_definition
-        self.validate()
-        self.size = self.calculate_size()
+            self.definition = puzzle_definition
+            self.validate()
+            self.size = self.calculate_size()
 
-        self.column_names = [chr(ord('A') + col_number) for col_number in range(self.size)]
-        self.row_names = [str(row_number + 1) for row_number in range(self.size)]
+            self.column_names = [chr(ord('A') + col_number) for col_number in range(self.size)]
+            self.row_names = [str(row_number + 1) for row_number in range(self.size)]
 
-        self.puzzle_dict = self.create_puzzle()
-        self.row_groups = self.create_row_groups()
-        self.column_groups = self.create_column_groups()
+            self.puzzle_dict = self.create_puzzle()
+            self.row_groups = self.create_row_groups()
+            self.column_groups = self.create_column_groups()
 
     def validate(self):
         raise NotImplementedError('Subclass must implement this method!')
@@ -91,7 +93,7 @@ class Grid_Puzzle(object):
         return max(cell.get_size() for cell in self.get_all_cells())
 
     def get_display_cell_width(self):
-        return self.get_max_cell_candidate_width() + 2
+        return max(self.get_max_cell_candidate_width() + Grid_Puzzle.cell_display_padding, Grid_Puzzle.minimum_cell_display_width)
 
     def get_display_header(self):
         heading_string = '    |'
@@ -103,7 +105,7 @@ class Grid_Puzzle(object):
     def get_horizontal_puzzle_boundary(self):
         line = '----‖'
         for i in range(1, self.size+1):
-            line += '='*(self.get_max_cell_candidate_width()+2) + '‖'
+            line += '='*(self.get_display_cell_width()) + '‖'
         return line
 
     def is_solved(self):
@@ -111,12 +113,6 @@ class Grid_Puzzle(object):
         for cell in self.get_all_cells():
             if cell.get_size() != 1:
                 return False
-        # Check to make sure each group only consists of unique values
-        for group in self.get_all_groups():
-            all_group_candidates = group.get_all_candidates()
-            flat_list = [candidate for group_candidates in all_group_candidates for candidate in group_candidates]
-            if len(set(flat_list)) != self.size:
-                raise Exception(f'ERROR! I found a group with a duplicated value: {group}')
         return True
 
     def check_consistency(self):
@@ -247,6 +243,10 @@ class Grid_Puzzle(object):
                 return
 
             self.search_and_reduce_matchlets()
+            if self.is_solved():
+                return
+
+            self.custom_reduce()
 
             updated_puzzle_size = self.get_current_puzzle_count()
             if self.is_solved() or current_puzzle_size == updated_puzzle_size:
@@ -254,6 +254,9 @@ class Grid_Puzzle(object):
                 return
             logging.debug(f"Reduced puzzle from {current_puzzle_size} down to {updated_puzzle_size}")
             current_puzzle_size = updated_puzzle_size
+
+    def custom_reduce(self):
+        """This method can be overridden by subclasses to handle anything subclass specific"""
 
     def search(self):
         """Using depth-first search to solve the puzzle.

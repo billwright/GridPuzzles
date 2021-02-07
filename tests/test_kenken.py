@@ -1,4 +1,5 @@
 import unittest
+
 from Kenken import Kenken
 
 kenken_size_3 = [
@@ -100,6 +101,27 @@ class Test_Kenken(unittest.TestCase):
         kenken.search()
         kenken.display()
         self.assertTrue(kenken.is_solved())
+
+    def test_solve_advanced(self):
+        kenken = Kenken(kenken_size_8)
+        kenken.display()
+
+        kenken.search()
+        kenken.display()
+        self.assertTrue(kenken.is_solved())
+
+    def test_all_puzzles(self):
+        for puzzle_definition in [
+            kenken_size_3,
+            kenken_size_4,
+            kenken_size_6,
+            kenken_size_8
+        ]:
+            kenken = Kenken(puzzle_definition)
+            kenken.display()
+            solved_puzzle = kenken.search()
+            solved_puzzle.display()
+            print()
 
 
 if __name__ == '__main__':

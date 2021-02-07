@@ -104,3 +104,6 @@ class Calculation_Group(Group):
 
     def is_required_result(self, result):
         return result != 0 and (abs(result) == self.required_result or (1 / result) == self.required_result)
+
+    def check_consistency(self):
+        """Nothing to do here."""
