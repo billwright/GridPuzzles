@@ -30,5 +30,6 @@ class Group(object):
 
     def check_consistency(self):
         singlet_candidates = [cell.candidates for cell in self.cells if len(cell) == 1]
-        if len(set(singlet_candidates)) != len(singlet_candidates):
+        flat_list = [candidate for singlet_tuple in singlet_candidates for candidate in singlet_tuple]
+        if len(set(flat_list)) != len(singlet_candidates):
             raise Duplicate_Cell_Exception(singlet_candidates, self.name)

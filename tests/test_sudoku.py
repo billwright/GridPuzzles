@@ -185,20 +185,19 @@ class TestSudoku(unittest.TestCase):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
         puzzle.display()
 
-        self.assertEqual('1', puzzle.get_cell('A1').candidates, 'Cell value is incorrect')
-        self.assertEqual('4', puzzle.get_cell('D2').candidates, 'Cell value is incorrect')
-        self.assertEqual('3', puzzle.get_cell('B4').candidates, 'Cell value is incorrect')
-        self.assertEqual('1234', puzzle.get_cell('D4').candidates, 'Cell value is incorrect')
+        self.assertEqual(['1'], puzzle.get_cell('A1').candidates, 'Cell value is incorrect')
+        self.assertEqual(['4'], puzzle.get_cell('D2').candidates, 'Cell value is incorrect')
+        self.assertEqual(['3'], puzzle.get_cell('B4').candidates, 'Cell value is incorrect')
+        self.assertEqual(['1', '2', '3', '4'], puzzle.get_cell('D4').candidates, 'Cell value is incorrect')
 
     def test_9x9_grid_creation(self):
         puzzle = Sudoku_Puzzle(self.sudoku_9x9_string)
         puzzle.display()
 
-        self.assertEqual('4', puzzle.get_cell('A1').candidates, 'Cell value is incorrect')
-        self.assertEqual('4', puzzle.get_cell('D2').candidates, 'Cell value is incorrect')
-        self.assertEqual('123456789', puzzle.get_cell('B4').candidates, 'Cell value is incorrect')
-        self.assertEqual('3', puzzle.get_cell('D4').candidates, 'Cell value is incorrect')
-        self.assertEqual('8', puzzle.get_cell('I9').candidates, 'Cell value is incorrect')
+        self.assertEqual(['4'], puzzle.get_cell('A1').candidates, 'Cell value is incorrect')
+        self.assertEqual(['4'], puzzle.get_cell('D2').candidates, 'Cell value is incorrect')
+        self.assertEqual(['3'], puzzle.get_cell('D4').candidates, 'Cell value is incorrect')
+        self.assertEqual(['8'], puzzle.get_cell('I9').candidates, 'Cell value is incorrect')
 
     def test_column_boundaries(self):
         puzzle = Sudoku_Puzzle(self.sudoku_4x4_string)
@@ -561,9 +560,7 @@ class TestSudoku(unittest.TestCase):
         puzzle.display()
 
         # See puzzle printout from test to understand these values
-        self.assertEqual('2', puzzle.get_cell('F8').candidates)
-
-        # noinspection PyPep8Naming
+        self.assertEqual('2', puzzle.get_cell('F8').candidates_string())
 
     def test_finding_exclusions(self):
         # To test this code, we'll pass in a pre-populated, with candidates, group.
@@ -588,7 +585,7 @@ class TestSudoku(unittest.TestCase):
         # This method searches this group for any exclusions and then reduces them.
         exclusion_group.search_and_reduce_exclusions()
 
-        self.assertEqual(cell_to_be_reduced.candidates, '9')
+        self.assertEqual(cell_to_be_reduced.candidates_string(), '9')
 
         # Now let's test a simpler case, but check every cell for consistency
         A1 = Cell('A1', '1')
@@ -598,10 +595,10 @@ class TestSudoku(unittest.TestCase):
         exclusion_group = Reducing_Group('Row 1', [A1, B1, C1, D1])
 
         exclusion_group.search_and_reduce_exclusions()
-        self.assertEqual('1', A1.candidates)
-        self.assertEqual('4', B1.candidates)
-        self.assertEqual('3', C1.candidates)
-        self.assertEqual('23', D1.candidates)
+        self.assertEqual(['1'], A1.candidates)
+        self.assertEqual(['4'], B1.candidates)
+        self.assertEqual(['3'], C1.candidates)
+        self.assertEqual(['2', '3'], D1.candidates)
 
 
 if __name__ == '__main__':

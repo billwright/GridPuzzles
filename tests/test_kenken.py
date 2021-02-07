@@ -93,5 +93,14 @@ class Test_Kenken(unittest.TestCase):
         kenken = Kenken(kenken_size_3)
         kenken.write_puzzle_to_file('/tmp/kenken.puzzle')
 
+    def test_solve_simple(self):
+        kenken = Kenken(kenken_size_3)
+        kenken.display()
+
+        kenken.search()
+        kenken.display()
+        self.assertTrue(kenken.is_solved())
+
+
 if __name__ == '__main__':
     unittest.main()

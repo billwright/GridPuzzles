@@ -5,9 +5,7 @@ class Cell(object):
 
     def __init__(self, cell_address, candidates):
         self.address = cell_address
-        if len(candidates) == 0:
-            raise Blanking_Cell_Exception(self)
-        self._candidates = candidates
+        self.set_candidates(candidates)
 
     def __eq__(self, other):
         return isinstance(other, Cell) and self.address == other.address
@@ -37,7 +35,8 @@ class Cell(object):
         for candidate_to_remove in candidates_to_remove:
             if self._candidates == candidate_to_remove:
                 raise Blanking_Cell_Exception(self)
-            self._candidates = self._candidates.replace(candidate_to_remove, '')
+            if candidate_to_remove in self._candidates:
+                self._candidates.remove(candidate_to_remove)
 
     def get_size(self):
         return len(self._candidates)
@@ -45,7 +44,10 @@ class Cell(object):
     def set_candidates(self, new_candidates):
         if len(new_candidates) == 0:
             raise Blanking_Cell_Exception(self)
-        self._candidates = new_candidates
+        if type(new_candidates) == str:
+            self._candidates = [candidate for candidate in new_candidates]
+        else:
+            self._candidates = new_candidates
 
     # This protects against a client (the Puzzle class) from clearing all values
     # TODO: Probably should protect the address as well.

@@ -8,6 +8,7 @@ from Grid_Puzzle import Grid_Puzzle
 # TODO: Color required result and operator
 # TODO: Color candidates
 
+
 class Kenken(Grid_Puzzle):
     def __init__(self, puzzle_group_definitions):
         self.calculation_groups = []
@@ -49,7 +50,7 @@ class Kenken(Grid_Puzzle):
         return int(sqrt(len(addresses)))
 
     def get_all_groups(self):
-        return self.row_groups + self.column_groups + self.calculation_groups
+        return super().get_all_groups() + self.calculation_groups
 
     def get_calculation_group_for_cell(self, cell):
         for group in self.calculation_groups:
