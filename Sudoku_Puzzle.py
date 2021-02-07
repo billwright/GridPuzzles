@@ -1,3 +1,4 @@
+from Grid_Puzzle import Grid_Puzzle
 import copy
 import math
 import logging
@@ -12,32 +13,34 @@ from grid_utils import cross
 logging.basicConfig(format='%(message)s', filename='sudoku.log', filemode='w', level=logging.INFO)
 
 
-class Sudoku_Puzzle(object):
+class Sudoku_Puzzle(Grid_Puzzle):
     # TODO: Rename this class to just Sudoku
     number_of_guesses = 0  # This is a class or static variable
     number_of_backtracks = 0  # This is a class or static variable
 
     def __init__(self, puzzle_string):
-        puzzle_square_root = math.sqrt(len(puzzle_string))
+        super().__init__(puzzle_string)
+        self.box_group_size = int(math.sqrt(self.size))
+        self.column_boundaries = self.calculate_column_boundaries()
+        self.row_boundaries = self.calculate_row_boundaries()
+        self.box_groups = self.create_box_groups()
+
+    def validate(self):
+        puzzle_square_root = math.sqrt(len(self.definition))
         if puzzle_square_root != int(puzzle_square_root):
-            error_string = f'ERROR: Puzzle string was of length {len(puzzle_string)}, which is not a perfect square'
+            error_string = f'ERROR: Puzzle string was of length {len(self.definition)}, which is not a perfect square'
             print(error_string)
             raise ValueError(error_string)
 
-        self.size = int(math.sqrt(len(puzzle_string)))
-        self.box_group_size = int(math.sqrt(self.size))
-        self.column_boundaries = [chr(ord('A') + i * self.box_group_size - 1) for i in
-                                  range(1, self.box_group_size + 1)]
-        self.row_boundaries = [str(i * self.box_group_size) for i in range(1, self.box_group_size + 1)]
-        self.column_names = [chr(ord('A') + col_number) for col_number in range(self.size)]
-        self.row_names = [str(row_number + 1) for row_number in range(self.size)]
-        self.puzzle_dict = self.create_puzzle(puzzle_string)
-        self.row_groups = self.create_row_groups()
-        self.column_groups = self.create_column_groups()
-        self.box_groups = self.create_box_groups()
+    def calculate_size(self):
+        return int(math.sqrt(len(self.definition)))
 
-    def possible_candidates(self):
-        return '1234567890ABCDEF'[0:self.size]
+    def calculate_column_boundaries(self):
+        return [chr(ord('A') + i * self.box_group_size - 1) for i in
+                range(1, self.box_group_size + 1)]
+
+    def calculate_row_boundaries(self):
+        return [str((row_number + 1) * self.box_group_size) for row_number in range(0, self.box_group_size)]
 
     def create_box_groups(self):
         col_name_groups = [self.column_names[i:i + self.box_group_size] for i in
@@ -51,62 +54,21 @@ class Sudoku_Puzzle(object):
                 groups.append(Reducing_Group(group_name, group_cells))
         return groups
 
-    def create_column_groups(self):
-        groups = []
-        for col_name in self.column_names:
-            col_cells = []
-            for row_name in self.row_names:
-                col_cells.append(self.get_cell(col_name + row_name))
-            groups.append(Reducing_Group(f'Column {col_name}', col_cells))
-        return groups
-
-    def create_row_groups(self):
-        groups = []
-        for row_name in self.row_names:
-            row_cells = []
-            for col_name in self.column_names:
-                row_cells.append(self.get_cell(col_name + row_name))
-            groups.append(Reducing_Group(f'Row {row_name}', row_cells))
-        return groups
-
     def get_all_groups(self):
         return self.row_groups + self.column_groups + self.box_groups
 
-    def get_all_group_candidates(self):
-        all_group_candidates = []
-        for group in self.get_all_groups():
-            all_group_candidates.append(group.get_all_candidates())
-        return all_group_candidates
-
-    def get_all_cell_addresses(self):
-        return cross(self.column_names, self.row_names)
-
-    def create_puzzle(self, puzzle_string):
+    def create_puzzle(self):
         addresses = self.get_all_cell_addresses()
-        candidates = [(candidate if candidate != '.' else self.possible_candidates()) for candidate in puzzle_string]
+        candidates = [(candidate if candidate != '.' else self.possible_candidates()) for candidate in self.definition]
 
         puzzle_dictionary = {}
         for (address, candidates) in zip(addresses, candidates):
             puzzle_dictionary[address] = Cell(address, candidates)
         return puzzle_dictionary
 
-    def get_cell(self, cell_address):
-        return self.puzzle_dict[cell_address]
-
-    def get_max_cell_width(self):
-        return 1 + max(cell.get_size() for cell in self.get_all_cells())
-
     def get_horizontal_grid_line(self):
         return '    |' + '+'.join(
-            ['-' * (self.get_max_cell_width() * self.box_group_size) + '-'] * self.box_group_size) + '|'
-
-    def get_display_header(self):
-        heading_string = '    |'
-        for col_name in self.column_names:
-            heading_string += col_name.center(self.get_max_cell_width(), ' ')
-            if col_name in self.column_boundaries:
-                heading_string += ' |'
-        return heading_string
+            ['-' * (self.get_display_cell_width() * self.box_group_size) + '-'*(self.box_group_size-1)] * self.box_group_size) + '|'
 
     def get_display_row(self, row_name):
         doubles = self.get_double_addresses()
@@ -115,10 +77,12 @@ class Sudoku_Puzzle(object):
         for col_name in self.column_names:
             cell_address = col_name + row_name
             cell_color = 'blue' if (cell_address in doubles) else 'green'
-            row_string += colored(self.get_cell(cell_address).candidates.center(self.get_max_cell_width()), cell_color)
+            row_string += colored(self.get_cell(cell_address).candidates.center(self.get_display_cell_width()), cell_color)
             if col_name in self.column_boundaries:
-                row_string += ' |'
-        return row_name.center(3) + ' |' + row_string
+                row_string += '|'
+            else:
+                row_string += ' '
+        return row_name.rjust(3) + ' |' + row_string
 
     def display(self):
         # Print column headings
@@ -178,9 +142,6 @@ class Sudoku_Puzzle(object):
         # values_sizes = [(len(self.get_cell_value(address)) for address in self.get_all_cell_addresses()]
         candidates_sizes = [cell.get_size() for cell in self.get_all_cells()]
         return sum(candidates_sizes)
-
-    def get_all_cells(self):
-        return self.puzzle_dict.values()
 
     def get_all_cells_sorted_by_size(self):
         return sorted(self.get_all_cells())

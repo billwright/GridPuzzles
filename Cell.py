@@ -58,3 +58,6 @@ class Cell(object):
 
     def is_not_singlet(self):
         return len(self._candidates) > 1
+
+    def candidates_string(self):
+        return ''.join(self._candidates)
