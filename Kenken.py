@@ -4,7 +4,6 @@ from Calculation_Group import Calculation_Group
 from Grid_Puzzle import Grid_Puzzle
 from termcolor import colored
 
-# TODO: Solve KenKen
 # TODO: Revisit switch to a list of one-character strings for candidates instead of just a string
 
 

@@ -1,17 +1,13 @@
 from Grid_Puzzle import Grid_Puzzle
 import math
-import logging
 from termcolor import colored
 
 from Cell import Cell
 from Reducing_Group import Reducing_Group
 from grid_utils import cross
 
-logging.basicConfig(format='%(message)s', filename='sudoku.log', filemode='w', level=logging.INFO)
 
-
-class Sudoku_Puzzle(Grid_Puzzle):
-    # TODO: Rename this class to just Sudoku
+class Sudoku(Grid_Puzzle):
 
     def __init__(self, puzzle_string):
         super().__init__(puzzle_string)
@@ -94,8 +90,8 @@ class Sudoku_Puzzle(Grid_Puzzle):
             if row_name in self.row_boundaries:
                 print(self.get_horizontal_grid_line())
         print(f'The current puzzle count is {self.get_current_puzzle_count()}')
-        print(f'Number of guesses: {Sudoku_Puzzle.number_of_guesses}')
-        print(f'Number of backtracks: {Sudoku_Puzzle.number_of_backtracks}')
+        print(f'Number of guesses: {Sudoku.number_of_guesses}')
+        print(f'Number of backtracks: {Sudoku.number_of_backtracks}')
         print()
 
 
