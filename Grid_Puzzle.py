@@ -2,6 +2,9 @@ from Reducing_Group import Reducing_Group
 from grid_utils import cross
 from Blanking_Cell_Exception import Blanking_Cell_Exception
 from Duplicate_Cell_Exception import Duplicate_Cell_Exception
+
+from math import sqrt
+
 import copy
 import logging
 
@@ -15,18 +18,28 @@ class Grid_Puzzle(object):
     cell_display_padding = 2
 
     def __init__(self, puzzle_definition):
-            self.definition = puzzle_definition
-            self.validate()
-            self.size = self.calculate_size()
+        self.definition = puzzle_definition
+        self.validate()
+        self.size = self.calculate_size()
 
-            self.column_names = [chr(ord('A') + col_number) for col_number in range(self.size)]
-            self.row_names = [str(row_number + 1) for row_number in range(self.size)]
+        self.column_names = [chr(ord('A') + col_number) for col_number in range(self.size)]
+        self.row_names = [str(row_number + 1) for row_number in range(self.size)]
 
-            self.puzzle_dict = self.create_puzzle()
-            self.row_groups = self.create_row_groups()
-            self.column_groups = self.create_column_groups()
+        self.puzzle_dict = self.create_puzzle()
+        self.row_groups = self.create_row_groups()
+        self.column_groups = self.create_column_groups()
 
     def validate(self):
+        puzzle_square_root = sqrt(len(self.definition))
+        if puzzle_square_root != int(puzzle_square_root):
+            error_string = f'ERROR: Puzzle string was of length {len(self.definition)}, which is not a perfect square'
+            print(error_string)
+            raise ValueError(error_string)
+
+    def calculate_size(self):
+        return int(sqrt(len(self.definition)))
+
+    def create_puzzle(self):
         raise NotImplementedError('Subclass must implement this method!')
 
     def create_column_groups(self):
@@ -79,12 +92,39 @@ class Grid_Puzzle(object):
         column = chr(column_number + ord('A'))
         return self.get_cell(column + row)
 
+    def get_cell_to_left(self, cell):
+        # We add one because otherwise we'd get 0 for the column number of column A
+        column_number = ord(cell.address[0]) - ord('A') + 1
+        if column_number == 1:
+            return None
+        row = cell.address[1:]
+
+        # Here we decrement the column, but we take away 2 since we already added one above
+        column = chr(column_number - 2 + ord('A'))
+        return self.get_cell(column + row)
+
     def get_cell_beneath(self, cell):
         row = int(cell.address[1:])
         if row == self.size:
             return None
         column = cell.address[0]
-        return self.get_cell(column + str(row+1))
+        return self.get_cell(column + str(row + 1))
+
+    def get_cell_above(self, cell):
+        row = int(cell.address[1:])
+        if row == 1:
+            return None
+        column = cell.address[0]
+        return self.get_cell(column + str(row - 1))
+
+    def get_cell_neighbors(self, cell):
+        neighbors = [
+            self.get_cell_above(cell),
+            self.get_cell_beneath(cell),
+            self.get_cell_to_left(cell),
+            self.get_cell_to_right(cell)
+        ]
+        return [neighbor for neighbor in neighbors if neighbor is not None]
 
     def get_all_cells(self):
         return self.puzzle_dict.values()
@@ -93,7 +133,8 @@ class Grid_Puzzle(object):
         return max(cell.get_size() for cell in self.get_all_cells())
 
     def get_display_cell_width(self):
-        return max(self.get_max_cell_candidate_width() + Grid_Puzzle.cell_display_padding, Grid_Puzzle.minimum_cell_display_width)
+        return max(self.get_max_cell_candidate_width() + Grid_Puzzle.cell_display_padding,
+                   Grid_Puzzle.minimum_cell_display_width)
 
     def get_display_header(self):
         heading_string = '    |'
@@ -104,8 +145,8 @@ class Grid_Puzzle(object):
 
     def get_horizontal_puzzle_boundary(self):
         line = '----‖'
-        for i in range(1, self.size+1):
-            line += '='*(self.get_display_cell_width()) + '‖'
+        for i in range(1, self.size + 1):
+            line += '=' * (self.get_display_cell_width()) + '‖'
         return line
 
     def is_solved(self):

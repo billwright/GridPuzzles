@@ -1,5 +1,5 @@
 from Grid_Puzzle import Grid_Puzzle
-import math
+from math import sqrt
 from termcolor import colored
 
 from Cell import Cell
@@ -11,20 +11,10 @@ class Sudoku(Grid_Puzzle):
 
     def __init__(self, puzzle_string):
         super().__init__(puzzle_string)
-        self.box_group_size = int(math.sqrt(self.size))
+        self.box_group_size = int(sqrt(self.size))
         self.column_boundaries = self.calculate_column_boundaries()
         self.row_boundaries = self.calculate_row_boundaries()
         self.box_groups = self.create_box_groups()
-
-    def validate(self):
-        puzzle_square_root = math.sqrt(len(self.definition))
-        if puzzle_square_root != int(puzzle_square_root):
-            error_string = f'ERROR: Puzzle string was of length {len(self.definition)}, which is not a perfect square'
-            print(error_string)
-            raise ValueError(error_string)
-
-    def calculate_size(self):
-        return int(math.sqrt(len(self.definition)))
 
     def calculate_column_boundaries(self):
         return [chr(ord('A') + i * self.box_group_size - 1) for i in
@@ -79,19 +69,16 @@ class Sudoku(Grid_Puzzle):
         return row_name.rjust(3) + ' |' + row_string
 
     def display(self):
-        # Print column headings
         print()
         print(self.get_display_header())
         print(self.get_horizontal_grid_line())
 
-        # Print each row
         for row_name in self.row_names:
             print(self.get_display_row(row_name))
             if row_name in self.row_boundaries:
                 print(self.get_horizontal_grid_line())
         print(f'The current puzzle count is {self.get_current_puzzle_count()}')
-        print(f'Number of guesses: {Sudoku.number_of_guesses}')
-        print(f'Number of backtracks: {Sudoku.number_of_backtracks}')
-        print()
+        print(f'Number of guesses: {Grid_Puzzle.number_of_guesses}')
+        print(f'Number of backtracks: {Grid_Puzzle.number_of_backtracks}')
 
 

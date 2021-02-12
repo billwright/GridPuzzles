@@ -1,4 +1,5 @@
 from Duplicate_Cell_Exception import Duplicate_Cell_Exception
+from grid_utils import flatten_and_de_dup
 
 
 class Group(object):
@@ -30,6 +31,6 @@ class Group(object):
 
     def check_consistency(self):
         singlet_candidates = [cell.candidates for cell in self.cells if len(cell) == 1]
-        flat_list = [candidate for singlet_tuple in singlet_candidates for candidate in singlet_tuple]
-        if len(set(flat_list)) != len(singlet_candidates):
+        unique_singlets = flatten_and_de_dup(singlet_candidates)
+        if len(unique_singlets) != len(singlet_candidates):
             raise Duplicate_Cell_Exception(singlet_candidates, self.name)

@@ -13,3 +13,15 @@ def super_cross(list_of_lists):
         reduced_list_of_lists = list_of_lists[0:-2]
         reduced_list_of_lists.append(crossed_tail_of_list)
         return super_cross(reduced_list_of_lists)
+
+
+def flatten(list_of_lists):
+    return [item for sublist in list_of_lists for item in sublist]
+
+
+def de_dup(list_with_duplicates):
+    return list(set(list_with_duplicates))
+
+
+def flatten_and_de_dup(list_of_lists):
+    return de_dup(flatten(list_of_lists))

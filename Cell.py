@@ -63,3 +63,20 @@ class Cell(object):
 
     def candidates_string(self):
         return ''.join(self._candidates)
+
+    def get_row(self):
+        return self.address[1:]
+
+    def get_column(self):
+        return self.address[0]
+
+    def get_row_number(self):
+        return int(self.get_row())
+
+    def get_column_number(self):
+        return ord(self.get_column()) - ord('A') + 1
+
+    def distance_to_cell(self, cell):
+        row_difference = abs(self.get_row_number() - cell.get_row_number())
+        column_difference = abs(self.get_column_number() - cell.get_column_number())
+        return row_difference + column_difference

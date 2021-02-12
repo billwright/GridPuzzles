@@ -43,6 +43,17 @@ class TestCell(unittest.TestCase):
         with self.assertRaises(Blanking_Cell_Exception):
             cell.remove_candidates('1234')
 
+    def test_cell_distance(self):
+        # The Cell candidates are irrelevant here, but something must be passed in
+        cell = Cell('A1', '1')
+        self.assertEqual(0, cell.distance_to_cell(cell))
+        self.assertEqual(1, cell.distance_to_cell(Cell('A2', '1')))
+        self.assertEqual(1, cell.distance_to_cell(Cell('B1', '1')))
+        self.assertEqual(8, cell.distance_to_cell(Cell('A9', '1')))
+        self.assertEqual(8, cell.distance_to_cell(Cell('I1', '1')))
+        self.assertEqual(8, cell.distance_to_cell(Cell('E5', '1')))
+
+
 
 if __name__ == '__main__':
     unittest.main()
