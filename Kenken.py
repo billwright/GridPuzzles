@@ -1,3 +1,5 @@
+import logging
+
 from math import sqrt
 
 from Calculation_Group import Calculation_Group
@@ -79,8 +81,9 @@ class Kenken(Grid_Puzzle):
             display_string += self.get_line_separator_between_row(row) + '\n'
         return display_string
 
-    def display(self):
-        print(self.get_puzzle_display_string())
+    def display(self, force_display=False):
+        if logging.DEBUG or force_display:
+            print(self.get_puzzle_display_string())
 
     def write_puzzle_to_file(self, filename):
         file = open(filename, "w")

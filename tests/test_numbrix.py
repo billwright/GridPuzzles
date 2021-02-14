@@ -1,6 +1,7 @@
 import unittest
-
 from Numbrix import Numbrix
+from Numbrix_Cell import Numbrix_Cell
+from Chain_Endpoint import Chain_Endpoint
 
 beginner_puzzle = [5, 6, 7, 8, 9, 24, 25, 30, 31,
                    4, None, None, None, None, None, None, None, 32,
@@ -128,19 +129,6 @@ class TestNumbrix(unittest.TestCase):
         self.assertEqual(cell_B3, numbrix.get_cell_between(cell_C3, cell_A3))
         self.assertEqual(cell_D3, numbrix.get_cell_between(cell_C3, cell_E3))
 
-    def test_solve_one_cell_gaps(self):
-        numbrix = Numbrix(beginner_puzzle)
-        numbrix.reduce()
-        numbrix.display()
-
-        # By looking at the puzzle produced above, we know that
-        # the chain endpoints are: D4, D6, E3, G6, H3, H5
-        numbrix.fill_1_cell_gaps()
-        numbrix.display()
-
-        cell_D5 = numbrix.get_cell('D5')
-        self.assertEqual(20, cell_D5.get_value())
-
     def test_another_reduction(self):
         numbrix = Numbrix(dec_27_2020)
         numbrix.display()
@@ -154,6 +142,95 @@ class TestNumbrix(unittest.TestCase):
 
         numbrix.reduce()
         numbrix.display()
+
+    def test_solve_one_cell_gaps(self):
+        numbrix = Numbrix(beginner_puzzle)
+        numbrix.reduce()
+        numbrix.display()
+
+        # By looking at the puzzle produced above, we know that
+        # the chain endpoints are: D4, D6, E3, G6, H3, H5
+        numbrix.fill_1_cell_gaps()
+        numbrix.display()
+
+        cell_D5 = numbrix.get_cell('D5')
+        self.assertEqual(20, cell_D5.get_value())
+
+    def test_create_endpoint_cell(self):
+        numbrix = Numbrix(beginner_puzzle)
+        numbrix.reduce()
+        numbrix.display()
+
+        endpoint_cell_E3 = Numbrix_Cell('E3', [63])
+        cell_F3 = Numbrix_Cell('F3', [])
+        cell_E4 = Numbrix_Cell('E4', [])
+        cell_D3 = Numbrix_Cell('D3', [18])
+        cell_E2 = Numbrix_Cell('E2', [64])
+        neighbors_of_E3 = [cell_E4, cell_F3, cell_E2, cell_D3]
+        print("Neighbors of E3:", numbrix.get_cell_neighbors(endpoint_cell_E3))
+
+        self.assertEqual(set(neighbors_of_E3), set(numbrix.get_cell_neighbors(endpoint_cell_E3)))
+
+        endpoint_cell_D4 = Numbrix_Cell('D4', [19])
+        endpoint_cell_D6 = Numbrix_Cell('D6', [21])
+        endpoint_cell_G6 = Numbrix_Cell('G6', [54])
+        endpoint_cell_H3 = Numbrix_Cell('H3', [74])
+        endpoint_cell_H5 = Numbrix_Cell('H5', [78])
+
+        all_endpoints = [endpoint_cell_H5, endpoint_cell_H3, endpoint_cell_G6, endpoint_cell_E3, endpoint_cell_D6, endpoint_cell_D4]
+        chain_endpoints = numbrix.get_chain_endpoints()
+        self.assertEqual(set(all_endpoints), set(chain_endpoints))
+
+        numbrix.fill_1_cell_gaps()
+
+        all_endpoints = [endpoint_cell_H5, endpoint_cell_H3, endpoint_cell_G6, endpoint_cell_E3]
+        chain_endpoints = numbrix.get_chain_endpoints()
+        self.assertEqual(set(all_endpoints), set(chain_endpoints))
+
+        numbrix.display()
+
+        cell_G3 = Numbrix_Cell('G3', [])
+        cell_H4 = Numbrix_Cell('H4', [])
+        expected_guessing_endpoint = Chain_Endpoint(endpoint_cell_H3, [cell_G3, cell_H4], 75, 4)
+        actual_guessing_endpoint = numbrix.get_guessing_cell()
+        self.assertEqual(expected_guessing_endpoint, actual_guessing_endpoint)
+
+        print("Chain Endpoint Guess is:", actual_guessing_endpoint)
+
+    def test_solving_beginner_puzzle(self):
+        numbrix = Numbrix(beginner_puzzle)
+        numbrix.display()
+
+        solved_puzzle = numbrix.search()
+        solved_puzzle.display()
+        self.assertTrue(solved_puzzle.is_solved())
+
+    def test_solving_intermediate_puzzle(self):
+        numbrix = Numbrix(dec_27_2020)
+        numbrix.display()
+
+        solved_puzzle = numbrix.search()
+        solved_puzzle.display()
+        self.assertTrue(solved_puzzle.is_solved())
+
+    def test_solving_very_hard_puzzle(self):
+        numbrix = Numbrix(very_hard_puzzle)
+        numbrix.display()
+
+        solved_puzzle = numbrix.search()
+        solved_puzzle.display()
+        self.assertTrue(solved_puzzle.is_solved())
+
+    @unittest.skip
+    def test_solving_puzzles(self):
+        puzzles = [beginner_puzzle, dec_27_2020, very_hard_puzzle]
+        for puzzle in puzzles:
+            numbrix = Numbrix(puzzle)
+            numbrix.display()
+
+            solved_puzzle = numbrix.search()
+            solved_puzzle.display()
+            self.assertTrue(solved_puzzle.is_solved())
 
 
 if __name__ == '__main__':

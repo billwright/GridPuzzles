@@ -9,6 +9,7 @@ import copy
 import logging
 
 logging.basicConfig(format='%(message)s', filename='grid-puzzle.log', filemode='w', level=logging.INFO)
+logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
 
 class Grid_Puzzle(object):
@@ -25,9 +26,13 @@ class Grid_Puzzle(object):
         self.column_names = [chr(ord('A') + col_number) for col_number in range(self.size)]
         self.row_names = [str(row_number + 1) for row_number in range(self.size)]
 
+        self.given_cells = []
+        self.guessed_cells = []
+
         self.puzzle_dict = self.create_puzzle()
         self.row_groups = self.create_row_groups()
         self.column_groups = self.create_column_groups()
+
 
     def validate(self):
         puzzle_square_root = sqrt(len(self.definition))
@@ -40,6 +45,9 @@ class Grid_Puzzle(object):
         return int(sqrt(len(self.definition)))
 
     def create_puzzle(self):
+        raise NotImplementedError('Subclass must implement this method!')
+
+    def display(self):
         raise NotImplementedError('Subclass must implement this method!')
 
     def create_column_groups(self):
@@ -274,7 +282,6 @@ class Grid_Puzzle(object):
 
     def reduce(self):
         current_puzzle_size = self.get_current_puzzle_count()
-        logging.info(current_puzzle_size)
         if self.is_solved():
             raise Exception('We should never get here. The puzzle is already solved or invalid')
 
@@ -302,8 +309,8 @@ class Grid_Puzzle(object):
     def search(self):
         """Using depth-first search to solve the puzzle.
         This methods returns True if the puzzle is solved, otherwise False"""
-        if self.is_solved():
-            raise Exception('We should never get here. The puzzle is already solved or invalid')
+        logging.debug("State of the puzzle before reduce:")
+        self.display()
 
         # Solve as much as we can using singlets, doublets, etc.
         self.reduce()
@@ -313,20 +320,22 @@ class Grid_Puzzle(object):
 
         if self.is_solved():
             print("Puzzle is solved!")
-            logging.info(self.get_current_puzzle_count())
             return self
+
+        # Log puzzle size for plotting later
+        logging.info(current_puzzle_size)
 
         # We are stuck and need to guess. Let's choose one of the unfilled cells with the fewest possibilities
         cell_to_guess = self.get_guessing_cell()
-        logging.debug("I'm guessing the value of cell:", cell_to_guess)
+        logging.debug(f"I'm guessing the value of cell: {cell_to_guess}. State of puzzle before this guess is:")
+        self.display()
 
         # We'll guess each value of the possible values until we find a solution
-        for current_guess_candidates in cell_to_guess.candidates[::-1]:
-            logging.debug("I'm guessing value:", current_guess_candidates)
+        for current_guess_candidates in cell_to_guess.get_guesses():
+            logging.debug(f"I'm guessing value: {current_guess_candidates}")
             Grid_Puzzle.number_of_guesses += 1
             puzzle_with_guess = copy.deepcopy(self)
-            cell_to_guess_in_copied_puzzle = puzzle_with_guess.get_cell(cell_to_guess.address)
-            cell_to_guess_in_copied_puzzle.set_candidates(current_guess_candidates)
+            puzzle_with_guess.update_with_guess(cell_to_guess, current_guess_candidates)
 
             # Here's the tricky part, recursively call this same method, but we're calling it on a different object
             # Note that this is NOT self.search(), but puzzle_with_guess.search().
@@ -336,12 +345,17 @@ class Grid_Puzzle(object):
                     return solved_puzzle
                 else:
                     logging.debug(
-                        f'Our guess of {current_guess_candidates} for Cell {cell_to_guess.address} was wrong.')
+                        f'Our guess of {current_guess_candidates} for Cell {cell_to_guess} was wrong.')
             except Blanking_Cell_Exception as error:
-                logging.debug(error.message, error.cell)
+                logging.debug(error.message)
             except Duplicate_Cell_Exception as error:
                 logging.debug(error.message)
 
         logging.debug(f"Could not find a solution when guessing values for Cell {cell_to_guess}. Backing up...")
         Grid_Puzzle.number_of_backtracks += 1
         return None
+
+    def update_with_guess(self, cell_to_guess, current_guess_candidates):
+        """The parameters here are from the another puzzle, so we need to make changes in our cells"""
+        my_cell = self.get_cell(cell_to_guess.address)
+        my_cell.set_candidates(current_guess_candidates)

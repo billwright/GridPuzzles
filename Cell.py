@@ -80,3 +80,7 @@ class Cell(object):
         row_difference = abs(self.get_row_number() - cell.get_row_number())
         column_difference = abs(self.get_column_number() - cell.get_column_number())
         return row_difference + column_difference
+
+    def get_guesses(self):
+        """Returning the candidates in reverse order. Why? Because our hardest Sudoku was 10x as fast."""
+        return self._candidates[::-1]

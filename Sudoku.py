@@ -1,3 +1,5 @@
+import logging
+
 from Grid_Puzzle import Grid_Puzzle
 from math import sqrt
 from termcolor import colored
@@ -68,17 +70,17 @@ class Sudoku(Grid_Puzzle):
                 row_string += ' '
         return row_name.rjust(3) + ' |' + row_string
 
-    def display(self):
-        print()
-        print(self.get_display_header())
-        print(self.get_horizontal_grid_line())
+    def display(self, force_display=False):
+        if logging.DEBUG or force_display:
+            print(self.get_display_header())
+            print(self.get_horizontal_grid_line())
 
-        for row_name in self.row_names:
-            print(self.get_display_row(row_name))
-            if row_name in self.row_boundaries:
-                print(self.get_horizontal_grid_line())
-        print(f'The current puzzle count is {self.get_current_puzzle_count()}')
-        print(f'Number of guesses: {Grid_Puzzle.number_of_guesses}')
-        print(f'Number of backtracks: {Grid_Puzzle.number_of_backtracks}')
+            for row_name in self.row_names:
+                print(self.get_display_row(row_name))
+                if row_name in self.row_boundaries:
+                    print(self.get_horizontal_grid_line())
+            print(f'The current puzzle count is {self.get_current_puzzle_count()}')
+            print(f'Number of guesses: {Grid_Puzzle.number_of_guesses}')
+            print(f'Number of backtracks: {Grid_Puzzle.number_of_backtracks}')
 
 
