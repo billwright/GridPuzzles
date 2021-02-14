@@ -23,7 +23,10 @@ class Numbrix_Cell(Cell):
             return self._candidates[0]
 
     def set_value(self, value):
-        self._candidates = [value]
+        if self.is_empty():
+            self._candidates = [value]
+        else:
+            raise ValueError("Trying to set an already set cell!")
 
     def candidates_string(self):
         if len(self.candidates) == 1 and self.candidates[0] is None:

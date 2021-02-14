@@ -5,6 +5,10 @@ def cross(cols, rows):
     return [c + r for r in rows for c in cols]
 
 
+def tuple_cross(list1, list2):
+    return [(item1, item2) for item2 in list2 for item1 in list1]
+
+
 def super_cross(list_of_lists):
     if len(list_of_lists) == 1:
         return list_of_lists[0]
