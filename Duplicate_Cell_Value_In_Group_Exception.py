@@ -1,4 +1,4 @@
-class Duplicate_Cell_Exception(Exception):
+class Duplicate_Cell_Value_In_Group_Exception(Exception):
     """Exception raised when code tries to remove all values from a Cell.
 
     Attributes:
