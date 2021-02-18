@@ -1,7 +1,9 @@
 from Reducing_Group import Reducing_Group
 from grid_utils import cross
 from Blanking_Cell_Exception import Blanking_Cell_Exception
-from Duplicate_Cell_Exception import Duplicate_Cell_Exception
+from Duplicate_Cell_Value_In_Group_Exception import Duplicate_Cell_Value_In_Group_Exception
+from Inconsistent_Puzzle_Exception import Inconsistent_Puzzle_Exception
+from Duplicate_Cell_Value_Exception import Duplicate_Cell_Value_Exception
 
 from math import sqrt
 
@@ -17,8 +19,10 @@ class Grid_Puzzle(object):
     number_of_backtracks = 0  # This is a class or static variable
     minimum_cell_display_width = 5
     cell_display_padding = 2
+    interactive_mode = False
 
-    def __init__(self, puzzle_definition):
+    def __init__(self, puzzle_definition, interactive=False):
+        Grid_Puzzle.interactive_mode = interactive
         self.definition = puzzle_definition
         self.validate()
         self.size = self.calculate_size()
@@ -162,6 +166,13 @@ class Grid_Puzzle(object):
         for cell in self.get_all_cells():
             if cell.get_size() != 1:
                 return False
+        return True
+
+    def puzzle_is_consistent(self):
+        try:
+            self.check_consistency()
+        except Duplicate_Cell_Value_In_Group_Exception:
+            return False
         return True
 
     def check_consistency(self):
@@ -325,17 +336,26 @@ class Grid_Puzzle(object):
         # Log puzzle size for plotting later
         logging.info(current_puzzle_size)
 
+        logging.debug("State of the puzzle before selecting a guessing cell:")
+        self.display()
+
         # We are stuck and need to guess. Let's choose one of the unfilled cells with the fewest possibilities
         cell_to_guess = self.get_guessing_cell()
         logging.debug(f"I'm guessing the value of cell: {cell_to_guess}. State of puzzle before this guess is:")
-        self.display()
 
         # We'll guess each value of the possible values until we find a solution
-        for current_guess_candidates in cell_to_guess.get_guesses():
-            logging.debug(f"I'm guessing value: {current_guess_candidates}")
+        guesses_for_cell = cell_to_guess.get_guesses()
+        for index, current_guess in enumerate(guesses_for_cell, start=1):
+            print(f"I'm guessing value: {current_guess} ({index} out of {guesses_for_cell} possible guesses)")
             Grid_Puzzle.number_of_guesses += 1
             puzzle_with_guess = copy.deepcopy(self)
-            puzzle_with_guess.update_with_guess(cell_to_guess, current_guess_candidates)
+            puzzle_with_guess.update_with_guess(cell_to_guess, current_guess)
+
+            # Check that our guess is consistent, otherwise, let's continue to a different guess
+            if not puzzle_with_guess.puzzle_is_consistent():
+                logging.debug("Current guess is inconsistent, so moving on to the next guess...")
+                self.display()
+                continue
 
             # Here's the tricky part, recursively call this same method, but we're calling it on a different object
             # Note that this is NOT self.search(), but puzzle_with_guess.search().
@@ -345,13 +365,18 @@ class Grid_Puzzle(object):
                     return solved_puzzle
                 else:
                     logging.debug(
-                        f'Our guess of {current_guess_candidates} for Cell {cell_to_guess} was wrong.')
+                        f'Our guess of {current_guess} for Cell {cell_to_guess} was wrong.')
             except Blanking_Cell_Exception as error:
                 logging.debug(error.message)
-            except Duplicate_Cell_Exception as error:
+            except Duplicate_Cell_Value_In_Group_Exception as error:
+                logging.debug(error.message)
+            except Inconsistent_Puzzle_Exception:
+                logging.debug("Puzzle became inconsistent. Must have been an incorrect guess. Trying a different one...")
+            except Duplicate_Cell_Value_Exception as error:
                 logging.debug(error.message)
 
         logging.debug(f"Could not find a solution when guessing values for Cell {cell_to_guess}. Backing up...")
+        self.display()
         Grid_Puzzle.number_of_backtracks += 1
         return None
 
