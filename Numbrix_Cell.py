@@ -36,31 +36,44 @@ class Numbrix_Cell(Cell):
     def is_empty(self):
         return not self._candidates
 
-    def reduce_neighbors(self, neighbors):
+    def is_connected(self, neighbors):
+        if self.is_empty():
+            return False
+        required_neighbor_values = self.get_required_neighbor_values()
+        all_neighbor_values = flatten_and_de_dup([neighbor.candidates for neighbor in neighbors])
+        for value in required_neighbor_values:
+            if value not in all_neighbor_values:
+                return False
+        return True
+
+    def reduce_neighbors(self, neighbors, already_used_values):
         if self.is_empty():
             return
 
-        available_neighbor_values = self.get_available_neighbor_values(neighbors)
+        available_neighbor_values = self.get_available_neighbor_values(neighbors, already_used_values)
         open_neighbors = [neighbor for neighbor in neighbors if neighbor.is_empty()]
         if len(available_neighbor_values) == 1 and len(open_neighbors) == 1:
             open_neighbors[0].set_candidates(available_neighbor_values)
 
-    def get_available_neighbor_values(self, neighbors):
+    def get_available_neighbor_values(self, neighbors, already_used_values):
         all_neighbor_values = flatten_and_de_dup([neighbor.candidates for neighbor in neighbors])
-        return [neighbor_value for neighbor_value in self.get_neighbor_values() if neighbor_value not in all_neighbor_values]
+        return [neighbor_value for neighbor_value in self.get_required_neighbor_values()
+                if neighbor_value not in all_neighbor_values and neighbor_value not in already_used_values]
 
-    def get_neighbor_values(self):
+    def get_required_neighbor_values(self):
         if self.is_empty():
             return []
 
         neighbor_values = []
         if self.get_value() > 1:
-            neighbor_values.append(self.get_value() - 1)
+            neighbor_value = self.get_value() - 1
+            neighbor_values.append(neighbor_value)
         if self.get_value() < 81:
-            neighbor_values.append(self.get_value() + 1)
+            neighbor_value = self.get_value() + 1
+            neighbor_values.append(neighbor_value)
         return neighbor_values
 
-    def is_link_endpoint(self, neighbors):
+    def is_link_endpoint(self, neighbors, already_used_values):
         """Return true if this is the end of a link and needs to be extended"""
-        return len(self.get_available_neighbor_values(neighbors)) > 0
+        return len(self.get_available_neighbor_values(neighbors, already_used_values)) > 0
 
