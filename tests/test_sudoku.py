@@ -2,7 +2,7 @@ import random
 import unittest
 
 from Blanking_Cell_Exception import Blanking_Cell_Exception
-from Duplicate_Cell_Exception import Duplicate_Cell_Exception
+from Duplicate_Cell_Value_In_Group_Exception import Duplicate_Cell_Value_In_Group_Exception
 from Cell import Cell
 from Reducing_Group import Reducing_Group
 from Sudoku import Sudoku
@@ -237,7 +237,7 @@ class TestSudoku(unittest.TestCase):
 
     def test_puzzle_seemingly_solved(self):
         puzzle = Sudoku(self.sudoku_not_solved_4x4_string)
-        with self.assertRaises(Duplicate_Cell_Exception):
+        with self.assertRaises(Duplicate_Cell_Value_In_Group_Exception):
             puzzle.is_solved()
 
     def test_puzzle_really_solved(self):

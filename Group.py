@@ -1,4 +1,4 @@
-from Duplicate_Cell_Exception import Duplicate_Cell_Exception
+from Duplicate_Cell_Value_In_Group_Exception import Duplicate_Cell_Value_In_Group_Exception
 from grid_utils import flatten_and_de_dup
 
 
@@ -33,4 +33,4 @@ class Group(object):
         singlet_candidates = [cell.candidates for cell in self.cells if len(cell) == 1]
         unique_singlets = flatten_and_de_dup(singlet_candidates)
         if len(unique_singlets) != len(singlet_candidates):
-            raise Duplicate_Cell_Exception(singlet_candidates, self.name)
+            raise Duplicate_Cell_Value_In_Group_Exception(singlet_candidates, self.name)
