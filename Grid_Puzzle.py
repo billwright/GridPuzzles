@@ -10,7 +10,7 @@ from math import sqrt
 import copy
 import logging
 
-logging.basicConfig(format='%(message)s', filename='grid-puzzle.log', filemode='w', level=logging.INFO)
+logging.basicConfig(format='%(message)s', filename='grid-puzzle.log', filemode='w', level=logging.DEBUG)
 logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
 
@@ -346,7 +346,7 @@ class Grid_Puzzle(object):
         # We'll guess each value of the possible values until we find a solution
         guesses_for_cell = cell_to_guess.get_guesses()
         for index, current_guess in enumerate(guesses_for_cell, start=1):
-            print(f"I'm guessing value: {current_guess} ({index} out of {guesses_for_cell} possible guesses)")
+            logging.debug(f"I'm guessing value: {current_guess} ({index} out of {guesses_for_cell} possible guesses)")
             Grid_Puzzle.number_of_guesses += 1
             puzzle_with_guess = copy.deepcopy(self)
             puzzle_with_guess.update_with_guess(cell_to_guess, current_guess)

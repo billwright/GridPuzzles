@@ -74,7 +74,7 @@ class TestNumbrix(unittest.TestCase):
         neighbors_of_cell_B1 = numbrix.get_cell_neighbors(cell_B1)
         print('Neighbors of cell B1:', neighbors_of_cell_B1)
 
-        cell_B1.reduce_neighbors(neighbors_of_cell_B1)
+        cell_B1.reduce_neighbors(neighbors_of_cell_B1, numbrix.get_all_values())
         print('Neighbors of cell B2:', neighbors_of_cell_B1)
         cell_B2 = numbrix.get_cell('B2')
         self.assertEqual(3, cell_B2.get_value())
@@ -88,11 +88,11 @@ class TestNumbrix(unittest.TestCase):
 
         cell_E7 = numbrix.get_cell('E7')
         neighbors_of_cell_E7 = numbrix.get_cell_neighbors(cell_E7)
-        self.assertFalse(cell_E7.is_link_endpoint(neighbors_of_cell_E7))
+        self.assertFalse(cell_E7.is_link_endpoint(neighbors_of_cell_E7, numbrix.get_all_values()))
 
         cell_G6 = numbrix.get_cell('G6')
         neighbors_of_cell_G6 = numbrix.get_cell_neighbors(cell_G6)
-        self.assertTrue(cell_G6.is_link_endpoint(neighbors_of_cell_G6))
+        self.assertTrue(cell_G6.is_link_endpoint(neighbors_of_cell_G6, numbrix.get_all_values()))
 
     def test_find_chain_endpoints(self):
         numbrix = Numbrix(beginner_puzzle)
@@ -104,8 +104,6 @@ class TestNumbrix(unittest.TestCase):
         chain_endpoints = numbrix.get_chain_endpoints()
         print(chain_endpoints)
         chain_endpoint_addresses = [cell.address for cell in chain_endpoints]
-        self.assertTrue('D4' in chain_endpoint_addresses)
-        self.assertTrue('D6' in chain_endpoint_addresses)
         self.assertTrue('E3' in chain_endpoint_addresses)
         self.assertTrue('G6' in chain_endpoint_addresses)
         self.assertTrue('H3' in chain_endpoint_addresses)
@@ -124,10 +122,10 @@ class TestNumbrix(unittest.TestCase):
         cell_D3 = numbrix.get_cell('D3')
         cell_E3 = numbrix.get_cell('E3')
 
-        self.assertEqual(cell_C2, numbrix.get_cell_between(cell_C3, cell_C1))
-        self.assertEqual(cell_C4, numbrix.get_cell_between(cell_C3, cell_C5))
-        self.assertEqual(cell_B3, numbrix.get_cell_between(cell_C3, cell_A3))
-        self.assertEqual(cell_D3, numbrix.get_cell_between(cell_C3, cell_E3))
+        self.assertEqual([cell_C2], numbrix.get_empty_cells_between(cell_C3, cell_C1))
+        self.assertEqual([cell_C4], numbrix.get_empty_cells_between(cell_C3, cell_C5))
+        self.assertEqual([cell_B3], numbrix.get_empty_cells_between(cell_C3, cell_A3))
+        self.assertEqual([cell_D3], numbrix.get_empty_cells_between(cell_C3, cell_E3))
 
     def test_another_reduction(self):
         numbrix = Numbrix(dec_27_2020)
@@ -171,13 +169,11 @@ class TestNumbrix(unittest.TestCase):
 
         self.assertEqual(set(neighbors_of_E3), set(numbrix.get_cell_neighbors(endpoint_cell_E3)))
 
-        endpoint_cell_D4 = Numbrix_Cell('D4', [19])
-        endpoint_cell_D6 = Numbrix_Cell('D6', [21])
         endpoint_cell_G6 = Numbrix_Cell('G6', [54])
         endpoint_cell_H3 = Numbrix_Cell('H3', [74])
         endpoint_cell_H5 = Numbrix_Cell('H5', [78])
 
-        all_endpoints = [endpoint_cell_H5, endpoint_cell_H3, endpoint_cell_G6, endpoint_cell_E3, endpoint_cell_D6, endpoint_cell_D4]
+        all_endpoints = [endpoint_cell_H5, endpoint_cell_H3, endpoint_cell_G6, endpoint_cell_E3]
         chain_endpoints = numbrix.get_chain_endpoints()
         self.assertEqual(set(all_endpoints), set(chain_endpoints))
 
@@ -191,7 +187,7 @@ class TestNumbrix(unittest.TestCase):
 
         cell_G3 = Numbrix_Cell('G3', [])
         cell_H4 = Numbrix_Cell('H4', [])
-        expected_guessing_endpoint = Chain_Endpoint(endpoint_cell_H3, [cell_G3, cell_H4], 75, 4)
+        expected_guessing_endpoint = Chain_Endpoint(endpoint_cell_H3, [cell_G3, cell_H4], [75], 4, 12)
         actual_guessing_endpoint = numbrix.get_guessing_cell()
         self.assertEqual(expected_guessing_endpoint, actual_guessing_endpoint)
 
@@ -206,12 +202,18 @@ class TestNumbrix(unittest.TestCase):
         self.assertTrue(solved_puzzle.is_solved())
 
     def test_solving_intermediate_puzzle(self):
-        numbrix = Numbrix(dec_27_2020)
+        interactive_mode = False
+
+        numbrix = Numbrix(dec_27_2020, interactive_mode)
         numbrix.display()
 
         solved_puzzle = numbrix.search()
-        solved_puzzle.display()
-        self.assertTrue(solved_puzzle.is_solved())
+        if solved_puzzle:
+            solved_puzzle.display()
+            self.assertTrue(solved_puzzle.is_solved())
+        else:
+            print("Solver finished, but no solution was found!")
+            self.assertTrue(False)
 
     def test_solving_very_hard_puzzle(self):
         numbrix = Numbrix(very_hard_puzzle)
