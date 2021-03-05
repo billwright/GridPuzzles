@@ -135,10 +135,57 @@ class TicTacToe(Grid_Puzzle):
         self.puzzle_dict[address].value = self.current_player
 
     def make_computer_move(self):
-        return self.make_random_move()
+        # return self.make_random_move()
+        return self.make_evaluated_move()
 
     def get_open_locations(self):
         return [cell for cell in self.get_all_cells() if cell.is_open()]
+
+    def make_evaluated_move(self):
+        open_locations = self.get_open_locations()
+        best_move = open_locations[0]
+        best_score = self.calculate_location_score(best_move)
+        for location in open_locations:
+            location_score = self.calculate_location_score(location)
+            if location_score > best_score:
+                best_score = location_score
+                best_move = location
+        best_move.value = 'O'
+
+    def calculate_location_score(self, location):
+        groups = self.get_groups_for_cell(location)
+        total_score = 0
+        for group in groups:
+            total_score += self.calculate_group_score(group)
+        if self.is_corner_or_middle(location):
+            total_score += 75
+        print('score for location', location, 'is', total_score)
+        return total_score
+
+    def is_corner_or_middle(self, location):
+        col_number = location.get_column_number()
+        if location.get_row_number() == location.get_column_number():
+            return True
+        if location.get_column_number() == 1 and location.get_row_number() == self.size:
+            return True
+        if location.get_row_number() == 1 and location.get_column_number() == self.size:
+            return True
+        return False
+
+    @staticmethod
+    def calculate_group_score(group):
+        group_score = 0
+        number_of_ohs = len([cell for cell in group.cells if cell.value == 'O'])
+        if number_of_ohs == 2:
+            group_score = 10000
+        elif number_of_ohs == 1:
+            group_score = 50
+        number_of_exs = len([cell for cell in group.cells if cell.value == 'X'])
+        if number_of_exs == 2:
+            group_score += 10000
+        if number_of_exs == 1:
+            group_score -= 50
+        return group_score
 
     def make_random_move(self):
         open_locations = self.get_open_locations()
