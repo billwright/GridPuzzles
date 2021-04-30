@@ -31,7 +31,7 @@ class TestTicTacToe(unittest.TestCase):
         self.assertEqual(2, len(diagonal_groups))
 
     def test_play_game(self):
-        TicTacToe.start(3)
+        TicTacToe.start_human_vs_random(3)
 
 
 if __name__ == '__main__':

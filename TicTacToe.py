@@ -1,10 +1,12 @@
-from Grid_Puzzle import Grid_Puzzle
-from Group import Group
-from TicTacToe_Cell import TicTacToe_Cell
+from random import random
 
 from termcolor import colored
-from random import random
-from random import randrange
+
+from Grid_Puzzle import Grid_Puzzle
+from Group import Group
+from Human_Player import Human_Player
+from Random_Player import Random_Player
+from TicTacToe_Cell import TicTacToe_Cell
 
 
 class TicTacToe(Grid_Puzzle):
@@ -64,28 +66,17 @@ class TicTacToe(Grid_Puzzle):
 
     @staticmethod
     def get_user_name():
-        TicTacToe.user_name = input('Please enter your name: ')
+        return input('Please enter your name: ')
 
-    def determine_starting_player(self):
-        print(f"Hi, {self.user_name}. Let's flip a coin to see who goes first.")
-        heads_or_tails = input("Type 'h' for Heads and 't' for Tails: ")
-        coin_flip = random()
-        if coin_flip >= 0.5:
-            print("\nt was heads.")
-            if heads_or_tails.capitalize() == 'H':
-                print('You chose heads, so you go first')
-                self.current_player = 'X'
-            else:
-                print('You chose tails, so I will go first')
-                self.current_player = 'O'
+    @staticmethod
+    def the_human_goes_first(self):
+        print(f"Hi, {self.user_name}. I'll flip a coin to see who goes first...")
+        if random() >= 0.5:
+            print("\nIt was heads. You'll go first and play the X's")
+            return True
         else:
-            print("\nIt was tails.")
-            if heads_or_tails.capitalize() == 'H':
-                print('You chose heads, so I will go first')
-                self.current_player = 'O'
-            else:
-                print('You chose tails, so you go first')
-                self.current_player = 'X'
+            print("\nIt was tails, so the computer will go first and play X's. You'll play O's")
+            return False
 
     def get_valid_move(self):
         while True:
@@ -187,14 +178,6 @@ class TicTacToe(Grid_Puzzle):
             group_score -= 50
         return group_score
 
-    def make_random_move(self):
-        open_locations = self.get_open_locations()
-        if len(open_locations) == 1:
-            open_locations[0].value = 'O'
-        else:
-            selection = randrange(1, len(open_locations))
-            open_locations[selection].value = 'O'
-
     def switch_player(self):
         if self.current_player == 'X':
             self.current_player = 'O'
@@ -202,12 +185,18 @@ class TicTacToe(Grid_Puzzle):
             self.current_player = 'X'
 
     @staticmethod
-    def start(size=3):
-        TicTacToe.get_user_name()
+    def start_human_vs_random(size=3):
+        name = TicTacToe.get_user_name()
         play_again = True
         while play_again:
+            if TicTacToe.the_human_goes_first:
+                current_player = Human_Player(name, 'X')
+                other_player = Random_Player('Random', 'O')
+            else:
+                current_player = Random_Player('Random', 'X')
+                other_player = Human_Player(name, 'O')
             tictactoe = TicTacToe(size)
-            tictactoe.play_game()
+            tictactoe.play_game(current_player, other_player)
             play_again = TicTacToe.ask_to_play_again()
         print(f"\nThanks for playing, {TicTacToe.user_name}. Bye.")
 
@@ -225,14 +214,11 @@ class TicTacToe(Grid_Puzzle):
         else:
             print("Cat game! No one won. We are both too good to make a mistake.")
 
-    def play_game(self):
-        self.determine_starting_player()
+    def play_game(self, first_player, other_player):
+        current_player = first_player
         while not self.game_is_over():
-            if self.current_player == 'X':
-                self.display()
-                move = self.get_valid_move()
-                self.make_move(move)
-            else:
-                self.make_computer_move()
-            self.switch_player()
+            self.display()
+            move = current_player.get_move(self)
+            self.make_move(move)
+            current_player, other_player = other_player, current_player
         self.display_results()
