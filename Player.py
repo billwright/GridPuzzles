@@ -4,6 +4,9 @@ class Player:
         self.name = name
         self.marker = marker
 
+    def __repr__(self):
+        return f'Player {self.name}'
+
     def get_name(self):
         return self.name
 

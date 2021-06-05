@@ -123,11 +123,7 @@ class TicTacToe(Grid_Puzzle):
         return len(self.get_open_locations()) == 0
 
     def make_move(self, address):
-        self.puzzle_dict[address].value = self.current_player
-
-    def make_computer_move(self):
-        # return self.make_random_move()
-        return self.make_evaluated_move()
+        self.puzzle_dict[address].value = self.current_player.marker
 
     def get_open_locations(self):
         return [cell for cell in self.get_all_cells() if cell.is_open()]
@@ -163,21 +159,6 @@ class TicTacToe(Grid_Puzzle):
             return True
         return False
 
-    @staticmethod
-    def calculate_group_score(group):
-        group_score = 0
-        number_of_ohs = len([cell for cell in group.cells if cell.value == 'O'])
-        if number_of_ohs == 2:
-            group_score = 10000
-        elif number_of_ohs == 1:
-            group_score = 50
-        number_of_exs = len([cell for cell in group.cells if cell.value == 'X'])
-        if number_of_exs == 2:
-            group_score += 10000
-        if number_of_exs == 1:
-            group_score -= 50
-        return group_score
-
     def switch_player(self):
         if self.current_player == 'X':
             self.current_player = 'O'
@@ -205,20 +186,24 @@ class TicTacToe(Grid_Puzzle):
         answer = input("\nWould you like to play again? (y or n): ")
         return answer.capitalize() == 'Y'
 
-    def display_results(self):
+    def display_results(self, first_player, second_player):
         self.display()
-        if self.winner == 'X':
-            print("\nYou won! Great job. I'll get you next time.")
-        elif self.winner == 'O':
-            print("\nI won, but you'll get me next time. I've got confidence in you.")
-        else:
+        winning_player = None
+        if self.winner == first_player.marker:
+            winning_player = first_player
+        if self.winner == second_player.marker:
+            winning_player = second_player
+
+        if winning_player is None:
             print("Cat game! No one won. We are both too good to make a mistake.")
+        else:
+            print(f"\n{winning_player.name} won! Great job.")
 
     def play_game(self, first_player, other_player):
-        current_player = first_player
+        self.current_player = first_player
         while not self.game_is_over():
             self.display()
-            move = current_player.get_move(self)
-            self.make_move(move)
-            current_player, other_player = other_player, current_player
-        self.display_results()
+            move = self.current_player.get_move(self)
+            self.make_move(move.address)
+            self.current_player, other_player = other_player, self.current_player
+        self.display_results(first_player, other_player)
