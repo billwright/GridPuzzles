@@ -11,8 +11,6 @@ from TicTacToe_Cell import TicTacToe_Cell
 
 class TicTacToe(Grid_Puzzle):
 
-    user_name = None
-
     def __init__(self, board_size):
         self.current_player = None
         self.winner = None
@@ -159,7 +157,7 @@ class TicTacToe(Grid_Puzzle):
             return True
         return False
 
-    def switch_player(self):
+    def switch_player_dd(self):
         if self.current_player == 'X':
             self.current_player = 'O'
         else:
@@ -169,17 +167,20 @@ class TicTacToe(Grid_Puzzle):
     def start_human_vs_random(size=3):
         name = TicTacToe.get_user_name()
         play_again = True
+        human_player = None
         while play_again:
             if TicTacToe.the_human_goes_first:
                 current_player = Human_Player(name, 'X')
+                human_player = current_player
                 other_player = Random_Player('Random', 'O')
             else:
                 current_player = Random_Player('Random', 'X')
                 other_player = Human_Player(name, 'O')
+                human_player = other_player
             tictactoe = TicTacToe(size)
             tictactoe.play_game(current_player, other_player)
             play_again = TicTacToe.ask_to_play_again()
-        print(f"\nThanks for playing, {TicTacToe.user_name}. Bye.")
+        print(f"\nThanks for playing, {human_player.name}. Bye.")
 
     @staticmethod
     def ask_to_play_again():

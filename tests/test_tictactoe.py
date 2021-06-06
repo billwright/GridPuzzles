@@ -2,6 +2,8 @@ import unittest
 from TicTacToe import TicTacToe
 from Random_Player import Random_Player
 from Position_Evaluator_Player import Position_Evaluator_Player
+from Human_Player import Human_Player
+
 
 class TestTicTacToe(unittest.TestCase):
 
@@ -9,17 +11,20 @@ class TestTicTacToe(unittest.TestCase):
         tictactoe = TicTacToe(3)
         tictactoe.display()
 
-        tictactoe.get_user_name()
-        self.assertIsNotNone(tictactoe.user_name)
+        human_player = Human_Player(Human_Player.get_user_name(), 'X')
+        self.assertIsNotNone(human_player.name)
 
     def test_making_moves(self):
         tictactoe = TicTacToe(3)
         tictactoe.display()
 
-        tictactoe.current_player = 'X'
+        player_x = Random_Player('robot', 'X')
+        tictactoe.current_player = player_x
         tictactoe.make_move('A1')
         tictactoe.make_move('C1')
-        tictactoe.current_player = 'O'
+
+        player_o = Random_Player('robot', 'O')
+        tictactoe.current_player = player_o
         tictactoe.make_move('B2')
         tictactoe.make_move('C3')
         tictactoe.display()
