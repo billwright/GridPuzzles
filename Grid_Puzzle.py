@@ -10,9 +10,6 @@ from math import sqrt
 import copy
 import logging
 
-logging.basicConfig(format='%(message)s', filename='grid-puzzle.log', filemode='w', level=logging.DEBUG)
-logging.basicConfig(format='%(message)s', level=logging.DEBUG)
-
 
 class Grid_Puzzle(object):
     number_of_guesses = 0  # This is a class or static variable
@@ -319,7 +316,7 @@ class Grid_Puzzle(object):
 
     def search(self):
         """Using depth-first search to solve the puzzle.
-        This methods returns True if the puzzle is solved, otherwise False"""
+        This methods returns either the solved puzzle or None"""
         logging.debug("State of the puzzle before reduce:")
         self.display()
 

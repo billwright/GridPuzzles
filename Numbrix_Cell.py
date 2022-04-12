@@ -68,7 +68,7 @@ class Numbrix_Cell(Cell):
         if self.get_value() > 1:
             neighbor_value = self.get_value() - 1
             neighbor_values.append(neighbor_value)
-        if self.get_value() < 81:
+        if self.get_value() < self.get_size() ** 2:
             neighbor_value = self.get_value() + 1
             neighbor_values.append(neighbor_value)
         return neighbor_values

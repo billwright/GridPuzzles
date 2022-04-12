@@ -1,6 +1,9 @@
 import unittest
+import logging
 
 from Kenken import Kenken
+
+logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
 kenken_size_3 = [
     ('/', 3, ['A1', 'A2']),
@@ -39,6 +42,31 @@ kenken_size_6 = [
     ('/', 2, ['F2', 'F3']),
     ('', 5, ['F4']),
     ('/', 2, ['F5', 'F6']),
+]
+
+kenken_size_6_tough = [
+    ('*', 18, ['A1', 'A2', 'A3']),
+    ('', 2, ['A4']),
+    ('-', 1, ['A5', 'A6']),
+
+    ('+', 11, ['B1', 'B2', 'C1']),
+    ('', 6, ['B3']),
+    ('+', 11, ['B4', 'B5', 'B6', 'C6']),
+
+    ('+', 3, ['C2', 'C3']),
+    ('*', 30, ['C4', 'C5', 'D5']),
+
+    ('-', 2, ['D1', 'E1']),
+    ('', 3, ['D2']),
+    ('*', 24, ['D3', 'D4']),
+    ('+', 3, ['D6', 'E6']),
+
+    ('-', 1, ['E2', 'E3']),
+    ('/', 2, ['E4', 'E5']),
+
+    ('+', 7, ['F1', 'F2', 'F3']),
+    ('-', 2, ['F4', 'F5']),
+    ('', 6, ['F6']),
 ]
 
 kenken_size_8 = [
@@ -122,6 +150,13 @@ class Test_Kenken(unittest.TestCase):
             solved_puzzle = kenken.search()
             solved_puzzle.display()
             print()
+
+    def test_hard_6(self):
+        kenken = Kenken(kenken_size_6_tough)
+        kenken.display()
+        solved_puzzle = kenken.search()
+        solved_puzzle.display()
+        print()
 
 
 if __name__ == '__main__':

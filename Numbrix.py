@@ -8,8 +8,6 @@ from Numbrix_Cell import Numbrix_Cell
 from Inconsistent_Puzzle_Exception import Inconsistent_Puzzle_Exception
 from Duplicate_Cell_Value_Exception import Duplicate_Cell_Value_Exception
 
-# logging.basicConfig(format='%(message)s', filename='grid-puzzle.log', filemode='w', level=logging.DEBUG)
-
 
 def endpoint_sorting_criteria():
     return lambda x: (
@@ -41,8 +39,8 @@ class Numbrix(Grid_Puzzle):
     def create_puzzle(self):
         cell_position_in_definition = 0
         cell_dictionary = {}
-        for column in self.column_names:
-            for row in self.row_names:
+        for row in self.row_names:
+            for column in self.column_names:
                 address = column + row
                 value = self.definition[cell_position_in_definition]
                 if value is None:
@@ -58,21 +56,30 @@ class Numbrix(Grid_Puzzle):
             raise ValueError("Puzzle definition did not map correctly!")
         return cell_dictionary
 
+    @staticmethod
+    def print_color_legend():
+        print('Latest guessed cell:', colored('RED', 'red', attrs=['underline']))
+        print('Guessed cell:', colored('YELLOW', 'yellow', attrs=['bold']))
+        print('Link endpoint:', colored('BLUE', 'blue'))
+        print('Given cell:', colored('WHITE', 'white', attrs=['dark']))
+        print('Cell is dead end:', colored('MAGENTA', 'magenta'))
+        print('Calculated cell:', colored('GREEN', 'green'))
+
     def get_display_cell(self, cell):
         attributes = []
         cell_string = cell.candidates_string()
-        # The last cell in the latest it the latest guessed cell
+        # The last cell in the latest is the latest guessed cell
         if len(self.guessed_cells) > 0 and cell == self.guessed_cells[-1]:
             cell_color = 'red'
             attributes.append('underline')
         elif cell in self.guessed_cells:
             cell_color = 'yellow'
             attributes.append('bold')
-        elif cell.is_link_endpoint(self.get_cell_neighbors(cell), self.get_all_values()):
-            cell_color = 'blue'
         elif cell in self.given_cells:
             cell_color = 'white'
             attributes.append('dark')
+        elif cell.is_link_endpoint(self.get_cell_neighbors(cell), self.get_all_values()):
+            cell_color = 'blue'
         elif cell.is_empty() and self.empty_cell_is_a_dead_end_or_hole(cell):
             cell_color = 'magenta'
             cell_string = '**'
@@ -99,6 +106,7 @@ class Numbrix(Grid_Puzzle):
             for row_name in self.row_names:
                 print(self.get_display_row(row_name))
             print(self.get_horizontal_puzzle_boundary())
+            self.print_color_legend();
             print(f'The current puzzle count is {self.get_current_puzzle_count()}')
             print(f'Guesses are:')
             for guess in self.guessed_cells:

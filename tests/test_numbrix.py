@@ -1,7 +1,18 @@
+import logging
 import unittest
+
+from Chain_Endpoint import Chain_Endpoint
 from Numbrix import Numbrix
 from Numbrix_Cell import Numbrix_Cell
-from Chain_Endpoint import Chain_Endpoint
+
+logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+
+easy_6_by_6 = [None, 15, 10, 9, 8, None,
+               17, None, None, None, None, 6,
+               18, None, 12, 3, None, 1,
+               19, None, 25, 26, None, 30,
+               20, None, None, None, None, 31,
+               None, 22, 35, 34, 33, None]
 
 beginner_puzzle = [5, 6, 7, 8, 9, 24, 25, 30, 31,
                    4, None, None, None, None, None, None, None, 32,
@@ -22,6 +33,103 @@ dec_27_2020 = [3, None, 9, None, 17, None, 21, None, 23,
                63, None, None, None, None, None, None, None, 81,
                None, None, None, None, None, None, None, None, None,
                67, None, 69, None, 73, None, 77, None, 79]
+
+# This puzzle, with the code as of this date (11/21/21), was solved
+# in 5h23m! It took 5040 backtracks to solve it.
+# TODO: Work on techniques to make this better and to analyze why it takes so long
+nov_21_2021 = [1, None, 7, None, 75, None, 81, None, 61,
+               None, None, None, None, None, None, None, None, None,
+               3, None, None, None, None, None, None, None, 59,
+               None, None, None, None, None, None, None, None, None,
+               19, None, None, None, None, None, None, None, 57,
+               None, None, None, None, None, None, None, None, None,
+               23, None, None, None, None, None, None, None, 49,
+               None, None, None, None, None, None, None, None, None,
+               25, None, 27, None, 35, None, 45, None, 47]
+
+# This puzzle, with the code as of this date (11/21/21), was solved
+# in less than 2 seconds. It took 3 backtracks to solve it.
+dec_5_2021 = [17, None, 11, None, 3, None, 1, None, 75,
+              None, None, None, None, None, None, None, None, None,
+              19, None, None, None, None, None, None, None, 73,
+              None, None, None, None, None, None, None, None, None,
+              21, None, None, None, None, None, None, None, 69,
+              None, None, None, None, None, None, None, None, None,
+              29, None, None, None, None, None, None, None, 65,
+              None, None, None, None, None, None, None, None, None,
+              35, None, 37, None, 51, None, 53, None, 55]
+
+# This puzzle, with the code as of this date (11/21/21), was solved
+# in 19 seconds. It took 228 backtracks to solve it.
+jan_30_2022 = [25, None, 23, None, 19, None, 3, None, 7,
+               None, None, None, None, None, None, None, None, None,
+               29, None, None, None, None, None, None, None, 9,
+               None, None, None, None, None, None, None, None, None,
+               39, None, None, None, None, None, None, None, 11,
+               None, None, None, None, None, None, None, None, None,
+               41, None, None, None, None, None, None, None, 73,
+               None, None, None, None, None, None, None, None, None,
+               43, None, 51, None, 59, None, 81, None, 79]
+
+# This puzzle causes the program to fail:
+# Error
+# Traceback (most recent call last):
+# File "/Users/bwright/PycharmProjects/GridPuzzles/tests/test_numbrix.py", line 300, in test_solving_puzzles
+# solved_puzzle.display()
+# AttributeError: 'NoneType' object has no attribute 'display'
+
+mar_20_2022 = [7, None, 5, None, 21, None, 31, None, 33,
+               None, None, None, None, None, None, None, None, None,
+               9, None, None, None, None, None, None, None, 37,
+               None, None, None, None, None, None, None, None, None,
+               13, None, None, None, None, None, None, None, 41,
+               None, None, None, None, None, None, None, None, None,
+               71, None, None, None, None, None, None, None, 43,
+               None, None, None, None, None, None, None, None, None,
+               75, None, 77, None, 55, None, 53, None, 45]
+
+# The solver gets an error when trying to solve this puzzle:
+# Error
+# Traceback (most recent call last):
+# File "/Users/bwright/PycharmProjects/GridPuzzles/tests/test_numbrix.py", line 316, in test_solving_puzzles
+# solved_puzzle.display()
+# AttributeError: 'NoneType' object has no attribute 'display'
+#
+apr_3_2022 = [None, None, None, None, 41, None, None, None, None,
+              None, 51, 50, None, None, None, 34, 35, None,
+              None, 56, None, None, None, None, None, 32, None,
+              None, None, None, None, None, None, None, None, None,
+              77, None, None, None, None, None, None, None, 21,
+              None, None, None, None, None, None, None, None, None,
+              None, 70, None, None, None, None, None, 2, None,
+              None, 71, 68, None, None, None, 8, 1, None,
+              None, None, None, None, 13, None, None, None, None]
+
+apr_10_2022 = [77, None, None, None, 53, None, None, None, 41,
+               None, 75, None, None, 50, None, None, 39, None,
+               None, None, None, None, None, None, None, None, None,
+               None, None, None, None, None, None, None, None, None,
+               1, 2, None, None, None, None, None, 32, 31,
+               None, None, None, None, None, None, None, None, None,
+               None, None, None, None, None, None, None, None, None,
+               None, 7, None, None, 14, None, None, 25, None,
+               9, None, None, None, 13, None, None, None, 21]
+
+# TODO: Handle this situation.
+#  This is an invalid puzzle. The given value of 61 should be 81. Ideally,
+#  the code should figure out the puzzles is unsolvable. Currently, it not
+#  only fails to solve it (expected), but it crashes AND it somehow changes
+#  some of the given values. That should be impossible. Fix this.
+# in less than 2 seconds. It took 3 backtracks to solve it.
+invalid_puzzle = [25, None, 23, None, 19, None, 3, None, 7,
+                  None, None, None, None, None, None, None, None, None,
+                  29, None, None, None, None, None, None, None, 9,
+                  None, None, None, None, None, None, None, None, None,
+                  39, None, None, None, None, None, None, None, 11,
+                  None, None, None, None, None, None, None, None, None,
+                  41, None, None, None, None, None, None, None, 73,
+                  None, None, None, None, None, None, None, None, None,
+                  43, None, 51, None, 59, None, 61, None, 79]
 
 very_hard_puzzle = [55, None, 61, None, 69, None, 79, None, 77,
                     None, None, None, None, None, None, None, None, None,
@@ -223,17 +331,29 @@ class TestNumbrix(unittest.TestCase):
         solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
 
-    @unittest.skip
+    # @unittest.skip
     def test_solving_puzzles(self):
         puzzles = [beginner_puzzle, dec_27_2020, very_hard_puzzle]
+        puzzles = [easy_6_by_6]
         for puzzle in puzzles:
             numbrix = Numbrix(puzzle)
+            print('The initial puzzle is:')
             numbrix.display()
 
             solved_puzzle = numbrix.search()
-            solved_puzzle.display()
-            self.assertTrue(solved_puzzle.is_solved())
+            if solved_puzzle is None:
+                logging.critical('Puzzle was not solved!')
+                self.assertTrue(False);
+            else:
+                solved_puzzle.display()
+                self.assertTrue(solved_puzzle.is_solved())
+        print('Color key is:')
 
+    def test_logging(self):
+        logging.debug('Debug message')
+        logging.warning('warning message')
+        logging.info('info message')
+        logging.error('error message')
 
 if __name__ == '__main__':
     unittest.main()
