@@ -195,12 +195,10 @@ class TestNumbrix(unittest.TestCase):
         numbrix.display()
 
         cell_E7 = numbrix.get_cell('E7')
-        neighbors_of_cell_E7 = numbrix.get_cell_neighbors(cell_E7)
-        self.assertFalse(cell_E7.is_link_endpoint(neighbors_of_cell_E7, numbrix.get_all_values()))
+        self.assertFalse(self.is_link_endpoint(cell_E7))
 
         cell_G6 = numbrix.get_cell('G6')
-        neighbors_of_cell_G6 = numbrix.get_cell_neighbors(cell_G6)
-        self.assertTrue(cell_G6.is_link_endpoint(neighbors_of_cell_G6, numbrix.get_all_values()))
+        self.assertTrue(self.is_link_endpoint(cell_G6))
 
     def test_find_chain_endpoints(self):
         numbrix = Numbrix(beginner_puzzle)

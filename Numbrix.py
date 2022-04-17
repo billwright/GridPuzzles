@@ -7,6 +7,7 @@ from Grid_Puzzle import Grid_Puzzle
 from Numbrix_Cell import Numbrix_Cell
 from Inconsistent_Puzzle_Exception import Inconsistent_Puzzle_Exception
 from Duplicate_Cell_Value_Exception import Duplicate_Cell_Value_Exception
+from grid_utils import flatten_and_de_dup
 
 
 def endpoint_sorting_criteria():
@@ -78,7 +79,7 @@ class Numbrix(Grid_Puzzle):
         elif cell in self.given_cells:
             cell_color = 'white'
             attributes.append('dark')
-        elif cell.is_link_endpoint(self.get_cell_neighbors(cell), self.get_all_values()):
+        elif self.is_link_endpoint(cell):
             cell_color = 'blue'
         elif cell.is_empty() and self.empty_cell_is_a_dead_end_or_hole(cell):
             cell_color = 'magenta'
@@ -117,6 +118,22 @@ class Numbrix(Grid_Puzzle):
                 if len(continue_interactive) > 0:
                     Numbrix.interactive_mode = False
 
+    def reduce_neighbors(self, cell):
+        if cell.is_empty():
+            return
+        neighbors = self.get_cell_neighbors(cell)
+        available_neighbor_values = self.get_available_neighbor_values(cell)
+        open_neighbors = [neighbor for neighbor in neighbors if neighbor.is_empty()]
+        if len(available_neighbor_values) == 1 and len(open_neighbors) == 1:
+            open_neighbors[0].set_candidates(available_neighbor_values)
+
+    def get_available_neighbor_values(self, cell):
+        neighbors = self.get_cell_neighbors(cell)
+        already_used_values = self.get_all_values()
+        all_neighbor_values = flatten_and_de_dup([neighbor.candidates for neighbor in neighbors])
+        return [neighbor_value for neighbor_value in self.get_required_neighbor_values(cell)
+                if neighbor_value not in all_neighbor_values and neighbor_value not in already_used_values]
+
     def reduce(self):
         current_puzzle_size = self.get_current_puzzle_count()
         if self.is_solved():
@@ -124,7 +141,7 @@ class Numbrix(Grid_Puzzle):
 
         while True:
             for cell in self.get_all_cells():
-                cell.reduce_neighbors(self.get_cell_neighbors(cell), self.get_all_values())
+                self.reduce_neighbors(cell)
             if self.is_solved():
                 return
 
@@ -138,10 +155,14 @@ class Numbrix(Grid_Puzzle):
                 f"Reduced puzzle from {current_puzzle_size} cells solved to {updated_puzzle_size} cells solved")
             current_puzzle_size = updated_puzzle_size
 
+    def is_link_endpoint(self, cell):
+        """Return true if this is the end of a link and needs to be extended"""
+        return len(self.get_available_neighbor_values(cell)) > 0
+
     def get_chain_endpoints(self):
         endpoints = []
         for cell in self.get_all_cells():
-            if cell.is_link_endpoint(self.get_cell_neighbors(cell), self.get_all_values()):
+            if self.is_link_endpoint(cell):
                 endpoints.append(cell)
         return endpoints
 
@@ -283,7 +304,7 @@ class Numbrix(Grid_Puzzle):
 
         # Check for all cells connected
         for cell in self.get_all_cells():
-            if not cell.is_connected(self.get_cell_neighbors(cell)):
+            if not self.cell_is_connected(cell):
                 return False
 
         # Check for no chain endpoints
@@ -301,11 +322,12 @@ class Numbrix(Grid_Puzzle):
     def puzzle_has_trapped_cells(self):
         for cell in self.get_all_cells():
             neighbors = self.get_cell_neighbors(cell)
-            connected_neighbors = [neighbor for neighbor in neighbors if neighbor.is_connected(self.get_cell_neighbors(neighbor))]
+            connected_neighbors = [neighbor for neighbor in neighbors if self.cell_is_connected(neighbor)]
 
             # If the cell is not connected (to its two chain links), but all its neighbors are connected,
             # then puzzle is invalid
-            if not cell.is_connected(self.get_cell_neighbors(cell)) and len(connected_neighbors) == len(neighbors):
+            if not self.cell_is_connected(cell) and len(connected_neighbors) == len(neighbors):
+                logging.debug(f'{cell} is trapped because it is not fully connected, but all its neighbors are.')
                 return True
         return False
 
@@ -313,30 +335,68 @@ class Numbrix(Grid_Puzzle):
         empty_cells = [cell for cell in self.get_all_cells() if cell.is_empty()]
         for empty_cell in empty_cells:
             if self.empty_cell_is_a_dead_end_or_hole(empty_cell):
+                logging.debug(f'Oops, we have a dead-end or hole at cell {empty_cell}')
                 return True
         return False
 
+    def cell_is_connected(self, cell):
+        if cell.is_empty():
+            return False
+
+        neighbors = self.get_cell_neighbors(cell)
+        required_neighbor_values = self.get_required_neighbor_values(cell)
+        all_neighbor_values = flatten_and_de_dup([neighbor.candidates for neighbor in neighbors])
+        for value in required_neighbor_values:
+            if value not in all_neighbor_values:
+                return False
+        return True
+
+    def get_required_neighbor_values(self, cell):
+        if cell.is_empty():
+            return []
+
+        neighbor_values = []
+        if cell.get_value() > 1:
+            neighbor_value = cell.get_value() - 1
+            neighbor_values.append(neighbor_value)
+        if cell.get_value() < self.size ** 2:
+            neighbor_value = cell.get_value() + 1
+            neighbor_values.append(neighbor_value)
+        return neighbor_values
+
     def empty_cell_is_a_dead_end_or_hole(self, empty_cell):
-        connected_neighbors = [cell for cell in self.get_cell_neighbors(empty_cell) if cell.is_connected(self.get_cell_neighbors(cell))]
+        connected_neighbors = [cell for cell in self.get_cell_neighbors(empty_cell) if self.cell_is_connected(cell)]
         open_neighbors = [cell for cell in self.get_cell_neighbors(empty_cell) if cell.is_empty()]
 
-        # If the cell is empty, with only one open neighbor and all other neighbors are connected, then it is a dead end.
-        if len(open_neighbors) == 1 and len(connected_neighbors) == 3:
+        # If the cell is empty, with only one open neighbor and all other neighbors are connected,
+        # then it is a dead end or the end of the puzzle chain (1 or 81, for a 9x9 puzzle)
+        if len(open_neighbors) == 1 and len(connected_neighbors) == 3 and not self.cell_can_contain_puzzle_end(empty_cell):
+            logging.debug(f'{empty_cell} is empty with only one open neighbor ({open_neighbors}) and all other neighbors are connected ({connected_neighbors}) and this cannot be the end of the puzzle')
             return True
 
         # If the cell has no open neighbors, but all its cells are connected, then we have a hole.
-        if len(connected_neighbors) == len(self.get_cell_neighbors(empty_cell)):
+        if len(connected_neighbors) == len(self.get_cell_neighbors(empty_cell)) and not self.cell_can_contain_puzzle_end(empty_cell):
+            logging.debug(f'{empty_cell} has no open neighbors, but all its cells are connected, then we have a hole and this cannot be the end of the puzzle')
             return True
         return False
 
+    def cell_can_contain_puzzle_end(self, candidate_empty_cell):
+        cell_penultimate_endpoint_values = [2, self.size**2 - 1]
+        neighbor_values = self.get_neighbor_values(candidate_empty_cell)
+        contains_values = [cell in neighbor_values for cell in cell_penultimate_endpoint_values]
+        return True in contains_values
+
     def puzzle_is_consistent(self):
         if self.puzzle_has_repeated_values():
+            logging.debug("Oops, we must have guessed wrong because puzzle has repeated values")
             return False
 
         if self.puzzle_has_trapped_cells():
+            logging.debug("Oops, we must have guessed wrong because puzzle has trapped cells")
             return False
 
         if self.puzzle_has_dead_ends():
+            logging.debug("Oops, we must have guessed wrong because puzzle has deadends")
             return False
 
         return True
