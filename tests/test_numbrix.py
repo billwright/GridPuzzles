@@ -14,6 +14,20 @@ easy_6_by_6 = [None, 15, 10, 9, 8, None,
                20, None, None, None, None, 31,
                None, 22, 35, 34, 33, None]
 
+easy_6_by_6a = [None, None, None, None, None, None,
+                None, 28, 25, 22, 19, None,
+                None, 27, 26, 21, 20, None,
+                None, 34, 35, 12, 13, None,
+                None, 3, 36, 11, 10, None,
+                None, None, None, None, None, None]
+
+blank_6_by_6 = [None, None, None, None, None, None,
+                None, None, None, None, None, None,
+                None, None, None, None, None, None,
+                None, None, None, None, None, None,
+                None, None, None, None, None, None,
+                None, None, None, None, None, None]
+
 beginner_puzzle = [5, 6, 7, 8, 9, 24, 25, 30, 31,
                    4, None, None, None, None, None, None, None, 32,
                    15, None, None, None, None, None, None, None, 33,
@@ -114,6 +128,16 @@ apr_10_2022 = [77, None, None, None, 53, None, None, None, 41,
                None, None, None, None, None, None, None, None, None,
                None, 7, None, None, 14, None, None, 25, None,
                9, None, None, None, 13, None, None, None, 21]
+
+apr_17_2022 = [33, None, 37, None, 41, None, 43, None, 45,
+               None, None, None, None, None, None, None, None, None,
+               31, None, None, None, None, None, None, None, 53,
+               None, None, None, None, None, None, None, None, None,
+               21, None, None, None, None, None, None, None, 55,
+               None, None, None, None, None, None, None, None, None,
+               5, None, None, None, None, None, None, None, 77,
+               None, None, None, None, None, None, None, None, None,
+               7, None, 9, None, 13, None, 71, None, 75]
 
 # TODO: Handle this situation.
 #  This is an invalid puzzle. The given value of 61 should be 81. Ideally,
@@ -332,7 +356,10 @@ class TestNumbrix(unittest.TestCase):
     # @unittest.skip
     def test_solving_puzzles(self):
         puzzles = [beginner_puzzle, dec_27_2020, very_hard_puzzle]
+        puzzles = [mar_20_2022]
         puzzles = [easy_6_by_6]
+        puzzles = [easy_6_by_6a]
+        puzzles = [apr_17_2022]
         for puzzle in puzzles:
             numbrix = Numbrix(puzzle)
             print('The initial puzzle is:')
@@ -352,6 +379,7 @@ class TestNumbrix(unittest.TestCase):
         logging.warning('warning message')
         logging.info('info message')
         logging.error('error message')
+
 
 if __name__ == '__main__':
     unittest.main()
