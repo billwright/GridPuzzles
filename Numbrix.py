@@ -114,7 +114,8 @@ class Numbrix(Grid_Puzzle):
                 print(f'     {guess}')
             print(f'Number of backtracks: {Grid_Puzzle.number_of_backtracks}')
             if Numbrix.interactive_mode:
-                continue_interactive = input("\nPress enter to continue interactive mode. Press any other key and enter to exit interactive mode:\n>>> ")
+                continue_interactive = input(
+                    "\nPress enter to continue interactive mode. Press any other key and enter to exit interactive mode:\n>>> ")
                 if len(continue_interactive) > 0:
                     Numbrix.interactive_mode = False
 
@@ -177,14 +178,16 @@ class Numbrix(Grid_Puzzle):
                     between_cells = self.get_empty_cells_between(cell, other_cell)
                     if len(between_cells) == 1:
                         between_cell = between_cells[0]
+                        possible_value = None
                         if cell.get_value() - other_cell.get_value() == 2:
-                            between_cell.set_value(other_cell.get_value() + 1)
+                            possible_value = other_cell.get_value() + 1
+                        if other_cell.get_value() - cell.get_value() == 2:
+                            possible_value = cell.get_value() + 1
+                        if (possible_value is not None) and (possible_value not in set(self.get_all_values())):
+                            between_cell.set_value(possible_value)
                             # Once one cell has been updated, we have to break out of this loop
                             # because our list of chain endpoints is no longer valid and our
                             # code assumes this to be so.
-                            return
-                        elif other_cell.get_value() - cell.get_value() == 2:
-                            between_cell.set_value(cell.get_value() + 1)
                             return
 
     def get_empty_cells_between(self, cell, other_cell):
@@ -207,24 +210,24 @@ class Numbrix(Grid_Puzzle):
         return [neighbor.get_value() for neighbor in self.get_cell_neighbors(cell) if not neighbor.is_empty()]
 
     def calculate_required_neighbor_values_for_chain_endpoint(self, cell):
-        possible_neighbors_values = [cell.get_value() - 1, cell.get_value() + 1]
-        neighbor_values = self.get_neighbor_values(cell)
-        for value in neighbor_values:
-            if value in possible_neighbors_values:
-                possible_neighbors_values.remove(value)
-        return possible_neighbors_values
+        # Possible neighbor values are the numbers higher and lower for this cell ONLY IF these values
+        # haven't already been used.
+        possible_neighbors_values = set([cell.get_value() - 1, cell.get_value() + 1])
+        reduced_possible_neighbors_values = possible_neighbors_values - set(self.get_all_values())
+        if possible_neighbors_values != reduced_possible_neighbors_values:
+            logging.debug('Reducing already used neighbor values')
+        return reduced_possible_neighbors_values
 
     def get_guessing_cell(self):
         """This returns a Chain_Endpoint object"""
         guess_candidates = []
 
         chain_endpoints = self.get_chain_endpoints()
-        chain_endpoints.sort(key=len)
         for cell in chain_endpoints:
             empty_neighbors = self.get_empty_neighbors(cell)
             required_neighbor_values = self.calculate_required_neighbor_values_for_chain_endpoint(cell)
 
-            # Check that the required values aren't already used elsewhere in the puzzle (indicating a invalid guess)
+            # Check that the required values aren't already used elsewhere in the puzzle (indicating an invalid guess)
             for required_value in required_neighbor_values:
                 if required_value in self.get_all_values():
                     message = f"Invalid puzzle! Cell {cell} requires an empty neighbor to have value {required_neighbor_values}, but it is used elsewhere in the puzzle"
@@ -235,7 +238,7 @@ class Numbrix(Grid_Puzzle):
             # unconnected cell, so the chain is of length 1
             chain_length = 1
             if len(required_neighbor_values) == 1:
-                if required_neighbor_values[0] > cell.get_value():
+                if list(required_neighbor_values)[0] > cell.get_value():
                     # If we require a cell higher than our value, then our chain must extend to lower numbers
                     direction = '-'
                 else:
@@ -274,7 +277,7 @@ class Numbrix(Grid_Puzzle):
         return values
 
     def calculate_smallest_value_difference_to_other_chains(self, cell_endpoint):
-        minimum_difference = 100  # A number larger than the greatest distance possible
+        minimum_difference = self.size * self.size + 1  # A number larger than the greatest distance possible
         for current_cell_endpoint in self.get_chain_endpoints():
             difference = abs(cell_endpoint.get_value() - current_cell_endpoint.get_value())
             if difference != 0 and difference < minimum_difference:
@@ -315,6 +318,14 @@ class Numbrix(Grid_Puzzle):
 
     def puzzle_has_repeated_values(self):
         all_values = self.get_all_values()
+        counts = {}
+        for curr_value in all_values:
+            if curr_value in counts:
+                counts[curr_value] = counts[curr_value] + 1
+                logging.debug(f'Found duplicate value: {curr_value}')
+            else:
+                counts[curr_value] = 1
+
         if len(all_values) != len(set(all_values)):
             return True
         return False
@@ -371,17 +382,20 @@ class Numbrix(Grid_Puzzle):
         # If the cell is empty, with only one open neighbor and all other neighbors are connected,
         # then it is a dead end or the end of the puzzle chain (1 or 81, for a 9x9 puzzle)
         if len(open_neighbors) == 1 and len(connected_neighbors) == 3 and not self.cell_can_contain_puzzle_end(empty_cell):
-            logging.debug(f'{empty_cell} is empty with only one open neighbor ({open_neighbors}) and all other neighbors are connected ({connected_neighbors}) and this cannot be the end of the puzzle')
+            logging.debug(
+                f'{empty_cell} is empty with only one open neighbor ({open_neighbors}) and all other neighbors are connected ({connected_neighbors}) and this cannot be the end of the puzzle')
             return True
 
         # If the cell has no open neighbors, but all its cells are connected, then we have a hole.
-        if len(connected_neighbors) == len(self.get_cell_neighbors(empty_cell)) and not self.cell_can_contain_puzzle_end(empty_cell):
-            logging.debug(f'{empty_cell} has no open neighbors, but all its cells are connected, then we have a hole and this cannot be the end of the puzzle')
+        if len(connected_neighbors) == len(self.get_cell_neighbors(empty_cell)) and not self.cell_can_contain_puzzle_end(
+                empty_cell):
+            logging.debug(
+                f'{empty_cell} has no open neighbors, but all its cells are connected, then we have a hole and this cannot be the end of the puzzle')
             return True
         return False
 
     def cell_can_contain_puzzle_end(self, candidate_empty_cell):
-        cell_penultimate_endpoint_values = [2, self.size**2 - 1]
+        cell_penultimate_endpoint_values = [2, self.size ** 2 - 1]
         neighbor_values = self.get_neighbor_values(candidate_empty_cell)
         contains_values = [cell in neighbor_values for cell in cell_penultimate_endpoint_values]
         return True in contains_values

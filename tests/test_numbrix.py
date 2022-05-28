@@ -7,6 +7,8 @@ from Numbrix_Cell import Numbrix_Cell
 
 logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
+# Example puzzles here: https://www.mathinenglish.com/puzzlesnumbrix.php
+#
 easy_6_by_6 = [None, 15, 10, 9, 8, None,
                17, None, None, None, None, 6,
                18, None, 12, 3, None, 1,
@@ -20,6 +22,43 @@ easy_6_by_6a = [None, None, None, None, None, None,
                 None, 34, 35, 12, 13, None,
                 None, 3, 36, 11, 10, None,
                 None, None, None, None, None, None]
+
+medium_6_by_6 = [4, None, None, None, None, 29,
+                 None, 2, 33, 26, 27, None,
+                 None, None, None, None, 24, None,
+                 None, 36, None, None, 21, None,
+                 None, 11, 12, 19, 18, None,
+                 9, None, None, None, None, 16]
+
+hard_6_by_6 = [None, None, None, None, None, None,
+               None, 21, 24, 35, 36, None,
+               None, 22, None, None, 33, None,
+               None, 15, None, None, 32, None,
+               None, 14, 9, 6, 5, None,
+               None, None, None, None, None, None]
+
+# Solution to the above puzzle is:
+hard_6_by_6_solution = [19, 20, 25, 26, 27, 28,
+                        18, 21, 24, 35, 36, 29,
+                        17, 22, 23, 34, 33, 30,
+                        16, 15, 8, 7, 32, 31,
+                        13, 14, 9, 6, 5, 4,
+                        12, 11, 10, 1, 2, 3]
+
+very_hard_6_by_6 = [10, None, None, None, None, 1,
+                    None, None, 5, 34, None, None,
+                    None, 7, None, None, 36, None,
+                    None, 14, None, None, 29, None,
+                    None, None, 16, 27, None, None,
+                    19, None, None, None, None, 24]
+
+# Solution to the above puzzle is:
+very_hard_6_by_6_solution = [10, 9, 4, 3, 2, 1,
+                             11, 8, 5, 34, 33, 32,
+                             12, 7, 6, 35, 36, 31,
+                             13, 14, 15, 28, 29, 30,
+                             18, 17, 16, 27, 26, 25,
+                             19, 20, 21, 22, 23, 24]
 
 blank_6_by_6 = [None, None, None, None, None, None,
                 None, None, None, None, None, None,
@@ -164,6 +203,26 @@ very_hard_puzzle = [55, None, 61, None, 69, None, 79, None, 77,
                     45, None, None, None, None, None, None, None, 17,
                     None, None, None, None, None, None, None, None, None,
                     5, None, 7, None, 9, None, 13, None, 15]
+
+may_1_puzzle = [73, None, None, None, 69, None, None, None, 57,
+                None, 75, None, None, 68, None, None, 59, None,
+                None, None, None, None, None, None, None, None, None,
+                None, None, None, None, None, None, None, None, None,
+                45, 44, None, None, None, None, None, 2, 3,
+                None, None, None, None, None, None, None, None, None,
+                None, None, None, None, None, None, None, None, None,
+                None, 27, None, None, 36, None, None, 13, None,
+                25, None, None, None, 17, None, None, None, 11]
+
+may_23_puzzle = [23, None, None, None, 77, None, None, None, 71,
+                 None, None, None, 29, None, 75, None, None, None,
+                 None, None, None, None, None, None, None, None, None,
+                 None, 19, None, None, None, None, None, 65, None,
+                 17, None, None, None, None, None, None, None, 57,
+                 None, 15, None, None, None, None, None, 59, None,
+                 None, None, None, None, None, None, None, None, None,
+                 None, None, None, 37, None, 41, None, None, None,
+                 9, None, None, None, 39, None, None, None, 53]
 
 
 # noinspection PyPep8Naming
@@ -358,8 +417,12 @@ class TestNumbrix(unittest.TestCase):
         puzzles = [beginner_puzzle, dec_27_2020, very_hard_puzzle]
         puzzles = [mar_20_2022]
         puzzles = [easy_6_by_6]
-        puzzles = [easy_6_by_6a]
         puzzles = [apr_17_2022]
+        puzzles = [easy_6_by_6a]
+        puzzles = [may_23_puzzle]
+        puzzles = [medium_6_by_6]
+        puzzles = [hard_6_by_6]
+        puzzles = [very_hard_6_by_6]
         for puzzle in puzzles:
             numbrix = Numbrix(puzzle)
             print('The initial puzzle is:')

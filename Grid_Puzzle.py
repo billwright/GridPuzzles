@@ -338,7 +338,7 @@ class Grid_Puzzle(object):
 
         # We are stuck and need to guess. Let's choose one of the unfilled cells with the fewest possibilities
         cell_to_guess = self.get_guessing_cell()
-        logging.debug(f"I'm guessing the value of cell: {cell_to_guess}. State of puzzle before this guess is:")
+        logging.debug(f"I'm guessing the value of cell: {cell_to_guess}. State of puzzle before this guess is: {self.puzzle_dict}")
 
         # We'll guess each value of the possible values until we find a solution
         guesses_for_cell = cell_to_guess.get_guesses()
@@ -352,6 +352,7 @@ class Grid_Puzzle(object):
             if not puzzle_with_guess.puzzle_is_consistent():
                 logging.debug("Current guess is inconsistent, so moving on to the next guess...")
                 self.display()
+                # Move on to the next guess -- this jumps back to the start of this for loop
                 continue
 
             # Here's the tricky part, recursively call this same method, but we're calling it on a different object
