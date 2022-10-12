@@ -316,7 +316,7 @@ class Grid_Puzzle(object):
 
     def search(self):
         """Using depth-first search to solve the puzzle.
-        This methods returns either the solved puzzle or None"""
+        This method returns either the solved puzzle or None"""
         logging.debug("State of the puzzle before reduce:")
         self.display()
 

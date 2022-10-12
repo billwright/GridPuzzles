@@ -76,7 +76,7 @@ class Cell(object):
     def get_column_number(self):
         return ord(self.get_column()) - ord('A') + 1
 
-    def distance_to_cell(self, cell):
+    def min_address_distance_to_cell(self, cell):
         row_difference = abs(self.get_row_number() - cell.get_row_number())
         column_difference = abs(self.get_column_number() - cell.get_column_number())
         return row_difference + column_difference
