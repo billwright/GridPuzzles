@@ -4,18 +4,19 @@ import unittest
 from Chain_Endpoint import Chain_Endpoint
 from Numbrix import Numbrix
 from Numbrix_Cell import Numbrix_Cell
+from Path import Path
 
-# logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
 # Example puzzles here: https://www.mathinenglish.com/puzzlesnumbrix.php
 #
 # All-moves-forced puzzle. Just calling reduce_neighbors() repeatedly solves this puzzle
-all_moves_forced = [None, 15, 10, 9, 8, None,
-                    17, None, None, None, None, 6,
-                    18, None, 12, 3, None, 1,
-                    19, None, 25, 26, None, 30,
-                    20, None, None, None, None, 31,
-                    None, 22, 35, 34, 33, None]
+all_moves_forced_6_by_6 = [None, 15, 10, 9, 8, None,
+                           17, None, None, None, None, 6,
+                           18, None, 12, 3, None, 1,
+                           19, None, 25, 26, None, 30,
+                           20, None, None, None, None, 31,
+                           None, 22, 35, 34, 33, None]
 
 easy_4_forced_moves_one_gap_move = [None, None, None, None, None, None,
                                     31, None, 25, 22, 19, None,
@@ -24,12 +25,12 @@ easy_4_forced_moves_one_gap_move = [None, None, None, None, None, None,
                                     None, 3, 36, 11, 10, None,
                                     None, None, None, None, None, None]
 
-easy_4_forced_moves = [None, None, None, None, None, None,
-                       None, 28, 25, 22, 19, None,
-                       None, 27, 26, 21, 20, None,
-                       None, 34, 35, 12, 13, None,
-                       None, 3, 36, 11, 10, None,
-                       None, None, None, None, None, None]
+easy_4_forced_moves_6_by_6 = [None, None, None, None, None, None,
+                              None, 28, 25, 22, 19, None,
+                              None, 27, 26, 21, 20, None,
+                              None, 34, 35, 12, 13, None,
+                              None, 3, 36, 11, 10, None,
+                              None, None, None, None, None, None]
 
 medium_6_by_6 = [4, None, None, None, None, 29,
                  None, 2, 33, 26, 27, None,
@@ -75,15 +76,15 @@ blank_6_by_6 = [None, None, None, None, None, None,
                 None, None, None, None, None, None,
                 None, None, None, None, None, None]
 
-beginner_puzzle = [5, 6, 7, 8, 9, 24, 25, 30, 31,
-                   4, None, None, None, None, None, None, None, 32,
-                   15, None, None, None, None, None, None, None, 33,
-                   16, None, None, None, None, None, None, None, 34,
-                   65, None, None, None, None, None, None, None, 39,
-                   66, None, None, None, None, None, None, None, 40,
-                   69, None, None, None, None, None, None, None, 45,
-                   70, None, None, None, None, None, None, None, 46,
-                   71, 72, 81, 80, 79, 52, 51, 48, 47]
+beginner_puzzle_9_by_9 = [5, 6, 7, 8, 9, 24, 25, 30, 31,
+                          4, None, None, None, None, None, None, None, 32,
+                          15, None, None, None, None, None, None, None, 33,
+                          16, None, None, None, None, None, None, None, 34,
+                          65, None, None, None, None, None, None, None, 39,
+                          66, None, None, None, None, None, None, None, 40,
+                          69, None, None, None, None, None, None, None, 45,
+                          70, None, None, None, None, None, None, None, 46,
+                          71, 72, 81, 80, 79, 52, 51, 48, 47]
 
 one_gaps = [3, None, 9, None, 17, None, 21, None, 23,
             None, None, None, None, None, None, None, None, None,
@@ -232,6 +233,16 @@ may_23_puzzle = [23, None, None, None, 77, None, None, None, 71,
                  None, None, None, 37, None, 41, None, None, None,
                  9, None, None, None, 39, None, None, None, 53]
 
+# the solution to this puzzle is:
+#         59 58 57 56 53 52 49 48 47
+#         60 63 64 55 54 51 50 45 46
+#         61 62 65 66 79 80 81 44 43
+#         70 69 68 67 78 39 40 41 42
+#         71 72 73 76 77 38 1 2 3
+#         30 31 74 75 36 37 14 13 4
+#         29 32 33 34 35 16 15 12 5
+#         28 25 24 21 20 17 10 11 6
+#         27 26 23 22 19 18 9 8 7
 sept_18_puzzle = [59, None, None, None, 53, None, None, None, 47,
                   None, 63, None, None, 54, None, None, 45, None,
                   None, None, None, None, None, None, None, None, None,
@@ -247,12 +258,12 @@ sept_18_puzzle = [59, None, None, None, 53, None, None, None, 47,
 class TestNumbrix(unittest.TestCase):
 
     def test_creation(self):
-        numbrix = Numbrix(beginner_puzzle)
+        numbrix = Numbrix(beginner_puzzle_9_by_9)
         self.assertIsNotNone(numbrix)
         numbrix.display()
 
     def test_get_neighbors(self):
-        numbrix = Numbrix(beginner_puzzle)
+        numbrix = Numbrix(beginner_puzzle_9_by_9)
         cell_A1 = numbrix.get_cell('A1')
         neighbors_of_cell_A1 = numbrix.get_cell_neighbors(cell_A1)
         print('Neighbors of cell A1:', neighbors_of_cell_A1)
@@ -278,7 +289,7 @@ class TestNumbrix(unittest.TestCase):
         self.assertEqual(4, len(neighbors_of_cell_B2))
 
     def test_cell_reduction(self):
-        numbrix = Numbrix(beginner_puzzle)
+        numbrix = Numbrix(beginner_puzzle_9_by_9)
         cell_B1 = numbrix.get_cell('B1')
         neighbors_of_cell_B1 = numbrix.get_cell_neighbors(cell_B1)
         print('Neighbors of cell B1:', neighbors_of_cell_B1)
@@ -289,7 +300,7 @@ class TestNumbrix(unittest.TestCase):
         self.assertEqual(3, cell_B2.get_value())
 
     def test_beginner_puzzle_reduction(self):
-        numbrix = Numbrix(beginner_puzzle)
+        numbrix = Numbrix(beginner_puzzle_9_by_9)
         numbrix.display()
 
         numbrix.reduce()
@@ -302,7 +313,7 @@ class TestNumbrix(unittest.TestCase):
         self.assertTrue(self.is_link_endpoint(cell_G6))
 
     def test_find_chain_endpoints(self):
-        numbrix = Numbrix(beginner_puzzle)
+        numbrix = Numbrix(beginner_puzzle_9_by_9)
         numbrix.reduce()
         numbrix.display()
 
@@ -318,7 +329,7 @@ class TestNumbrix(unittest.TestCase):
 
     def test_get_cell_between(self):
         """Test getting the cell between two cells that are 2 cells apart"""
-        numbrix = Numbrix(beginner_puzzle)
+        numbrix = Numbrix(beginner_puzzle_9_by_9)
         cell_C1 = numbrix.get_cell('C1')
         cell_C2 = numbrix.get_cell('C2')
         cell_C3 = numbrix.get_cell('C3')
@@ -350,7 +361,7 @@ class TestNumbrix(unittest.TestCase):
 
     def test_forced(self):
         Numbrix.interactive_mode = False
-        numbrix = Numbrix(all_moves_forced)
+        numbrix = Numbrix(all_moves_forced_6_by_6)
         numbrix.display()
         numbrix.populate_all_forced_cells()
         numbrix.display()
@@ -416,7 +427,7 @@ class TestNumbrix(unittest.TestCase):
         print(paths)
 
     def test_create_endpoint_cell(self):
-        numbrix = Numbrix(beginner_puzzle)
+        numbrix = Numbrix(beginner_puzzle_9_by_9)
         numbrix.reduce()
         numbrix.display()
 
@@ -455,7 +466,7 @@ class TestNumbrix(unittest.TestCase):
         print("Chain.py Endpoint Guess is:", actual_guessing_endpoint)
 
     def test_solving_beginner_puzzle(self):
-        numbrix = Numbrix(beginner_puzzle)
+        numbrix = Numbrix(beginner_puzzle_9_by_9)
         numbrix.display()
 
         solved_puzzle = numbrix.search()
@@ -534,9 +545,48 @@ class TestNumbrix(unittest.TestCase):
     def test_finding_routes_on_puzzle(self):
         # numbrix = Numbrix(very_hard_puzzle)
         numbrix = Numbrix(hard_6_by_6)
-        numbrix.display()
         paths = numbrix.generate_required_paths_with_routes()
-        Numbrix.print_path_info(paths)
+        Path.print_path_info(paths)
+        numbrix.display()
+
+        paths = numbrix.generate_required_paths_with_routes()
+        Path.print_path_info(paths)
+        numbrix.display()
+
+        forced_path_solved_puzzle = numbrix.solve_one_path_routes()
+        forced_path_solved_puzzle.populate_all_forced_cells()
+        forced_path_solved_puzzle.display()
+
+        forced_path_solved_puzzle.get_well_bottoms()
+        print(forced_path_solved_puzzle.get_remaining_well_bottoms_values())
+        forced_path_solved_puzzle.display_as_code()
+
+        if forced_path_solved_puzzle.fill_forced_well_bottom():
+            paths = forced_path_solved_puzzle.generate_required_paths_with_routes()
+            Path.print_path_info(paths)
+            forced_path_solved_puzzle.display()
+        forced_path_solved_puzzle.display()
+
+        forced_path_solved_puzzle.populate_all_forced_cells()
+        forced_path_solved_puzzle.display()
+
+    # TODO: this is a problem. It finds one well bottom, but not
+    # the other, so more work to be done here. No forced cells
+    # and no paths here... But, the upper hole can be solved in
+    # two different ways! So, it is unlikely to occur in a real
+    # puzzle. Maybe the code is okay...
+    def test_find_well_bottoms(self):
+        puzzle_def = [19, 20, 25, 26, 27, 28,
+                      18, 21, 24, None, None, 29,
+                      17, 22, 23, None, 33, 30,
+                      16, 15, 8, 7, 32, 31,
+                      13, 14, 9, 6, 5, None,
+                      12, 11, 10, None, None, None]
+        numbrix = Numbrix(puzzle_def)
+        numbrix.get_well_bottoms()
+        print(numbrix.get_remaining_well_bottoms_values())
+        numbrix.reduce()
+        numbrix.display()
 
     def test_solving_intermediate_puzzle(self):
         interactive_mode = False
@@ -578,18 +628,20 @@ class TestNumbrix(unittest.TestCase):
 
     # @unittest.skip
     def test_solving_puzzles(self):
-        puzzles = [beginner_puzzle, dec_27_2020, very_hard_puzzle]
+        puzzles = [beginner_puzzle_9_by_9, very_hard_puzzle]
+        puzzles = [very_hard_puzzle]
         puzzles = [mar_20_2022]
-        puzzles = [all_moves_forced]
         puzzles = [apr_17_2022]
-        puzzles = [easy_4_forced_moves]
-        puzzles = [medium_6_by_6]
-        puzzles = [hard_6_by_6]
+        puzzles = [beginner_puzzle_9_by_9]
         puzzles = [very_hard_6_by_6]
         puzzles = [may_23_puzzle]
+        puzzles = [all_moves_forced_6_by_6]
+        puzzles = [easy_4_forced_moves_6_by_6]
+        puzzles = [hard_6_by_6]
+        puzzles = [medium_6_by_6]
         puzzles = [sept_18_puzzle]
         for puzzle in puzzles:
-            numbrix = Numbrix(puzzle)
+            numbrix = Numbrix(puzzle, True, 'What happened here?')
             print('The initial puzzle is:')
             numbrix.display()
 
@@ -607,6 +659,63 @@ class TestNumbrix(unittest.TestCase):
         logging.warning('warning message')
         logging.info('info message')
         logging.error('error message')
+
+    def test_finding_of_extended_holes(self):
+        # This puzzle is invalid, but is created when searching for a solution
+        puzzle_with_four_holes_and_no_paths = [59, 58, 57, 56, 53, 52, 49, 48, 47,
+                                               60, 63, 64, 55, 54, 51, 50, 45, 46,
+                                               61, 62, 65, 66, 41, 42, 43, 44, None,
+                                               70, 69, 68, 67, 40, 39, None, None, None,
+                                               71, 72, None, 34, 35, 38, None, 2, 3,
+                                               None, None, 32, 33, 36, 37, 14, 13, 4,
+                                               29, 30, 31, 22, 21, 16, 15, 12, 5,
+                                               28, 25, 24, 23, 20, 17, 10, 11, 6,
+                                               27, 26, None, None, 19, 18, 9, 8, 7]
+        numbrix = Numbrix(puzzle_with_four_holes_and_no_paths)
+        numbrix.display()
+
+        well_bottom_values = numbrix.get_remaining_well_bottoms_values()
+        assert 1 in well_bottom_values
+        assert 81 in well_bottom_values
+
+        numbrix.generate_required_paths()
+        assert len(numbrix.paths) == 0
+
+        starting_cell = numbrix.get_cell('I3')
+        empty_cell_set = numbrix.get_all_connected_empty_cells(starting_cell)
+        assert len(empty_cell_set) == 5
+
+        holes = numbrix.get_extended_holes()
+        print('puzzle holes are: ')
+        for hole in holes:
+            print('     ', hole)
+        assert len(holes) == 4
+
+    def test_finding_end_paths(self):
+        near_complete_puzzle_def = [55, 56, 57, 58, 59, None, None, 76, 75,
+                                    54, 53, 52, 61, 60, None, None, 73, 74,
+                                    49, 50, 51, 62, 65, 66, None, 72, 71,
+                                    48, 37, 36, 63, 64, 67, 68, 69, 70,
+                                    47, 38, 35, 34, 33, 32, 31, 30, 29,
+                                    46, 39, 6, 5, 4, None, None, None, 28,
+                                    45, 40, 7, 16, 17, 18, 19, 26, 27,
+                                    44, 41, 8, 15, 14, 13, 20, 25, 24,
+                                    43, 42, 9, 10, 11, 12, 21, 22, 23]
+
+        numbrix = Numbrix(near_complete_puzzle_def)
+        numbrix.display()
+        print('final cells', numbrix.get_final_cells())
+        # numbrix.guess_final_cells()
+        guesses = numbrix.generate_guesses_for_final_cells()
+        print('guesses are', guesses)
+
+        solved_puzzle = numbrix.search()
+        if solved_puzzle is None:
+            logging.critical('Puzzle was not solved!')
+            self.assertTrue(False);
+        else:
+            solved_puzzle.display()
+            self.assertTrue(solved_puzzle.is_solved())
 
 
 if __name__ == '__main__':

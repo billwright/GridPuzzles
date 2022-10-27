@@ -8,8 +8,12 @@ from Grid_Puzzle import Grid_Puzzle
 from Numbrix_Cell import Numbrix_Cell
 from Inconsistent_Puzzle_Exception import Inconsistent_Puzzle_Exception
 from Duplicate_Cell_Value_Exception import Duplicate_Cell_Value_Exception
-from grid_utils import flatten_and_de_dup
+from RoutesIsNoneException import RoutesIsNoneException
+from grid_utils import flatten_and_de_dup, tuple_cross
 from Path import Path
+
+MAX_PATH_LENGTH_TO_SEARCH_FOR_ROUTES = 8
+
 
 def endpoint_sorting_criteria():
     return lambda x: (
@@ -38,6 +42,14 @@ def sort_chain_endpoints_for_guessing(endpoints):
 
 class Numbrix(Grid_Puzzle):
     debug_cell_count = 0
+
+    def __init__(self, puzzle_definition, interactive=False, matching_message=None):
+        self.paths = []
+        self.debug_matching_message = matching_message
+        super().__init__(puzzle_definition, interactive)
+
+    def __repr__(self):
+        return f'Numbrix({id(self)}): count={self.get_current_puzzle_count()}'
 
     def create_puzzle(self):
         cell_position_in_definition = 0
@@ -86,6 +98,9 @@ class Numbrix(Grid_Puzzle):
         elif self.is_link_endpoint(cell):
             cell_color = 'blue'
             attributes.append('blink')
+        elif cell.is_empty() and self.empty_cell_is_possible_final_cell(cell):
+            cell_color = 'magenta'
+            cell_string = '++'
         elif cell.is_empty() and self.empty_cell_is_a_dead_end_or_hole(cell):
             cell_color = 'magenta'
             cell_string = '**'
@@ -112,17 +127,26 @@ class Numbrix(Grid_Puzzle):
             for row_name in self.row_names:
                 print(self.get_display_row(row_name))
             print(self.get_horizontal_puzzle_boundary())
-            self.print_color_legend();
             print(f'The current puzzle count is {self.get_current_puzzle_count()}')
             print(f'Guesses are:')
             for guess in self.guessed_cells:
                 print(f'     {guess}')
             print(f'Number of backtracks: {Grid_Puzzle.number_of_backtracks}')
+            self.print_paths()
             # if Numbrix.interactive_mode:
             #     continue_interactive = input(
             #         "\nPress enter to continue interactive mode. Press any other key and enter to exit interactive mode:\n>>> ")
             #     if len(continue_interactive) > 0:
             #         Numbrix.interactive_mode = False
+
+    def display_as_code(self):
+        code_string = '['
+        for row_name in self.row_names:
+            for col_name in self.column_names:
+                cell_value = self.get_cell(col_name + row_name).get_value()
+                code_string += f'{cell_value}, '
+            code_string += '\n'
+        print(code_string[0:-3] + ']')
 
     def reduce_neighbors(self, cell):
         if cell.is_empty():
@@ -141,13 +165,26 @@ class Numbrix(Grid_Puzzle):
                 if neighbor_value not in all_neighbor_values and neighbor_value not in already_used_values]
 
     def debug_pause(self, message):
-        if Numbrix.interactive_mode and self.get_current_puzzle_count() != Numbrix.debug_cell_count:
+        if Numbrix.interactive_mode and \
+                self.get_current_puzzle_count() != Numbrix.debug_cell_count and \
+                (self.debug_matching_message is None or self.debug_matching_message in message):
             Numbrix.debug_cell_count = self.get_current_puzzle_count()
             self.display()
             continue_interactive = input(
-                "\nPress enter to continue interactive mode. Press any other key and enter to exit interactive mode:\n>>> ")
-            if len(continue_interactive) > 0:
-                Numbrix.interactive_mode = False
+                f"{message}\nPress enter to continue interactive mode. Press 'e' to exit interactive mode:\n>>> ")
+            if len(continue_interactive) != 0:
+                match continue_interactive:
+                    case "b":
+                        self.display()
+                    case "l":
+                        self.print_color_legend()
+                    case "p":
+                        self.print_paths()
+                    case 'e':
+                        Numbrix.interactive_mode = False
+                        print('Exiting interactive mode')
+                    case _:
+                        print('Continuing in interactive mode')
 
     def populate_all_forced_cells(self):
         before_puzzle_size = self.get_current_puzzle_count()
@@ -192,27 +229,80 @@ class Numbrix(Grid_Puzzle):
         before_puzzle_size = self.get_current_puzzle_count()
         progress_made = True
         while not self.is_solved() and progress_made:
+            # TODO: Leaving this here now, but I don't think I need this. I think path
+            # solving is sufficient.
             self.populate_all_forced_cells()
-            self.reduce_paths_with_one_route_option()
+            # self.reduce_paths_with_one_route_option()
             if self.get_current_puzzle_count() == before_puzzle_size:
                 progress_made = False
             else:
                 before_puzzle_size = self.get_current_puzzle_count()
 
     def generate_required_paths_with_routes(self):
-        paths = self.generate_required_paths()
-        for path in paths:
-            routes = self.generate_possible_routes_for_path(path)
-            path.set_routes(routes)
-        paths.sort(key=lambda x: (len(x.routes), -x.value_distance))
-        return paths
+        self.paths = self.generate_required_paths()
+        for path in self.paths:
+            self.generate_possible_routes_for_path(path)
+        self.paths = Path.sort_by_least_routes(self.paths)
+        self.verify_routes()
 
-    @staticmethod
-    def print_path_info(paths):
-        print("Path           Value Distance   # of Routes")
-        print("-------------------------------------------")
-        for path in paths:
-            print(f'{path}    {path.value_distance}               {len(path.routes)}')
+    # Returns a new instance of Numbrix with the solved one-route paths
+    def solve_one_path_routes(self, recursive_depth):
+        starting_count = self.get_current_puzzle_count()
+        new_puzzle = self.solve_next_one_route_path(recursive_depth)
+
+        if not new_puzzle.check_consistency():
+            print('Solving a one-route path in this puzzle caused it to become inconsistent')
+            return self
+
+        new_count = new_puzzle.get_current_puzzle_count()
+        if new_count > starting_count:
+            print(f'Before one-route path is solved puzzle (with recursive_depth of {recursive_depth}):')
+            self.display()
+            print(f'After one-route path is solved puzzle (with recursive_depth of {recursive_depth}):')
+            new_puzzle.display()
+            self.debug_pause(
+                f'I found a puzzle with one-path solved. Above are the before and after. Now I am continuing with the after puzzle.  (with recursive_depth of {recursive_depth})')
+            return new_puzzle.solve_one_path_routes(recursive_depth + 1)
+        else:
+            return new_puzzle
+
+    def solve_next_one_route_path(self, recursive_depth):
+        self.paths = self.generate_required_paths()
+        if recursive_depth == 0:
+            self.debug_pause(f'In solve_next_one_route_path with recursive_depth of {recursive_depth}')
+        for path in self.paths:
+            # If the path is too long, let's skip it for now, as it will generate too many routes
+            # Hopefully we can reduce the length of this path by guessing shorter paths with fewer
+            # routes.
+            # This could cause the puzzle to never be solved if all the paths in a puzzle have a value
+            # distance that is too long.
+            if path.value_distance < MAX_PATH_LENGTH_TO_SEARCH_FOR_ROUTES or len(self.paths) == 1:
+                if len(self.paths) == 1:
+                    print(f'Only one path left: {path}')
+                self.generate_possible_routes_for_path(path)
+                self.verify_routes_for_path(path)
+
+                try:
+                    if path.has_just_one_route():
+                        self.debug_pause(
+                            f'Found a 1-route path({path}) and I am recursing on that puzzle now with recursive_depth of {recursive_depth}')
+                        return path.get_first_route_puzzle().solve_next_one_route_path(recursive_depth + 1)
+                except RoutesIsNoneException:
+                    print(f'Routes is set to None for path {path}.')
+                    print('Puzzle is in this state:')
+                    self.display()
+            else:
+                try:
+                    print(f'Skipping route generation for path {path} because of excessive value distance')
+                except TypeError:
+                    print(f'Got a TypeError...')
+        return self
+
+    def print_paths(self):
+        Path.print_path_info(self.paths)
+
+    def sort_paths(self):
+        self.paths = Path.sort_by_least_routes(self.paths)
 
     def search(self):
         """Using depth-first search to solve the puzzle.
@@ -233,27 +323,69 @@ class Numbrix(Grid_Puzzle):
         # Log puzzle size for plotting later
         logging.info(current_puzzle_size)
 
+        # Let's generate a puzzle with all the one-route paths solved.
+        self.debug_pause('Moving on to path generation and solving...')
+        puzzle_with_one_route_paths_solved = self.solve_one_path_routes(0)
+
+        if puzzle_with_one_route_paths_solved.is_solved():
+            print("Puzzle is solved!")
+            return self
+
+        # puzzle_with_one_route_paths_solved = self.generate_required_paths_with_routes()
+        puzzle_with_one_route_paths_solved.sort_paths()
+        puzzle_with_one_route_paths_solved.print_paths()
+
+        # The paths should now be sorted in order
+        # of the least amount of routes, so we always start with the first path and
+        # will just recurse over the choices there, which are populated instances of
+        # the Numbrix puzzle.
+
         logging.debug("State of the puzzle before selecting route to guess:")
-        self.display()
+        puzzle_with_one_route_paths_solved.display()
 
-        # We are stuck and need to guess. Let's choose the path with the fewest routes
-        paths = self.generate_required_paths_with_routes()
+        if len(puzzle_with_one_route_paths_solved.paths) == 0:
+            # Number of paths was zero, so we probably have a puzzle that is missing the end values.
+            # So, we need to create a path so that we can continue. We'll first create a complete list of
+            # guesses to iterate over.
+            # A guess is a tuple of a cell and a value
+            guesses = puzzle_with_one_route_paths_solved.generate_guesses_for_final_cells()
+            for (cell, value) in guesses:
+                puzzle_with_guess = copy.deepcopy(puzzle_with_one_route_paths_solved)
+                final_cell = puzzle_with_guess.get_cell(cell.address)
+                final_cell.set_value(value)
+                solved_puzzle = puzzle_with_guess.search()
+                if solved_puzzle is not None:
+                    return solved_puzzle
+                else:
+                    logging.debug(
+                        f'Our guess of {value} for cell {cell} was wrong.')
 
-        cell_to_guess = self.get_guessing_cell()
-        logging.debug(f"I'm guessing the value of cell: {cell_to_guess}. State of puzzle before this guess is: {self.puzzle_dict}")
+            # puzzle_with_one_route_paths_solved.display_as_code()
+            # if puzzle_with_one_route_paths_solved.fill_forced_well_bottom():
+            #     print('Well bottom found!')
+            #     puzzle_with_one_route_paths_solved.generate_required_paths_with_routes()
 
-        # We'll guess each value of the possible values until we find a solution
-        guesses_for_cell = cell_to_guess.get_guesses()
-        for index, current_guess in enumerate(guesses_for_cell, start=1):
-            logging.debug(f"I'm guessing value: {current_guess} ({index} out of {guesses_for_cell} possible guesses)")
+        if len(puzzle_with_one_route_paths_solved.paths) == 0:
+            print('We should never be here, unless the puzzle is solved...I should check for that.')
+            puzzle_with_one_route_paths_solved.display()
+            return None
+
+        path_to_guess = puzzle_with_one_route_paths_solved.paths[0]
+        if path_to_guess.routes is None:
+            print(f'There are no routes for the first path: {path_to_guess} to guess!')
+            puzzle_with_one_route_paths_solved.display()
+            return None
+
+        # We'll guess each route for the path until we find a solution
+        for index, (puzzle_with_guess, route_guess) in enumerate(path_to_guess.routes, start=1):
+            logging.debug(
+                f"I'm guessing route: {route_guess} ({index} out of {path_to_guess.num_routes()} possible guesses)")
             Grid_Puzzle.number_of_guesses += 1
-            puzzle_with_guess = copy.deepcopy(self)
-            puzzle_with_guess.update_with_guess(cell_to_guess, current_guess)
 
             # Check that our guess is consistent, otherwise, let's continue to a different guess
             if not puzzle_with_guess.puzzle_is_consistent():
                 logging.debug("Current guess is inconsistent, so moving on to the next guess...")
-                self.display()
+                puzzle_with_one_route_paths_solved.display()
                 # Move on to the next guess -- this jumps back to the start of this for loop
                 continue
 
@@ -265,20 +397,48 @@ class Numbrix(Grid_Puzzle):
                     return solved_puzzle
                 else:
                     logging.debug(
-                        f'Our guess of {current_guess} for Cell {cell_to_guess} was wrong.')
-            except Blanking_Cell_Exception as error:
-                logging.debug(error.message)
-            except Duplicate_Cell_Value_In_Group_Exception as error:
-                logging.debug(error.message)
+                        f'Our guess of {route_guess} for Path {path_to_guess} was wrong.')
             except Inconsistent_Puzzle_Exception:
-                logging.debug("Puzzle became inconsistent. Must have been an incorrect guess. Trying a different one...")
+                logging.debug(
+                    "Puzzle became inconsistent. Must have been an incorrect guess. Trying a different one...")
             except Duplicate_Cell_Value_Exception as error:
                 logging.debug(error.message)
 
-        logging.debug(f"Could not find a solution when guessing values for Cell {cell_to_guess}. Backing up...")
-        self.display()
+        logging.debug(f"Could not find a solution when guessing route for Path {path_to_guess}. Backing up...")
+        puzzle_with_one_route_paths_solved.display()
         Grid_Puzzle.number_of_backtracks += 1
         return None
+
+    def generate_guesses_for_final_cells(self):
+        extended_holes = self.get_extended_holes()
+        available_ending_values = self.get_remaining_well_bottoms_values()
+        if len(extended_holes) != len(available_ending_values):
+            # TODO: Shouldn't have called this method. Check for invalid earlier
+            print('Puzzle is invalid. Back-up.')
+            return []
+
+        # Check if we have the matching number of well bottoms
+        well_bottoms = self.get_final_cells()
+        print('well bottoms:', well_bottoms)
+
+        # This might not be a valid assertion. If failed for this puzzle state,
+        # which is a wrong puzzle, but G5 is a well bottom, but not recognized
+        # as such with my current code. So, just not checking this for now.
+        #     |  A  |  B  |  C  |  D  |  E  |  F  |  G  |  H  |  I  |
+        # ----‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖
+        #   1 |  59 |  58 |  57 |  56 |  53 |  52 |  49 |  48 |  47 |
+        #   2 |  60 |  63 |  64 |  55 |  54 |  51 |  50 |  45 |  46 |
+        #   3 |  61 |  62 |  65 |  66 |  41 |  42 |  43 |  44 |     |
+        #   4 |  70 |  69 |  68 |  67 |  40 |  39 |     |     |     |
+        #   5 |  71 |  72 |  73 |     |  ++ |  38 |     |  2  |  3  |
+        #   6 |  30 |  31 |     |     |  36 |  37 |  14 |  13 |  4  |
+        #   7 |  29 |  32 |  33 |  34 |  35 |  16 |  15 |  12 |  5  |
+        #   8 |  28 |  25 |  24 |  21 |  20 |  17 |  10 |  11 |  6  |
+        #   9 |  27 |  26 |  23 |  22 |  19 |  18 |  9  |  8  |  7  |
+        # ----‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖
+        # assert len(well_bottoms) == len(available_ending_values)
+
+        return tuple_cross(well_bottoms, available_ending_values)
 
     def is_link_endpoint(self, cell):
         """Return true if this is the end of a link and needs to be extended"""
@@ -298,38 +458,114 @@ class Numbrix(Grid_Puzzle):
         endpoints = self.get_chain_endpoints()
         print('Sorted endpoints are:', endpoints)
 
-        paths = []
+        self.paths = []
         for index, endpoint in enumerate(endpoints[0:-1]):
-            new_path = Path(endpoint, endpoints[index+1])
-
             # Determine if this endpoint can be a starting point by checking if it isn't already
             # connected to the next higher value
             if endpoint.get_value() + 1 not in self.get_neighbor_values(endpoint):
-                paths.append(new_path)
-        paths.sort(key=lambda x: x.value_distance)
-        return paths
+                new_path = Path(endpoint, endpoints[index + 1])
+                self.paths.append(new_path)
+        self.paths.sort(key=lambda x: x.value_distance)
+        return self.paths
 
-    def reduce_paths_with_one_route_option(self):
-        paths = self.generate_required_paths()
-        for path in paths:
-            routes = self.generate_possible_routes_for_path(path)
-            if len(routes) == 1:
-                # Populate cells in this puzzle (but not start and finish, since they are already set)
-                for cell in routes[0][1:-1]:
-                    self.get_cell(cell.address).set_value(cell.get_value())
+    # I don't think I need this special case any longer...
+    # def reduce_paths_with_one_route_option(self):
+    #     self.paths = self.generate_required_paths()
+    #     for path in self.paths:
+    #         routes = self.generate_possible_routes_for_path(path)
+    #         if len(routes) == 1:
+    #             # Populate cells in this puzzle (but not start and finish, since they are already set)
+    #             for cell in routes[0][1:-1]:
+    #                 self.get_cell(cell.address).set_value(cell.get_value())
 
-    # This method always returns a list of routes. And each route is an ordered list of cells
+    # Well bottoms are cells that will be a dead-end. Wells can only have the value of 1 and the
+    # max number of the puzzle (81 for a 9x9 puzzle). A well bottom is an open cell with fully-connected
+    # neighbors, save for one open neighbor. This means that putting a value in the well bottom will
+    # not connect to any populated neighbor. Here's an example:
+    #
+    #     |  A  |  B  |  C  |  D  |  E  |  F  |
+    # ----‖=====‖=====‖=====‖=====‖=====‖=====‖
+    #   1 |  19 |  20 |  25 |  26 |  27 |  28 |
+    #   2 |  18 |  21 |  24 |  35 |  36 |  29 |
+    #   3 |  17 |  22 |  23 |  34 |  33 |  30 |
+    #   4 |  16 |  15 |  8  |  7  |  32 |  31 |
+    #   5 |  13 |  14 |  9  |  6  |  5  |     |
+    #   6 |  12 |  11 |  10 |     |     |     |
+    # ----‖=====‖=====‖=====‖=====‖=====‖=====‖
+    #
+    # D6 is the well bottom. F5 is not a well bottom because it has a neighbor (E5) that is not
+    # fully connected, as it needs to be connected to a cell with a 4 in it. The code here is to be
+    # used to find the well bottom and populate it with a 1 or max value. At that point, we can then
+    # create a path and fill it in. Paths, by definition in this program, go from one populated cell
+    # to another. Hence, the need to populate the well bottoms.
+    def get_well_bottoms(self):
+        well_bottoms = []
+        for possible_well_bottom in self.get_all_empty_cells():
+            all_neighbors = self.get_cell_neighbors(possible_well_bottom)
+            connected_neighbors = [cell for cell in all_neighbors if self.cell_is_connected(cell)]
+            open_neighbors = [cell for cell in all_neighbors if cell.is_empty()]
+
+            # If we have only one open neighbor and all other neighbors are already connected or all but
+            # one other neighbor is full connected, then we are a well bottom
+            if len(open_neighbors) == 1 and (len(connected_neighbors) >= len(all_neighbors) - 2):
+                well_bottoms.append(possible_well_bottom)
+
+        for cell in well_bottoms:
+            print(f'{cell} is a well bottom')
+
+        return well_bottoms
+
+    def get_remaining_well_bottoms_values(self):
+        return [x for x in [1, self.size * self.size] if x not in self.get_all_values()]
+
+    def fill_forced_well_bottom(self):
+        well_bottom_values = self.get_remaining_well_bottoms_values()
+        well_bottoms = self.get_well_bottoms()
+        print(f'I found these well bottoms: {well_bottoms}')
+        if len(well_bottom_values) == 1:
+            assert len(well_bottoms) == 1
+            well_bottoms[0].set_value(well_bottom_values[0])
+            print('Well bottom filled')
+            return True
+        return False
+
+    def get_all_empty_cells(self):
+        return [cell for cell in self.get_all_cells() if cell.is_empty()]
+
+    def verify_routes(self):
+        # Check to make sure every puzzle associated with a route has more
+        # solved cells than the current puzzle. Otherwise, there is no point.
+        for path in self.paths:
+            self.verify_routes_for_path(path)
+
+    def verify_routes_for_path(self, path):
+        current_count = self.get_current_puzzle_count()
+        if path.routes is not None:
+            for route in path.routes:
+                count_difference = route[0].get_current_puzzle_count() - current_count
+                if count_difference != (path.value_distance - 1):
+                    print(f'Found invalid (puzzle,route) tuple for path {path}. Count increase is only {count_difference}')
+                assert count_difference == (path.value_distance - 1)
+
+    # This method always returns a list of (puzzle, route) tuples. The puzzle is a possibly deep-copied
+    # instance Numbrix that contains the populated, generated route. The route is the second element in
+    # the tuple and only used for reporting.
     def generate_possible_routes_for_path(self, path):
         # Test whether the path is already connected. If so, return the route
+        # TODO: Is it possible to do this test BEFORE the recursion? Instead of check for a connected
+        # path, maybe check for a 1-cell gap?
         if path.is_already_connected():
-            logging.debug('This path is already connected')
-            # Remember, this method returns a list of routes, so here we return a list that contains just
-            # one route, which is two cells long
-            return [[path.start, path.end]]
+            # logging.debug('This path is already connected')
+            # Remember, this method returns a list of tuples, so here we return a list that contains just
+            # one tuples, which has the puzzle (self) and the list of two cells
+            new_routes = [(self, [path.start, path.end])]
+            path.set_routes(new_routes)
+            self.verify_routes_for_path(path)
+            return new_routes
 
         # Test whether it is possible to get from one cell to the other
         if not path.is_possible():
-            logging.debug('This path is not possible')
+            # logging.debug('This path is not possible')
             return None
 
         # 2. Start from start cell and iterate over all open neighbors
@@ -338,6 +574,7 @@ class Numbrix(Grid_Puzzle):
             # Before we set any values in our numbrix puzzle, we need to make a copy so
             # that we don't alter the original puzzle, as we aren't sure what route to take, as yet.
             puzzle_with_guess = copy.deepcopy(self)
+            puzzle_with_guess.paths = []
             # Create new path with new cells from our copy
             new_start = puzzle_with_guess.get_cell(cell.address)
             new_start.set_value(path.start.get_value() + 1)
@@ -354,13 +591,13 @@ class Numbrix(Grid_Puzzle):
             # If a path was found for the shorter path, then we tack on our starting cell
             # and add it to the list of possible routes.
             if shorter_routes is not None:
-                for shorter_route in shorter_routes:
+                for (more_solved_puzzle, shorter_route) in shorter_routes:
                     shorter_route.insert(0, path.start)
-                    routes.append(shorter_route)
 
-        # TODO: What if, instead of returning a route, created in another instance of a Numbrix puzzle,
-        # I just returned the instance of the Numbrix puzzle? It's already been populated with the route.
+                    # Append the (puzzle, route) tuple to our list of routes
+                    routes.append((more_solved_puzzle, shorter_route))
 
+        path.set_routes(routes)
         return routes
 
     def custom_reduce(self):
@@ -571,30 +808,110 @@ class Numbrix(Grid_Puzzle):
             neighbor_values.append(neighbor_value)
         return neighbor_values
 
+    def empty_cell_is_possible_final_cell(self, possible_final_cell):
+        connected_neighbors = [cell for cell in self.get_cell_neighbors(possible_final_cell) if self.cell_is_connected(cell)]
+        open_neighbors = [cell for cell in self.get_cell_neighbors(possible_final_cell) if cell.is_empty()]
+
+        # If the cell is empty, with only one open neighbor and all other neighbors are connected,
+        # then it is a possible end of the puzzle chain (1 or 81, for a 9x9 puzzle)
+        return len(open_neighbors) == 1 and len(connected_neighbors) == 3 and self.cell_can_contain_puzzle_end(possible_final_cell)
+
+    def get_final_cells(self):
+        return [cell for cell in self.get_all_empty_cells() if self.empty_cell_is_possible_final_cell(cell)]
+        # Equivalent code without comprehension:
+        # final_cells = []
+        # for cell in self.get_all_empty_cells():
+        #     if self.empty_cell_is_possible_final_cell(cell):
+        #         final_cells.append(cell)
+        # return final_cells
+
+    def guess_final_cells(self):
+        self.generate_required_paths()
+        assert len(self.paths) == 0
+
+        extended_holes = self.get_extended_holes()
+        available_ending_values = self.get_remaining_well_bottoms_values()
+        assert len(extended_holes) == len(available_ending_values)
+
+        # Check if we have the matching number of well bottoms
+        well_bottoms = self.get_final_cells()
+        print('well bottoms:', well_bottoms)
+        assert len(well_bottoms) == len(available_ending_values)
+
+        # Now we'll guess and check
+        for possible_end_cell in well_bottoms:
+            for possible_end_value in available_ending_values:
+                new_puzzle = copy.deepcopy(self)
+                end_cell = new_puzzle.get_cell(possible_end_cell.address)
+                end_cell.set_value(possible_end_value)
+                new_puzzle.generate_required_paths()
+                if len(new_puzzle.paths) == 1:
+                    new_routes = new_puzzle.generate_possible_routes_for_path(new_puzzle.paths[0])
+                    print('new routes:', new_routes)
+                    if new_routes is not None and len(new_routes) > 0:
+                        print('Found one!')
+
     def empty_cell_is_a_dead_end_or_hole(self, empty_cell):
         connected_neighbors = [cell for cell in self.get_cell_neighbors(empty_cell) if self.cell_is_connected(cell)]
         open_neighbors = [cell for cell in self.get_cell_neighbors(empty_cell) if cell.is_empty()]
 
         # If the cell is empty, with only one open neighbor and all other neighbors are connected,
         # then it is a dead end or the end of the puzzle chain (1 or 81, for a 9x9 puzzle)
-        if len(open_neighbors) == 1 and len(connected_neighbors) == 3 and not self.cell_can_contain_puzzle_end(empty_cell):
+        if len(open_neighbors) == 1 and len(connected_neighbors) == 3 and not self.cell_can_contain_puzzle_end(
+                empty_cell):
             logging.debug(
                 f'{empty_cell} is empty with only one open neighbor ({open_neighbors}) and all other neighbors are connected ({connected_neighbors}) and this cannot be the end of the puzzle')
             return True
 
+        return self.empty_cell_is_hole(empty_cell)
+
+    def empty_cell_is_hole(self, empty_cell):
+        connected_neighbors = [cell for cell in self.get_cell_neighbors(empty_cell) if self.cell_is_connected(cell)]
         # If the cell has no open neighbors, but all its cells are connected, then we have a hole.
-        if len(connected_neighbors) == len(self.get_cell_neighbors(empty_cell)) and not self.cell_can_contain_puzzle_end(
+        if len(connected_neighbors) == len(
+                self.get_cell_neighbors(empty_cell)) and not self.cell_can_contain_puzzle_end(
                 empty_cell):
             logging.debug(
                 f'{empty_cell} has no open neighbors, but all its cells are connected, then we have a hole and this cannot be the end of the puzzle')
             return True
         return False
 
+    def get_holes(self):
+        return [cell for cell in self.get_all_empty_cells() if self.empty_cell_is_hole(cell)]
+
+    # Extended holes are connected empty cells. They don't necessarily have to have all
+    # connected neighbors.
+    def get_extended_holes(self):
+        extended_holes = []
+        for cell in self.get_all_empty_cells():
+            all_hole_cells_found = [empty_cell for extended_hole in extended_holes for empty_cell in extended_hole]
+            if cell not in all_hole_cells_found:
+                extended_hole = self.get_all_connected_empty_cells(cell, set())
+                extended_holes.append(extended_hole)
+        return extended_holes
+
+    def get_all_connected_empty_cells(self, cell, empty_cell_set=set()):
+        if cell not in empty_cell_set:
+            empty_cell_set.add(cell)
+            for empty_neighbor in self.get_empty_neighbors(cell):
+                self.get_all_connected_empty_cells(empty_neighbor, empty_cell_set)
+        return empty_cell_set
+
     def cell_can_contain_puzzle_end(self, candidate_empty_cell):
-        cell_penultimate_endpoint_values = [2, self.size ** 2 - 1]
-        neighbor_values = self.get_neighbor_values(candidate_empty_cell)
-        contains_values = [cell in neighbor_values for cell in cell_penultimate_endpoint_values]
-        return True in contains_values
+        return len(self.get_remaining_well_bottoms_values()) > 0
+        # cell_penultimate_endpoint_values = [2, self.size ** 2 - 1]
+        # neighbor_values = self.get_neighbor_values(candidate_empty_cell)
+        # contains_values = [cell in neighbor_values for cell in cell_penultimate_endpoint_values]
+        # return True in contains_values
+
+    def cell_can_contain_puzzle_end_2(self, candidate_empty_cell):
+        for end_value in self.get_remaining_well_bottoms_values():
+            candidate_empty_cell.set_value(end_value)
+            self.generate_required_paths()
+            if len(self.paths) == 1:
+                self.print_paths()
+                return True
+        return False
 
     def puzzle_is_consistent(self):
         if self.puzzle_has_repeated_values():

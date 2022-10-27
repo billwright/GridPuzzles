@@ -1,6 +1,8 @@
 import logging
 
 from Numbrix_Cell import Numbrix_Cell
+from RoutesIsNoneException import RoutesIsNoneException
+
 
 # A Path is one possible path between two cells. Two cells might only have one possible
 # path between them, but they might have many. For example, take this puzzle:
@@ -27,7 +29,26 @@ from Numbrix_Cell import Numbrix_Cell
 
 class Path:
 
-    def __init__(self, start_cell, end_cell, list_of_routes=[]):
+    @staticmethod
+    def print_path_info(paths):
+        print("Path           Value Distance   # of Routes")
+        print("-------------------------------------------")
+        for path in paths:
+            num_routes = 'NA'
+            if path.routes is not None:
+                num_routes = len(path.routes)
+            print(f'{path}    {path.value_distance}               {num_routes}')
+
+    @staticmethod
+    def sort_by_least_routes(paths):
+        path_with_routes = [path for path in paths if path.routes is not None]
+        path_with_routes_set_to_none = [path for path in paths if path.routes is None]
+        path_with_routes.sort(key=lambda x: (len(x.routes), -x.value_distance))
+        path_with_routes_set_to_none.sort(key=lambda x: x.value_distance)
+
+        return path_with_routes + path_with_routes_set_to_none
+
+    def __init__(self, start_cell, end_cell, list_of_routes=None):
         self.start = start_cell
         self.end = end_cell
         self.value_distance = abs(self.start.get_value() - self.end.get_value())
@@ -36,7 +57,7 @@ class Path:
         self.routes = list_of_routes
 
     def __repr__(self):
-        return f'Path:{self.value_distance}({self.start.address}->{self.end.address})'
+        return f'Path:{self.value_distance}({self.start.address}->{self.end.address})-{self.num_routes_string()}'
 
     # def value_distance(self):
     #     return abs(self.start.get_value() - self.end.get_value())
@@ -57,4 +78,28 @@ class Path:
         return self.value_distance >= self.minimum_address_distance
 
     def set_routes(self, list_of_routes):
+        if list_of_routes is None:
+            raise Exception('Setting routes to None')
         self.routes = list_of_routes
+
+    def num_routes(self):
+        if self.routes is None:
+            raise RoutesIsNoneException('Routes is None')
+        # Routes are tuples: (puzzle, [list of cells])
+        return len(self.routes)
+
+    def num_routes_string(self):
+        if self.routes is None:
+            return 'NA'
+        else:
+            return str(len(self.routes))
+
+    # Returns the puzzle containing the first route populated
+    def get_first_route_puzzle(self):
+        return self.routes[0][0]
+
+    def get_first_route(self):
+        return self.routes[0][1]
+
+    def has_just_one_route(self):
+        return self.routes is not None and self.num_routes() == 1
