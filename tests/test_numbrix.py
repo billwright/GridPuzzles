@@ -253,6 +253,44 @@ sept_18_puzzle = [59, None, None, None, 53, None, None, None, 47,
                   None, 25, None, None, 20, None, None, 11, None,
                   27, None, None, None, 19, None, None, None, 7]
 
+# This next puzzle is hard. Here was the results of solving it:
+#         |  A  |  B  |  C  |  D  |  E  |  F  |  G  |  H  |  I  |
+#     ----‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖
+#       1 |  23 |  24 |  27 |  28 |  77 |  76 |  73 |  72 |  71 |
+#       2 |  22 |  25 |  26 |  29 |  78 |  75 |  74 |  69 |  70 |
+#       3 |  21 |  20 |  1  |  30 |  79 |  80 |  81 |  68 |  67 |
+#       4 |  18 |  19 |  2  |  31 |  32 |  63 |  64 |  65 |  66 |
+#       5 |  17 |  16 |  3  |  34 |  33 |  62 |  61 |  58 |  57 |
+#       6 |  14 |  15 |  4  |  35 |  44 |  45 |  60 |  59 |  56 |
+#       7 |  13 |  12 |  5  |  36 |  43 |  46 |  47 |  48 |  55 |
+#       8 |  10 |  11 |  6  |  37 |  42 |  41 |  50 |  49 |  54 |
+#       9 |  9  |  8  |  7  |  38 |  39 |  40 |  51 |  52 |  53 |
+#     ----‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖
+#     The current puzzle count is 81
+#     Guessed route are:
+#          [Cell(B6) = [15], Cell(B5) = [16], Cell(A5) = [17]]
+#          [Cell(D8) = [37], Cell(D9) = [38], Cell(E9) = [39]]
+#          [Cell(E9) = [39], Cell(F9) = [40], Cell(F8) = [41]]
+#          [Cell(F2) = [75], Cell(F1) = [76], Cell(E1) = [77]]
+#          [Cell(B4) = [19], Cell(B3) = [20], Cell(A3) = [21], Cell(A2) = [22], Cell(A1) = [23]]
+#          [Cell(B1) = [24], Cell(B2) = [25], Cell(C2) = [26], Cell(C1) = [27], Cell(D1) = [28], Cell(D2) = [29]]
+#          [Cell(I1) = [71], Cell(H1) = [72], Cell(G1) = [73], Cell(G2) = [74], Cell(F2) = [75]]
+#          [Cell(H4) = [65], Cell(I4) = [66], Cell(I3) = [67], Cell(H3) = [68], Cell(H2) = [69], Cell(I2) = [70]]
+#          [Cell(H6) = [59], Cell(G6) = [60], Cell(G5) = [61], Cell(F5) = [62], Cell(F4) = [63], Cell(G4) = [64]]
+#          [Cell(A9) = [9], Cell(A8) = [10], Cell(B8) = [11], Cell(B7) = [12], Cell(A7) = [13], Cell(A6) = [14], Cell(B6) = [15]]
+#          [Cell(D3) = [30], Cell(D4) = [31], Cell(E4) = [32], Cell(E5) = [33], Cell(D5) = [34], Cell(D6) = [35], Cell(D7) = [36], Cell(D8) = [37]]
+#     Guessed cells are:
+#     Number of backtracks: 145
+may_29_2022_puzzle = [23, None, None, None, 77, None, None, None, 71,
+                      None, None, None, 29, None, 75, None, None, None,
+                      None, None, None, None, None, None, None, None, None,
+                      None, 19, None, None, None, None, None, 65, None,
+                      17, None, None, None, None, None, None, None, 57,
+                      None, 15, None, None, None, None, None, 59, None,
+                      None, None, None, None, None, None, None, None, None,
+                      None, None, None, 37, None, 41, None, None, None,
+                      9, None, None, None, 39, None, None, None, 53]
+
 
 # noinspection PyPep8Naming
 class TestNumbrix(unittest.TestCase):
@@ -640,6 +678,7 @@ class TestNumbrix(unittest.TestCase):
         puzzles = [apr_17_2022]
         puzzles = [mar_20_2022]
         puzzles = [very_hard_puzzle]
+        puzzles = [may_29_2022_puzzle]
 
         for puzzle in puzzles:
             numbrix = Numbrix(puzzle, False)
