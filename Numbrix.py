@@ -306,7 +306,7 @@ class Numbrix(Grid_Puzzle):
             paths_with_routes = [path for path in self.paths if path.routes is not None]
             if len(paths_with_routes) == 0:
                 # Then let's calculate the routes for the first path
-                print(f'Generating routes for path {self.paths[0]} because we no paths with routes')
+                print(f'Generating routes for path {self.paths[0]} because we have no paths with routes')
                 self.generate_possible_routes_for_path(self.paths[0])
 
         return self
@@ -407,6 +407,10 @@ class Numbrix(Grid_Puzzle):
                 puzzle_with_one_route_paths_solved.display()
                 # Move on to the next guess -- this jumps back to the start of this for loop
                 continue
+
+            # Next, check if the guessed puzzle is already solved
+            if puzzle_with_guess.is_solved():
+                return puzzle_with_guess
 
             # Here's the tricky part, recursively call this same method, but we're calling it on a different object
             # Note that this is NOT self.search(), but puzzle_with_guess.search().

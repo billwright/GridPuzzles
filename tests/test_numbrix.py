@@ -629,8 +629,6 @@ class TestNumbrix(unittest.TestCase):
     # @unittest.skip
     def test_solving_puzzles(self):
         puzzles = [beginner_puzzle_9_by_9, very_hard_puzzle]
-        puzzles = [very_hard_puzzle]
-        puzzles = [mar_20_2022]
         puzzles = [all_moves_forced_6_by_6]
         puzzles = [easy_4_forced_moves_6_by_6]
         puzzles = [sept_18_puzzle]
@@ -640,9 +638,11 @@ class TestNumbrix(unittest.TestCase):
         puzzles = [very_hard_6_by_6]
         puzzles = [beginner_puzzle_9_by_9]
         puzzles = [apr_17_2022]
+        puzzles = [mar_20_2022]
+        puzzles = [very_hard_puzzle]
 
         for puzzle in puzzles:
-            numbrix = Numbrix(puzzle, True)
+            numbrix = Numbrix(puzzle, False)
             print('The initial puzzle is:')
             numbrix.display()
 
