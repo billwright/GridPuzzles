@@ -130,7 +130,7 @@ class Numbrix(Grid_Puzzle):
                 print(self.get_display_row(row_name))
             print(self.get_horizontal_puzzle_boundary())
             print(f'The current puzzle count is {self.get_current_puzzle_count()}')
-            print(f'Guessed route are:')
+            print(f'Guessed routes are:')
             for guess in self.guessed_routes:
                 print(f'     {guess}')
             print(f'Guessed cells are:')
@@ -214,7 +214,7 @@ class Numbrix(Grid_Puzzle):
             else:
                 before_puzzle_size = self.get_current_puzzle_count()
 
-    def reduce_forced_cell_only(self):
+    def reduce_forced_cells_only(self):
         if self.is_solved():
             raise Exception('We should never get here. The puzzle is already solved or invalid')
 
@@ -249,6 +249,7 @@ class Numbrix(Grid_Puzzle):
             self.generate_possible_routes_for_path(path)
         self.paths = Path.sort_by_least_routes(self.paths)
         self.verify_routes()
+        return self.paths
 
     # Returns a new instance of Numbrix with the solved one-route paths
     def solve_one_path_routes(self, recursive_depth):
@@ -543,17 +544,6 @@ class Numbrix(Grid_Puzzle):
 
     def get_remaining_well_bottoms_values(self):
         return [x for x in [1, self.size * self.size] if x not in self.get_all_values()]
-
-    def fill_forced_well_bottom(self):
-        well_bottom_values = self.get_remaining_well_bottoms_values()
-        well_bottoms = self.get_well_bottoms()
-        print(f'I found these well bottoms: {well_bottoms}')
-        if len(well_bottom_values) == 1:
-            assert len(well_bottoms) == 1
-            well_bottoms[0].set_value(well_bottom_values[0])
-            print('Well bottom filled')
-            return True
-        return False
 
     def get_all_empty_cells(self):
         return [cell for cell in self.get_all_cells() if cell.is_empty()]
