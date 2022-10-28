@@ -253,7 +253,7 @@ sept_18_puzzle = [59, None, None, None, 53, None, None, None, 47,
                   None, 25, None, None, 20, None, None, 11, None,
                   27, None, None, None, 19, None, None, None, 7]
 
-# This next puzzle is hard. Here was the results of solving it:
+# Sheri didn't solve this one. This next puzzle is hard. Here was the results of solving it:
 #         |  A  |  B  |  C  |  D  |  E  |  F  |  G  |  H  |  I  |
 #     ----‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖
 #       1 |  23 |  24 |  27 |  28 |  77 |  76 |  73 |  72 |  71 |
@@ -290,6 +290,41 @@ may_29_2022_puzzle = [23, None, None, None, 77, None, None, None, 71,
                       None, None, None, None, None, None, None, None, None,
                       None, None, None, 37, None, 41, None, None, None,
                       9, None, None, None, 39, None, None, None, 53]
+
+# Sheri solved this one. Results for this puzzle were:
+#         |  A  |  B  |  C  |  D  |  E  |  F  |  G  |  H  |  I  |
+#     ----‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖
+#       1 |  55 |  56 |  57 |  58 |  59 |  68 |  69 |  74 |  75 |
+#       2 |  54 |  53 |  52 |  61 |  60 |  67 |  70 |  73 |  76 |
+#       3 |  49 |  50 |  51 |  62 |  65 |  66 |  71 |  72 |  77 |
+#       4 |  48 |  37 |  36 |  63 |  64 |  81 |  80 |  79 |  78 |
+#       5 |  47 |  38 |  35 |  34 |  33 |  32 |  31 |  30 |  29 |
+#       6 |  46 |  39 |  6  |  5  |  4  |  3  |  2  |  1  |  28 |
+#       7 |  45 |  40 |  7  |  16 |  17 |  18 |  19 |  26 |  27 |
+#       8 |  44 |  41 |  8  |  15 |  14 |  13 |  20 |  25 |  24 |
+#       9 |  43 |  42 |  9  |  10 |  11 |  12 |  21 |  22 |  23 |
+#     ----‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖
+#     The current puzzle count is 81
+#     Guessed route are:
+#          [Cell(E9) = [11], Cell(F9) = [12], Cell(F8) = [13], Cell(E8) = [14]]
+#          [Cell(I9) = [23], Cell(I8) = [24], Cell(H8) = [25]]
+#          [Cell(H7) = [26], Cell(I7) = [27], Cell(I6) = [28], Cell(I5) = [29]]
+#          [Cell(H2) = [73], Cell(H1) = [74], Cell(I1) = [75]]
+#          [Cell(E8) = [14], Cell(D8) = [15], Cell(D7) = [16], Cell(E7) = [17], Cell(F7) = [18], Cell(G7) = [19]]
+#          [Cell(A4) = [48], Cell(A3) = [49], Cell(B3) = [50], Cell(C3) = [51], Cell(C2) = [52], Cell(B2) = [53]]
+#          [Cell(H5) = [30], Cell(G5) = [31], Cell(F5) = [32], Cell(E5) = [33], Cell(D5) = [34], Cell(C5) = [35], Cell(C4) = [36], Cell(B4) = [37], Cell(B5) = [38]]
+#          [Cell(E2) = [60], Cell(D2) = [61], Cell(D3) = [62], Cell(D4) = [63], Cell(E4) = [64], Cell(E3) = [65], Cell(F3) = [66], Cell(F2) = [67], Cell(F1) = [68], Cell(G1) = [69], Cell(G2) = [70], Cell(G3) = [71], Cell(H3) = [72], Cell(H2) = [73]]
+#     Guessed cells are:
+#     Number of backtracks: 39
+oct_23_2022_puzzle = [55, None, None, None, 59, None, None, None, 75,
+                      None, 53, None, None, 60, None, None, 73, None,
+                      None, None, None, None, None, None, None, None, None,
+                      None, None, None, None, None, None, None, None, None,
+                      47, 38, None, None, None, None, None, 30, 29,
+                      None, None, None, None, None, None, None, None, None,
+                      None, None, None, None, None, None, None, None, None,
+                      None, 41, None, None, 14, None, None, 25, None,
+                      43, None, None, None, 11, None, None, None, 23]
 
 
 # noinspection PyPep8Naming
@@ -679,6 +714,7 @@ class TestNumbrix(unittest.TestCase):
         puzzles = [mar_20_2022]
         puzzles = [very_hard_puzzle]
         puzzles = [may_29_2022_puzzle]
+        puzzles = [oct_23_2022_puzzle]
 
         for puzzle in puzzles:
             numbrix = Numbrix(puzzle, False)
