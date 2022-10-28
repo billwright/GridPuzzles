@@ -631,24 +631,25 @@ class TestNumbrix(unittest.TestCase):
         puzzles = [beginner_puzzle_9_by_9, very_hard_puzzle]
         puzzles = [very_hard_puzzle]
         puzzles = [mar_20_2022]
-        puzzles = [apr_17_2022]
-        puzzles = [beginner_puzzle_9_by_9]
-        puzzles = [very_hard_6_by_6]
-        puzzles = [may_23_puzzle]
         puzzles = [all_moves_forced_6_by_6]
         puzzles = [easy_4_forced_moves_6_by_6]
+        puzzles = [sept_18_puzzle]
         puzzles = [hard_6_by_6]
         puzzles = [medium_6_by_6]
-        puzzles = [sept_18_puzzle]
+        puzzles = [may_23_puzzle]
+        puzzles = [very_hard_6_by_6]
+        puzzles = [beginner_puzzle_9_by_9]
+        puzzles = [apr_17_2022]
+
         for puzzle in puzzles:
-            numbrix = Numbrix(puzzle, True, 'What happened here?')
+            numbrix = Numbrix(puzzle, True)
             print('The initial puzzle is:')
             numbrix.display()
 
             solved_puzzle = numbrix.search()
             if solved_puzzle is None:
                 logging.critical('Puzzle was not solved!')
-                self.assertTrue(False);
+                self.assertTrue(False)
             else:
                 solved_puzzle.display()
                 self.assertTrue(solved_puzzle.is_solved())

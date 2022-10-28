@@ -45,6 +45,8 @@ class Numbrix(Grid_Puzzle):
 
     def __init__(self, puzzle_definition, interactive=False, matching_message=None):
         self.paths = []
+        # This is the stack of guessed routes
+        self.guessed_routes = []
         self.debug_matching_message = matching_message
         super().__init__(puzzle_definition, interactive)
 
@@ -128,7 +130,10 @@ class Numbrix(Grid_Puzzle):
                 print(self.get_display_row(row_name))
             print(self.get_horizontal_puzzle_boundary())
             print(f'The current puzzle count is {self.get_current_puzzle_count()}')
-            print(f'Guesses are:')
+            print(f'Guessed route are:')
+            for guess in self.guessed_routes:
+                print(f'     {guess}')
+            print(f'Guessed cells are:')
             for guess in self.guessed_cells:
                 print(f'     {guess}')
             print(f'Number of backtracks: {Grid_Puzzle.number_of_backtracks}')
@@ -250,7 +255,7 @@ class Numbrix(Grid_Puzzle):
         starting_count = self.get_current_puzzle_count()
         new_puzzle = self.solve_next_one_route_path(recursive_depth)
 
-        if not new_puzzle.check_consistency():
+        if not new_puzzle.is_consistent():
             print('Solving a one-route path in this puzzle caused it to become inconsistent')
             return self
 
@@ -296,6 +301,14 @@ class Numbrix(Grid_Puzzle):
                     print(f'Skipping route generation for path {path} because of excessive value distance')
                 except TypeError:
                     print(f'Got a TypeError...')
+
+            # Check to make sure we have calculated routes for at least one path, regardless of length
+            paths_with_routes = [path for path in self.paths if path.routes is not None]
+            if len(paths_with_routes) == 0:
+                # Then let's calculate the routes for the first path
+                print(f'Generating routes for path {self.paths[0]} because we no paths with routes')
+                self.generate_possible_routes_for_path(self.paths[0])
+
         return self
 
     def print_paths(self):
@@ -317,7 +330,7 @@ class Numbrix(Grid_Puzzle):
         logging.debug(f"Checking for a solved puzzle. The current count is {current_puzzle_size}")
 
         if self.is_solved():
-            print("Puzzle is solved!")
+            print("Puzzle is solved after reduce!")
             return self
 
         # Log puzzle size for plotting later
@@ -328,8 +341,8 @@ class Numbrix(Grid_Puzzle):
         puzzle_with_one_route_paths_solved = self.solve_one_path_routes(0)
 
         if puzzle_with_one_route_paths_solved.is_solved():
-            print("Puzzle is solved!")
-            return self
+            print("Puzzle is solved after one-route paths!")
+            return puzzle_with_one_route_paths_solved
 
         # puzzle_with_one_route_paths_solved = self.generate_required_paths_with_routes()
         puzzle_with_one_route_paths_solved.sort_paths()
@@ -353,12 +366,17 @@ class Numbrix(Grid_Puzzle):
                 puzzle_with_guess = copy.deepcopy(puzzle_with_one_route_paths_solved)
                 final_cell = puzzle_with_guess.get_cell(cell.address)
                 final_cell.set_value(value)
-                solved_puzzle = puzzle_with_guess.search()
-                if solved_puzzle is not None:
-                    return solved_puzzle
-                else:
+                puzzle_with_guess.guessed_cells.append(final_cell)
+                try:
+                    solved_puzzle = puzzle_with_guess.search()
+                    if solved_puzzle is not None:
+                        return solved_puzzle
+                    else:
+                        logging.debug(
+                            f'Our guess of {value} for cell {cell} was wrong.')
+                except Inconsistent_Puzzle_Exception:
                     logging.debug(
-                        f'Our guess of {value} for cell {cell} was wrong.')
+                        "Puzzle became inconsistent. Must have been an incorrect guess. Trying a different one...")
 
             # puzzle_with_one_route_paths_solved.display_as_code()
             # if puzzle_with_one_route_paths_solved.fill_forced_well_bottom():
@@ -378,12 +396,13 @@ class Numbrix(Grid_Puzzle):
 
         # We'll guess each route for the path until we find a solution
         for index, (puzzle_with_guess, route_guess) in enumerate(path_to_guess.routes, start=1):
+            puzzle_with_guess.guessed_routes.append(route_guess)
             logging.debug(
                 f"I'm guessing route: {route_guess} ({index} out of {path_to_guess.num_routes()} possible guesses)")
             Grid_Puzzle.number_of_guesses += 1
 
             # Check that our guess is consistent, otherwise, let's continue to a different guess
-            if not puzzle_with_guess.puzzle_is_consistent():
+            if not puzzle_with_guess.is_consistent():
                 logging.debug("Current guess is inconsistent, so moving on to the next guess...")
                 puzzle_with_one_route_paths_solved.display()
                 # Move on to the next guess -- this jumps back to the start of this for loop
@@ -438,6 +457,9 @@ class Numbrix(Grid_Puzzle):
         # ----‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖=====‖
         # assert len(well_bottoms) == len(available_ending_values)
 
+        if len(well_bottoms) == 0:
+            print('I did not find any well bottoms, so using all the cells in the first hole')
+            well_bottoms = extended_holes[0]
         return tuple_cross(well_bottoms, available_ending_values)
 
     def is_link_endpoint(self, cell):
@@ -913,7 +935,7 @@ class Numbrix(Grid_Puzzle):
                 return True
         return False
 
-    def puzzle_is_consistent(self):
+    def is_consistent(self):
         if self.puzzle_has_repeated_values():
             logging.debug("Oops, we must have guessed wrong because puzzle has repeated values")
             return False
@@ -923,13 +945,13 @@ class Numbrix(Grid_Puzzle):
             return False
 
         if self.puzzle_has_dead_ends():
-            logging.debug("Oops, we must have guessed wrong because puzzle has deadends")
+            logging.debug("Oops, we must have guessed wrong because puzzle has dead-ends")
             return False
 
         return True
 
     def check_consistency(self):
-        if not self.puzzle_is_consistent():
+        if not self.is_consistent():
             logging.debug("Puzzle is inconsistent. Here's the state:")
             self.display()
             raise Inconsistent_Puzzle_Exception()

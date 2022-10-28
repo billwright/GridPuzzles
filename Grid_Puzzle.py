@@ -165,7 +165,7 @@ class Grid_Puzzle(object):
                 return False
         return True
 
-    def puzzle_is_consistent(self):
+    def is_consistent(self):
         try:
             self.check_consistency()
         except Duplicate_Cell_Value_In_Group_Exception:
@@ -349,7 +349,7 @@ class Grid_Puzzle(object):
             puzzle_with_guess.update_with_guess(cell_to_guess, current_guess)
 
             # Check that our guess is consistent, otherwise, let's continue to a different guess
-            if not puzzle_with_guess.puzzle_is_consistent():
+            if not puzzle_with_guess.is_consistent():
                 logging.debug("Current guess is inconsistent, so moving on to the next guess...")
                 self.display()
                 # Move on to the next guess -- this jumps back to the start of this for loop
