@@ -3,6 +3,12 @@ Python project for programming book
 
 Text for the book for this project is located here: https://docs.google.com/document/d/13-bG9_2Dcl3PHeKNWAaYTmCeLY4aH8liWOVOP9fXglw/edit?usp=sharing
 
+This program uses external modules. For them to work they need to be installed in the 
+python version used. To do this:
+
+```shell
+> pip install termcolor
+```
 TODO:
 
 * Explain how to run program
