@@ -2,14 +2,14 @@ from random import random
 
 from termcolor import colored
 
-from Grid_Puzzle import Grid_Puzzle
+from GridPuzzle import GridPuzzle
 from Group import Group
 from Human_Player import Human_Player
 from Random_Player import Random_Player
 from TicTacToe_Cell import TicTacToe_Cell
 
 
-class TicTacToe(Grid_Puzzle):
+class TicTacToe(GridPuzzle):
 
     def __init__(self, board_size):
         self.current_player = None

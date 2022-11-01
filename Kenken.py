@@ -3,13 +3,13 @@ import logging
 from math import sqrt
 
 from Calculation_Group import Calculation_Group
-from Grid_Puzzle import Grid_Puzzle
+from GridPuzzle import GridPuzzle
 from termcolor import colored
 
 # TODO: Revisit switch to a list of one-character strings for candidates instead of just a string
 
 
-class Kenken(Grid_Puzzle):
+class Kenken(GridPuzzle):
     def __init__(self, puzzle_group_definitions):
         self.calculation_groups = []
         super().__init__(puzzle_group_definitions)

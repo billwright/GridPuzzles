@@ -1,5 +1,6 @@
 import logging
 import unittest
+from termcolor import colored
 
 from Numbrix import Numbrix
 from Path import Path
@@ -279,15 +280,15 @@ sept_18_puzzle = [59, None, None, None, 53, None, None, None, 47,
 #          [Cell(D3) = [30], Cell(D4) = [31], Cell(E4) = [32], Cell(E5) = [33], Cell(D5) = [34], Cell(D6) = [35], Cell(D7) = [36], Cell(D8) = [37]]
 #     Guessed cells are:
 #     Number of backtracks: 145
-may_29_2022_puzzle = [23, None, None, None, 77, None, None, None, 71,
-                      None, None, None, 29, None, 75, None, None, None,
-                      None, None, None, None, None, None, None, None, None,
-                      None, 19, None, None, None, None, None, 65, None,
-                      17, None, None, None, None, None, None, None, 57,
-                      None, 15, None, None, None, None, None, 59, None,
-                      None, None, None, None, None, None, None, None, None,
-                      None, None, None, 37, None, 41, None, None, None,
-                      9, None, None, None, 39, None, None, None, 53]
+may_29_2022 = [23, None, None, None, 77, None, None, None, 71,
+               None, None, None, 29, None, 75, None, None, None,
+               None, None, None, None, None, None, None, None, None,
+               None, 19, None, None, None, None, None, 65, None,
+               17, None, None, None, None, None, None, None, 57,
+               None, 15, None, None, None, None, None, 59, None,
+               None, None, None, None, None, None, None, None, None,
+               None, None, None, 37, None, 41, None, None, None,
+               9, None, None, None, 39, None, None, None, 53]
 
 # Sheri solved this one. Results for this puzzle were:
 #         |  A  |  B  |  C  |  D  |  E  |  F  |  G  |  H  |  I  |
@@ -314,15 +315,15 @@ may_29_2022_puzzle = [23, None, None, None, 77, None, None, None, 71,
 #          [Cell(E2) = [60], Cell(D2) = [61], Cell(D3) = [62], Cell(D4) = [63], Cell(E4) = [64], Cell(E3) = [65], Cell(F3) = [66], Cell(F2) = [67], Cell(F1) = [68], Cell(G1) = [69], Cell(G2) = [70], Cell(G3) = [71], Cell(H3) = [72], Cell(H2) = [73]]
 #     Guessed cells are:
 #     Number of backtracks: 39
-oct_23_2022_puzzle = [55, None, None, None, 59, None, None, None, 75,
-                      None, 53, None, None, 60, None, None, 73, None,
-                      None, None, None, None, None, None, None, None, None,
-                      None, None, None, None, None, None, None, None, None,
-                      47, 38, None, None, None, None, None, 30, 29,
-                      None, None, None, None, None, None, None, None, None,
-                      None, None, None, None, None, None, None, None, None,
-                      None, 41, None, None, 14, None, None, 25, None,
-                      43, None, None, None, 11, None, None, None, 23]
+oct_23_2022 = [55, None, None, None, 59, None, None, None, 75,
+               None, 53, None, None, 60, None, None, 73, None,
+               None, None, None, None, None, None, None, None, None,
+               None, None, None, None, None, None, None, None, None,
+               47, 38, None, None, None, None, None, 30, 29,
+               None, None, None, None, None, None, None, None, None,
+               None, None, None, None, None, None, None, None, None,
+               None, 41, None, None, 14, None, None, 25, None,
+               43, None, None, None, 11, None, None, None, 23]
 
 
 # noinspection PyPep8Naming
@@ -604,20 +605,11 @@ class TestNumbrix(unittest.TestCase):
 
     # @unittest.skip
     def test_solving_puzzles(self):
-        puzzles = [beginner_puzzle_9_by_9, very_hard_puzzle]
-        puzzles = [all_moves_forced_6_by_6]
-        puzzles = [easy_4_forced_moves_6_by_6]
-        puzzles = [sept_18_puzzle]
-        puzzles = [hard_6_by_6]
-        puzzles = [medium_6_by_6]
-        puzzles = [may_23_puzzle]
-        puzzles = [very_hard_6_by_6]
-        puzzles = [beginner_puzzle_9_by_9]
-        puzzles = [apr_17_2022]
-        puzzles = [mar_20_2022]
+        test_puzzles = [beginner_puzzle_9_by_9, very_hard_puzzle, all_moves_forced_6_by_6,
+                        easy_4_forced_moves_6_by_6, sept_18_puzzle, hard_6_by_6,
+                        medium_6_by_6, may_23_puzzle, very_hard_6_by_6, apr_17_2022,
+                        mar_20_2022, may_29_2022, oct_23_2022]
         puzzles = [very_hard_puzzle]
-        puzzles = [may_29_2022_puzzle]
-        puzzles = [oct_23_2022_puzzle]
 
         for puzzle in puzzles:
             numbrix = Numbrix(puzzle, False)
@@ -694,6 +686,9 @@ class TestNumbrix(unittest.TestCase):
         else:
             solved_puzzle.display()
             self.assertTrue(solved_puzzle.is_solved())
+
+    def test_color_printing(self):
+        print('Latest guessed cell:', colored('RED', 'red', attrs=['underline']))
 
 
 if __name__ == '__main__':

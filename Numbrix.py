@@ -3,7 +3,7 @@ import copy
 
 from termcolor import colored
 
-from Grid_Puzzle import Grid_Puzzle
+from GridPuzzle import GridPuzzle
 from NumbrixCell import NumbrixCell
 from Inconsistent_Puzzle_Exception import Inconsistent_Puzzle_Exception
 from Duplicate_Cell_Value_Exception import Duplicate_Cell_Value_Exception
@@ -14,7 +14,7 @@ from Path import Path
 MAX_PATH_LENGTH_TO_SEARCH_FOR_ROUTES = 8
 
 
-class Numbrix(Grid_Puzzle):
+class Numbrix(GridPuzzle):
     debug_cell_count: int = 0
 
     def __init__(self, puzzle_definition, interactive=False, matching_message=None):
@@ -53,7 +53,7 @@ class Numbrix(Grid_Puzzle):
         This is helpful in debugging and display of the puzzle."""
         self.last_cell_changed = cell
         cell.set_value(new_value)
-        
+
     @staticmethod
     def print_color_legend():
         print('Latest guessed cell:', colored('RED', 'red', attrs=['underline']))
@@ -62,6 +62,7 @@ class Numbrix(Grid_Puzzle):
         print('Given cell:', colored('WHITE', 'white', attrs=['dark']))
         print('Cell is dead end:', colored('MAGENTA', 'magenta'))
         print('Calculated cell:', colored('GREEN', 'green'))
+        print('! indicates last cell value set.')
 
     def get_display_cell(self, cell):
         attributes = []
@@ -90,7 +91,7 @@ class Numbrix(Grid_Puzzle):
         else:
             cell_color = 'green'
         if cell is self.last_cell_changed:
-            cell_string = f'*{cell_string}'
+            cell_string = f'{cell_string}!'
         return colored(cell_string.center(self.get_display_cell_width()), cell_color, attrs=attributes)
 
     def get_display_row(self, row_name):
@@ -119,7 +120,8 @@ class Numbrix(Grid_Puzzle):
             print(f'Guessed cells are:')
             for guess in self.guessed_cells:
                 print(f'     {guess}')
-            print(f'Number of backtracks: {Grid_Puzzle.number_of_backtracks}')
+            print(f'Number of guesses: {GridPuzzle.number_of_guesses}')
+            print(f'Number of backtracks: {GridPuzzle.number_of_backtracks}')
             self.print_paths()
             # if Numbrix.interactive_mode:
             #     continue_interactive = input(
@@ -143,7 +145,8 @@ class Numbrix(Grid_Puzzle):
         available_neighbor_values = self.get_available_neighbor_values(cell)
         open_neighbors = [neighbor for neighbor in neighbors if neighbor.is_empty()]
         if len(available_neighbor_values) == 1 and len(open_neighbors) == 1:
-            open_neighbors[0].set_candidates(available_neighbor_values)
+            self.set_cell_value(open_neighbors[0], available_neighbor_values[0])
+            # open_neighbors[0].set_candidates(available_neighbor_values)
 
     def get_available_neighbor_values(self, cell):
         neighbors = self.get_cell_neighbors(cell)
@@ -297,6 +300,10 @@ class Numbrix(Grid_Puzzle):
         self.display()
 
         # Solve as much as we can with simple forcing of cells and paths
+        # This code, which just fills in forced cells, is not required to solve
+        # puzzles, but for the very hard puzzle it made a huge difference. Without
+        # the reduce call (just this one line), the puzzle was solved with 3117
+        # backtracks. With it, the puzzled was solved with just 27 backtracks.
         self.reduce()
 
         current_puzzle_size = self.get_current_puzzle_count()
@@ -317,28 +324,20 @@ class Numbrix(Grid_Puzzle):
             print("Puzzle is solved after one-route paths!")
             return puzzle_with_one_route_paths_solved
 
-        # puzzle_with_one_route_paths_solved = self.generate_required_paths_with_routes()
         puzzle_with_one_route_paths_solved.sort_paths()
-        puzzle_with_one_route_paths_solved.print_paths()
-
-        # The paths should now be sorted in order
-        # of the least amount of routes, so we always start with the first path and
-        # will just recurse over the choices there, which are populated instances of
-        # the Numbrix puzzle.
-
-        logging.debug("State of the puzzle before selecting route to guess:")
         puzzle_with_one_route_paths_solved.display()
 
+        logging.debug("State of the puzzle before selecting route to guess:")
         if len(puzzle_with_one_route_paths_solved.paths) == 0:
-            # Number of paths was zero, so we probably have a puzzle that is missing the end values.
+            # if number of paths is zero, so we have a puzzle that is missing the end values.
             # So, we need to create a path so that we can continue. We'll first create a complete list of
-            # guesses to iterate over.
-            # A guess is a tuple of a cell and a value
+            # guesses to iterate over. A guess is a tuple of a cell and a value
             guesses = puzzle_with_one_route_paths_solved.generate_guesses_for_final_cells()
-            for (cell, value) in guesses:
+            for (guessed_cell, guessed_end_value) in guesses:
+                GridPuzzle.number_of_guesses += 1
                 puzzle_with_guess = copy.deepcopy(puzzle_with_one_route_paths_solved)
-                final_cell = puzzle_with_guess.get_cell(cell.address)
-                puzzle_with_guess.set_cell_value(final_cell, value)
+                final_cell = puzzle_with_guess.get_cell(guessed_cell.address)
+                puzzle_with_guess.set_cell_value(final_cell, guessed_end_value)
                 puzzle_with_guess.guessed_cells.append(final_cell)
                 try:
                     solved_puzzle = puzzle_with_guess.search()
@@ -346,15 +345,10 @@ class Numbrix(Grid_Puzzle):
                         return solved_puzzle
                     else:
                         logging.debug(
-                            f'Our guess of {value} for cell {cell} was wrong.')
+                            f'Our guess of {guessed_end_value} for cell {guessed_cell} was wrong.')
                 except Inconsistent_Puzzle_Exception:
                     logging.debug(
                         "Puzzle became inconsistent. Must have been an incorrect guess. Trying a different one...")
-
-            # puzzle_with_one_route_paths_solved.display_as_code()
-            # if puzzle_with_one_route_paths_solved.fill_forced_well_bottom():
-            #     print('Well bottom found!')
-            #     puzzle_with_one_route_paths_solved.generate_required_paths_with_routes()
 
         if len(puzzle_with_one_route_paths_solved.paths) == 0:
             print('We should never be here, unless the puzzle is solved...I should check for that.')
@@ -367,12 +361,15 @@ class Numbrix(Grid_Puzzle):
             puzzle_with_one_route_paths_solved.display()
             return None
 
-        # We'll guess each route for the path until we find a solution
+        # Since the paths are sorted in order of the least amount of routes,
+        # we start with the first path and iterate over the choices there,
+        # which are populated Numbrix instances.
         for index, (puzzle_with_guess, route_guess) in enumerate(path_to_guess.routes, start=1):
+            GridPuzzle.number_of_guesses += 1
             puzzle_with_guess.guessed_routes.append(route_guess)
             logging.debug(
                 f"I'm guessing route: {route_guess} ({index} out of {path_to_guess.num_routes()} possible guesses)")
-            Grid_Puzzle.number_of_guesses += 1
+            GridPuzzle.number_of_guesses += 1
 
             # Check that our guess is consistent, otherwise, let's continue to a different guess
             if not puzzle_with_guess.is_consistent():
@@ -402,7 +399,7 @@ class Numbrix(Grid_Puzzle):
 
         logging.debug(f"Could not find a solution when guessing route for Path {path_to_guess}. Backing up...")
         puzzle_with_one_route_paths_solved.display()
-        Grid_Puzzle.number_of_backtracks += 1
+        GridPuzzle.number_of_backtracks += 1
         return None
 
     def generate_guesses_for_final_cells(self):

@@ -11,7 +11,7 @@ import copy
 import logging
 
 
-class Grid_Puzzle(object):
+class GridPuzzle(object):
     number_of_guesses = 0  # This is a class or static variable
     number_of_backtracks = 0  # This is a class or static variable
     minimum_cell_display_width = 5
@@ -19,7 +19,7 @@ class Grid_Puzzle(object):
     interactive_mode = False
 
     def __init__(self, puzzle_definition, interactive=False):
-        Grid_Puzzle.interactive_mode = interactive
+        GridPuzzle.interactive_mode = interactive
         self.definition = puzzle_definition
         self.validate()
         self.size = self.calculate_size()
@@ -141,8 +141,8 @@ class Grid_Puzzle(object):
         return max(cell.get_size() for cell in self.get_all_cells())
 
     def get_display_cell_width(self):
-        return max(self.get_max_cell_candidate_width() + Grid_Puzzle.cell_display_padding,
-                   Grid_Puzzle.minimum_cell_display_width)
+        return max(self.get_max_cell_candidate_width() + GridPuzzle.cell_display_padding,
+                   GridPuzzle.minimum_cell_display_width)
 
     def get_display_header(self):
         heading_string = '    |'
@@ -343,7 +343,7 @@ class Grid_Puzzle(object):
         guesses_for_cell = cell_to_guess.get_guesses()
         for index, current_guess in enumerate(guesses_for_cell, start=1):
             logging.debug(f"I'm guessing value: {current_guess} ({index} out of {guesses_for_cell} possible guesses)")
-            Grid_Puzzle.number_of_guesses += 1
+            GridPuzzle.number_of_guesses += 1
             puzzle_with_guess = copy.deepcopy(self)
             puzzle_with_guess.update_with_guess(cell_to_guess, current_guess)
 
@@ -374,7 +374,7 @@ class Grid_Puzzle(object):
 
         logging.debug(f"Could not find a solution when guessing values for Cell {cell_to_guess}. Backing up...")
         self.display()
-        Grid_Puzzle.number_of_backtracks += 1
+        GridPuzzle.number_of_backtracks += 1
         return None
 
     def update_with_guess(self, cell_to_guess, current_guess_candidates):

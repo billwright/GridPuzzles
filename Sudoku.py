@@ -1,6 +1,6 @@
 import logging
 
-from Grid_Puzzle import Grid_Puzzle
+from GridPuzzle import GridPuzzle
 from math import sqrt
 from termcolor import colored
 
@@ -9,7 +9,7 @@ from Reducing_Group import Reducing_Group
 from grid_utils import cross
 
 
-class Sudoku(Grid_Puzzle):
+class Sudoku(GridPuzzle):
 
     def __init__(self, puzzle_string):
         super().__init__(puzzle_string)
@@ -80,7 +80,7 @@ class Sudoku(Grid_Puzzle):
                 if row_name in self.row_boundaries:
                     print(self.get_horizontal_grid_line())
             print(f'The current puzzle count is {self.get_current_puzzle_count()}')
-            print(f'Number of guesses: {Grid_Puzzle.number_of_guesses}')
-            print(f'Number of backtracks: {Grid_Puzzle.number_of_backtracks}')
+            print(f'Number of guesses: {GridPuzzle.number_of_guesses}')
+            print(f'Number of backtracks: {GridPuzzle.number_of_backtracks}')
 
 
