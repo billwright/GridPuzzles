@@ -34,7 +34,6 @@ class Grid_Puzzle(object):
         self.row_groups = self.create_row_groups()
         self.column_groups = self.create_column_groups()
 
-
     def validate(self):
         puzzle_square_root = sqrt(len(self.definition))
         if puzzle_square_root != int(puzzle_square_root):

@@ -2,7 +2,7 @@ from Cell import Cell
 from Blanking_Cell_Exception import Blanking_Cell_Exception
 
 
-class Numbrix_Cell(Cell):
+class NumbrixCell(Cell):
 
     def __init__(self, cell_address, candidates):
         self._candidates = []

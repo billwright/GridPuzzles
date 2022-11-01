@@ -1,6 +1,6 @@
 import logging
 
-from Numbrix_Cell import Numbrix_Cell
+from NumbrixCell import NumbrixCell
 from RoutesIsNoneException import RoutesIsNoneException
 
 

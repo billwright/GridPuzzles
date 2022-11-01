@@ -1,9 +1,7 @@
 import logging
 import unittest
 
-from Chain_Endpoint import Chain_Endpoint
 from Numbrix import Numbrix
-from Numbrix_Cell import Numbrix_Cell
 from Path import Path
 
 logging.basicConfig(format='%(message)s', level=logging.DEBUG)
@@ -393,24 +391,6 @@ class TestNumbrix(unittest.TestCase):
         self.assertTrue('C8' in chain_endpoint_addresses)
         self.assertTrue('E8' in chain_endpoint_addresses)
 
-    def test_get_cell_between(self):
-        """Test getting the cell between two cells that are 2 cells apart"""
-        numbrix = Numbrix(beginner_puzzle_9_by_9)
-        cell_C1 = numbrix.get_cell('C1')
-        cell_C2 = numbrix.get_cell('C2')
-        cell_C3 = numbrix.get_cell('C3')
-        cell_C4 = numbrix.get_cell('C4')
-        cell_C5 = numbrix.get_cell('C5')
-        cell_A3 = numbrix.get_cell('A3')
-        cell_B3 = numbrix.get_cell('B3')
-        cell_D3 = numbrix.get_cell('D3')
-        cell_E3 = numbrix.get_cell('E3')
-
-        self.assertEqual([cell_C2], numbrix.get_empty_cells_between(cell_C3, cell_C1))
-        self.assertEqual([cell_C4], numbrix.get_empty_cells_between(cell_C3, cell_C5))
-        self.assertEqual([cell_B3], numbrix.get_empty_cells_between(cell_C3, cell_A3))
-        self.assertEqual([cell_D3], numbrix.get_empty_cells_between(cell_C3, cell_E3))
-
     def test_another_reduction(self):
         numbrix = Numbrix(one_gaps)
         numbrix.display()
@@ -433,24 +413,6 @@ class TestNumbrix(unittest.TestCase):
         numbrix.display()
 
         numbrix.is_solved()
-
-    def test_solve_one_cell_gaps(self):
-        Numbrix.interactive_mode = False
-        numbrix = Numbrix(one_gaps)
-        numbrix.display()
-        numbrix.populate_all_1_gap_cells()
-        numbrix.display()
-
-        cell_H1 = numbrix.get_cell('H1')
-        assert cell_H1.get_value() == 22
-        cell_A2 = numbrix.get_cell('A2')
-        assert cell_A2.get_value() == 2
-        cell_I8 = numbrix.get_cell('I8')
-        assert cell_I8.get_value() == 80
-        cell_B9 = numbrix.get_cell('B9')
-        assert cell_B9.get_value() == 68
-        cell_H9 = numbrix.get_cell('H9')
-        assert cell_H9.get_value() == 78
 
     def test_forced_and_one_cell_gaps(self):
         Numbrix.interactive_mode = False
@@ -484,11 +446,6 @@ class TestNumbrix(unittest.TestCase):
         endpoints = [cell.address for cell in numbrix.get_chain_endpoints()]
         print('Endpoints are: ', endpoints)
         assert 'C1' in endpoints
-
-        cell_C1 = numbrix.get_cell('C1')
-        smallest_value_distance = numbrix.calculate_smallest_value_difference_to_other_chains(cell_C1)
-        print(f'The smallest distance to another endpoint for cell {cell_C1} is {smallest_value_distance}')
-        assert smallest_value_distance == 6
 
         paths = numbrix.generate_required_paths()
         print(paths)
@@ -733,7 +690,7 @@ class TestNumbrix(unittest.TestCase):
         solved_puzzle = numbrix.search()
         if solved_puzzle is None:
             logging.critical('Puzzle was not solved!')
-            self.assertTrue(False);
+            self.assertTrue(False)
         else:
             solved_puzzle.display()
             self.assertTrue(solved_puzzle.is_solved())

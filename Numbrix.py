@@ -3,9 +3,8 @@ import copy
 
 from termcolor import colored
 
-from Chain_Endpoint import Chain_Endpoint
 from Grid_Puzzle import Grid_Puzzle
-from Numbrix_Cell import Numbrix_Cell
+from NumbrixCell import NumbrixCell
 from Inconsistent_Puzzle_Exception import Inconsistent_Puzzle_Exception
 from Duplicate_Cell_Value_Exception import Duplicate_Cell_Value_Exception
 from RoutesIsNoneException import RoutesIsNoneException
@@ -15,35 +14,11 @@ from Path import Path
 MAX_PATH_LENGTH_TO_SEARCH_FOR_ROUTES = 8
 
 
-def endpoint_sorting_criteria():
-    return lambda x: (
-        x.value_difference_to_another_chain,
-        len(x.open_neighbors),
-        -x.chain_length,
-        x.endpoint.get_value())
-
-
-# Talk about this function vs. an instance method (no need for self here) or a static method (tying to this class as it doesn't make sense as a general function
-def sort_chain_endpoints_for_guessing(endpoints):
-    """We always want to guess from the endpoint of the chain that is closest to connecting with another chain,
-    as that should cause us to fail earlier, if we guess wrong. For instance if we are trying to extend a chain that
-    ends in 40 and connect it up to a chain that starts with 43, we can only guess locations for 41 and 42 before
-    we'd hit the duplicate cell value inconsistency, and we'd know that we have to back up and try again. Those endpoints are
-    only looking for one, required value, so we look for those first."""
-
-    one_required_value_endpoints = [endpoint for endpoint in endpoints if len(endpoint.required_neighbor_values) == 1]
-    if one_required_value_endpoints:
-        return sorted(one_required_value_endpoints, key=endpoint_sorting_criteria())
-    two_required_value_endpoints = [endpoint for endpoint in endpoints if len(endpoint.required_neighbor_values) == 2]
-    if two_required_value_endpoints:
-        return sorted(two_required_value_endpoints, key=endpoint_sorting_criteria())
-    return sorted(endpoints, key=endpoint_sorting_criteria())
-
-
 class Numbrix(Grid_Puzzle):
-    debug_cell_count = 0
+    debug_cell_count: int = 0
 
     def __init__(self, puzzle_definition, interactive=False, matching_message=None):
+        self.last_cell_changed = None
         self.paths = []
         # This is the stack of guessed routes
         self.guessed_routes = []
@@ -64,7 +39,7 @@ class Numbrix(Grid_Puzzle):
                     candidates = []
                 else:
                     candidates = [value]
-                new_cell = Numbrix_Cell(address, candidates)
+                new_cell = NumbrixCell(address, candidates)
                 if not new_cell.is_empty():
                     self.given_cells.append(new_cell)
                 cell_dictionary[address] = new_cell
@@ -73,6 +48,12 @@ class Numbrix(Grid_Puzzle):
             raise ValueError("Puzzle definition did not map correctly!")
         return cell_dictionary
 
+    def set_cell_value(self, cell: NumbrixCell, new_value: int):
+        """Sets the value of a cell, but also records the cell as the last cell changed.
+        This is helpful in debugging and display of the puzzle."""
+        self.last_cell_changed = cell
+        cell.set_value(new_value)
+        
     @staticmethod
     def print_color_legend():
         print('Latest guessed cell:', colored('RED', 'red', attrs=['underline']))
@@ -108,6 +89,8 @@ class Numbrix(Grid_Puzzle):
             cell_string = '**'
         else:
             cell_color = 'green'
+        if cell is self.last_cell_changed:
+            cell_string = f'*{cell_string}'
         return colored(cell_string.center(self.get_display_cell_width()), cell_color, attrs=attributes)
 
     def get_display_row(self, row_name):
@@ -198,17 +181,6 @@ class Numbrix(Grid_Puzzle):
             for cell in self.get_all_cells():
                 self.reduce_neighbors(cell)
                 self.debug_pause('After reduce_neighbors')
-            if self.get_current_puzzle_count() == before_puzzle_size:
-                progress_made = False
-            else:
-                before_puzzle_size = self.get_current_puzzle_count()
-
-    def populate_all_1_gap_cells(self):
-        before_puzzle_size = self.get_current_puzzle_count()
-        progress_made = True
-        while not self.is_solved() and progress_made:
-            self.fill_1_cell_gaps()
-            self.debug_pause('After fill_1_cell_gaps')
             if self.get_current_puzzle_count() == before_puzzle_size:
                 progress_made = False
             else:
@@ -366,7 +338,7 @@ class Numbrix(Grid_Puzzle):
             for (cell, value) in guesses:
                 puzzle_with_guess = copy.deepcopy(puzzle_with_one_route_paths_solved)
                 final_cell = puzzle_with_guess.get_cell(cell.address)
-                final_cell.set_value(value)
+                puzzle_with_guess.set_cell_value(final_cell, value)
                 puzzle_with_guess.guessed_cells.append(final_cell)
                 try:
                     solved_puzzle = puzzle_with_guess.search()
@@ -470,10 +442,12 @@ class Numbrix(Grid_Puzzle):
     def is_link_endpoint(self, cell):
         """Return true if this is the end of a link and needs to be extended"""
         available_neighbor_values = self.get_available_neighbor_values(cell)
-        # logging.debug(f'cell {cell} has these available neighbor values: {available_neighbor_values}')
         return len(available_neighbor_values) > 0
 
     def get_chain_endpoints(self):
+        """Chains are an ordered list of cells that are connected via their values. The
+        endpoints of these chains are the cells that are only connected by one value and
+        so mark the ends of the chains."""
         endpoints = []
         for cell in self.get_all_cells():
             if self.is_link_endpoint(cell):
@@ -593,7 +567,7 @@ class Numbrix(Grid_Puzzle):
             puzzle_with_guess.paths = []
             # Create new path with new cells from our copy
             new_start = puzzle_with_guess.get_cell(cell.address)
-            new_start.set_value(path.start.get_value() + 1)
+            puzzle_with_guess.set_cell_value(new_start, path.start.get_value() + 1)
             new_end = puzzle_with_guess.get_cell(path.end.address)
 
             # Here we create our new, shorter path in our copied puzzle. This path starts one
@@ -616,102 +590,11 @@ class Numbrix(Grid_Puzzle):
         path.set_routes(routes)
         return routes
 
-    def custom_reduce(self):
-        self.fill_1_cell_gaps()
-
-    def fill_1_cell_gaps(self):
-        chain_endpoints = self.get_chain_endpoints()
-        for cell in chain_endpoints:
-            for other_cell in chain_endpoints:
-                if cell.min_address_distance_to_cell(other_cell) == 2:
-                    between_cells = self.get_empty_cells_between(cell, other_cell)
-                    if len(between_cells) == 1:
-                        between_cell = between_cells[0]
-                        possible_value = None
-                        if cell.get_value() - other_cell.get_value() == 2:
-                            possible_value = other_cell.get_value() + 1
-                        if other_cell.get_value() - cell.get_value() == 2:
-                            possible_value = cell.get_value() + 1
-                        if (possible_value is not None) and (possible_value not in set(self.get_all_values())):
-                            between_cell.set_value(possible_value)
-                            # Once one cell has been updated, we have to break out of this loop
-                            # because our list of chain endpoints is no longer valid and our
-                            # code assumes this to be so.
-                            return
-
-    def get_empty_cells_between(self, cell, other_cell):
-        assert cell.min_address_distance_to_cell(other_cell) == 2
-        between_cells = []
-        if cell.get_row() > other_cell.get_row():
-            between_cells.append(self.get_cell(cell.get_column() + str(cell.get_row_number() - 1)))
-        if cell.get_row() < other_cell.get_row():
-            between_cells.append(self.get_cell(cell.get_column() + str(cell.get_row_number() + 1)))
-        if cell.get_column_number() > other_cell.get_column_number():
-            between_cells.append(self.get_cell(chr(cell.get_column_number() - 2 + ord('A')) + cell.get_row()))
-        if cell.get_column_number() < other_cell.get_column_number():
-            between_cells.append(self.get_cell(chr(cell.get_column_number() + ord('A')) + cell.get_row()))
-        return [cell for cell in between_cells if cell.is_empty()]
-
     def get_empty_neighbors(self, cell):
         return [neighbor for neighbor in self.get_cell_neighbors(cell) if neighbor.is_empty()]
 
     def get_neighbor_values(self, cell):
         return [neighbor.get_value() for neighbor in self.get_cell_neighbors(cell) if not neighbor.is_empty()]
-
-    def calculate_required_neighbor_values_for_chain_endpoint(self, cell):
-        # Possible neighbor values are the numbers higher and lower for this cell ONLY IF these values
-        # haven't already been used.
-        possible_neighbors_values = set([cell.get_value() - 1, cell.get_value() + 1])
-        reduced_possible_neighbors_values = possible_neighbors_values - set(self.get_all_values())
-        if possible_neighbors_values != reduced_possible_neighbors_values:
-            logging.debug('Reducing already used neighbor values')
-        return reduced_possible_neighbors_values
-
-    def get_guessing_cell(self):
-        """This returns a Chain_Endpoint object"""
-        guess_candidates = []
-
-        chain_endpoints = self.get_chain_endpoints()
-        for cell in chain_endpoints:
-            empty_neighbors = self.get_empty_neighbors(cell)
-            required_neighbor_values = self.calculate_required_neighbor_values_for_chain_endpoint(cell)
-
-            # Check that the required values aren't already used elsewhere in the puzzle (indicating an invalid guess)
-            for required_value in required_neighbor_values:
-                if required_value in self.get_all_values():
-                    message = f"Invalid puzzle! Cell {cell} requires an empty neighbor to have value {required_neighbor_values}, but it is used elsewhere in the puzzle"
-                    self.display()
-                    raise Duplicate_Cell_Value_Exception(message)
-
-            # Calculate the length of the chain. If the cell still requires two neighbor values, then it is an
-            # unconnected cell, so the chain is of length 1
-            chain_length = 1
-            if len(required_neighbor_values) == 1:
-                if list(required_neighbor_values)[0] > cell.get_value():
-                    # If we require a cell higher than our value, then our chain must extend to lower numbers
-                    direction = '-'
-                else:
-                    direction = '+'
-                chain_length = self.get_chain_length(cell, 1, direction)
-
-            smallest_difference = self.calculate_smallest_value_difference_to_other_chains(cell)
-            guess_candidates.append(
-                Chain_Endpoint(cell, empty_neighbors, required_neighbor_values, smallest_difference, chain_length))
-
-        sorted_guesses = sort_chain_endpoints_for_guessing(guess_candidates)
-        return sorted_guesses[0]
-
-    def get_chain_length(self, cell_in_chain, current_length, direction):
-        """This method calculates the length of a chain, giving one endpoint, the current length,
-        and the direction (this argument is either '+' or '-') to go"""
-        neighbors = self.get_cell_neighbors(cell_in_chain)
-        neighbor_values = [cell.get_value() for cell in neighbors if not cell.is_empty()]
-        next_value = eval(str(cell_in_chain.get_value()) + direction + "1")
-        if next_value not in neighbor_values:
-            return current_length
-
-        next_cell_in_chain = [cell for cell in neighbors if cell.get_value() == next_value][0]
-        return self.get_chain_length(next_cell_in_chain, current_length + 1, direction)
 
     def get_cell_with_value(self, a_value):
         for cell in self.get_all_cells():
@@ -724,21 +607,6 @@ class Numbrix(Grid_Puzzle):
         for cell in self.puzzle_dict.values():
             values.extend(cell.candidates)
         return values
-
-    def calculate_smallest_value_difference_to_other_chains(self, cell_endpoint):
-        minimum_difference = self.size * self.size + 1  # A number larger than the greatest distance possible
-        for current_cell_endpoint in self.get_chain_endpoints():
-            difference = abs(cell_endpoint.get_value() - current_cell_endpoint.get_value())
-            if difference != 0 and difference < minimum_difference:
-                minimum_difference = difference
-        return minimum_difference
-
-    def update_with_guess(self, _, current_guess):
-        """The parameters here are from the another puzzle, so we need to make changes in our cells"""
-        (cell_to_guess, value_to_guess) = current_guess
-        my_cell = self.get_cell(cell_to_guess.address)
-        my_cell.set_value(value_to_guess)
-        self.guessed_cells.append(my_cell)
 
     def is_solved(self):
         # First, let's make sure the puzzle is consistent. Otherwise, it can't be solved.
@@ -830,7 +698,7 @@ class Numbrix(Grid_Puzzle):
 
         # If the cell is empty, with only one open neighbor and all other neighbors are connected,
         # then it is a possible end of the puzzle chain (1 or 81, for a 9x9 puzzle)
-        return len(open_neighbors) == 1 and len(connected_neighbors) == 3 and self.cell_can_contain_puzzle_end(possible_final_cell)
+        return len(open_neighbors) == 1 and len(connected_neighbors) == 3 and self.cell_can_contain_puzzle_end()
 
     def get_final_cells(self):
         return [cell for cell in self.get_all_empty_cells() if self.empty_cell_is_possible_final_cell(cell)]
@@ -859,7 +727,8 @@ class Numbrix(Grid_Puzzle):
             for possible_end_value in available_ending_values:
                 new_puzzle = copy.deepcopy(self)
                 end_cell = new_puzzle.get_cell(possible_end_cell.address)
-                end_cell.set_value(possible_end_value)
+                new_puzzle.set_cell_value(end_cell, possible_end_value)
+
                 new_puzzle.generate_required_paths()
                 if len(new_puzzle.paths) == 1:
                     new_routes = new_puzzle.generate_possible_routes_for_path(new_puzzle.paths[0])
@@ -873,8 +742,7 @@ class Numbrix(Grid_Puzzle):
 
         # If the cell is empty, with only one open neighbor and all other neighbors are connected,
         # then it is a dead end or the end of the puzzle chain (1 or 81, for a 9x9 puzzle)
-        if len(open_neighbors) == 1 and len(connected_neighbors) == 3 and not self.cell_can_contain_puzzle_end(
-                empty_cell):
+        if len(open_neighbors) == 1 and len(connected_neighbors) == 3 and not self.cell_can_contain_puzzle_end():
             logging.debug(
                 f'{empty_cell} is empty with only one open neighbor ({open_neighbors}) and all other neighbors are connected ({connected_neighbors}) and this cannot be the end of the puzzle')
             return True
@@ -885,8 +753,7 @@ class Numbrix(Grid_Puzzle):
         connected_neighbors = [cell for cell in self.get_cell_neighbors(empty_cell) if self.cell_is_connected(cell)]
         # If the cell has no open neighbors, but all its cells are connected, then we have a hole.
         if len(connected_neighbors) == len(
-                self.get_cell_neighbors(empty_cell)) and not self.cell_can_contain_puzzle_end(
-                empty_cell):
+                self.get_cell_neighbors(empty_cell)) and not self.cell_can_contain_puzzle_end():
             logging.debug(
                 f'{empty_cell} has no open neighbors, but all its cells are connected, then we have a hole and this cannot be the end of the puzzle')
             return True
@@ -895,9 +762,9 @@ class Numbrix(Grid_Puzzle):
     def get_holes(self):
         return [cell for cell in self.get_all_empty_cells() if self.empty_cell_is_hole(cell)]
 
-    # Extended holes are connected empty cells. They don't necessarily have to have all
-    # connected neighbors.
     def get_extended_holes(self):
+        """Extended holes are connected empty cells. They don't necessarily have to have all
+    # connected neighbors."""
         extended_holes = []
         for cell in self.get_all_empty_cells():
             all_hole_cells_found = [empty_cell for extended_hole in extended_holes for empty_cell in extended_hole]
@@ -906,28 +773,21 @@ class Numbrix(Grid_Puzzle):
                 extended_holes.append(extended_hole)
         return extended_holes
 
-    def get_all_connected_empty_cells(self, cell, empty_cell_set=set()):
+    def get_all_connected_empty_cells(self, cell, empty_cell_set=None):
+        if empty_cell_set is None:
+            empty_cell_set = set()
         if cell not in empty_cell_set:
             empty_cell_set.add(cell)
             for empty_neighbor in self.get_empty_neighbors(cell):
                 self.get_all_connected_empty_cells(empty_neighbor, empty_cell_set)
         return empty_cell_set
 
-    def cell_can_contain_puzzle_end(self, candidate_empty_cell):
+    def cell_can_contain_puzzle_end(self):
         return len(self.get_remaining_well_bottoms_values()) > 0
         # cell_penultimate_endpoint_values = [2, self.size ** 2 - 1]
         # neighbor_values = self.get_neighbor_values(candidate_empty_cell)
         # contains_values = [cell in neighbor_values for cell in cell_penultimate_endpoint_values]
         # return True in contains_values
-
-    def cell_can_contain_puzzle_end_2(self, candidate_empty_cell):
-        for end_value in self.get_remaining_well_bottoms_values():
-            candidate_empty_cell.set_value(end_value)
-            self.generate_required_paths()
-            if len(self.paths) == 1:
-                self.print_paths()
-                return True
-        return False
 
     def is_consistent(self):
         if self.puzzle_has_repeated_values():
