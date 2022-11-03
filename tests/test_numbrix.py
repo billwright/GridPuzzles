@@ -1,11 +1,13 @@
 import logging
 import unittest
-from termcolor import colored
+from termcolor import colored, cprint
+import simple_colors
 
 from Numbrix import Numbrix
 from Path import Path
 
-logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+# logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(message)s', filename='grid-puzzle.log', filemode='w', level=logging.DEBUG)
 
 # Example puzzles here: https://www.mathinenglish.com/puzzlesnumbrix.php
 #
@@ -581,10 +583,8 @@ class TestNumbrix(unittest.TestCase):
 
     def test_solving_medium_6_x_6(self):
         numbrix = Numbrix(medium_6_by_6)
-        numbrix.display()
-
-        numbrix.reduce()
         solved_puzzle = numbrix.search()
+        solved_puzzle.display()
         self.assertTrue(solved_puzzle.is_solved())
 
     def test_reducing_very_hard(self):
@@ -593,7 +593,6 @@ class TestNumbrix(unittest.TestCase):
 
         numbrix.reduce()
         numbrix.display()
-        # self.assertTrue(numbrix.is_solved())
 
     def test_solving_very_hard_puzzle(self):
         numbrix = Numbrix(very_hard_puzzle)
@@ -688,7 +687,25 @@ class TestNumbrix(unittest.TestCase):
             self.assertTrue(solved_puzzle.is_solved())
 
     def test_color_printing(self):
+        # Test termcolor
         print('Latest guessed cell:', colored('RED', 'red', attrs=['underline']))
+        cprint("cprint test in red", "RED")
+        print('\\x1b[5m\\x1b[1m\\x1b[40m\\x1b[31mHello, World!\\x1b[0m')
+
+        # Test simple_colors
+        print('Green bold: ', simple_colors.green('Welcome Finxter!', 'bold'))
+        print('Red blink: ', simple_colors.red('Welcome Finxter!', 'blink'))
+        print('Blue Underlined and bold: ', simple_colors.blue('Welcome Finxter!', ['underlined', 'bold']))
+        print('Blue Underlined and dim: ', simple_colors.blue('Welcome Finxter!', ['underlined', 'dim']))
+        print('Just blue: ', simple_colors.blue('Welcome Finxter!'))
+        print('Yellow reverse: ', simple_colors.yellow('Welcome Finxter!', ['reverse']))
+        print('Magenta bright italic: ', simple_colors.magenta('Welcome Finxter!', ['bright', 'italic']))
+        print('Magenta dim italic: ', simple_colors.magenta('Welcome Finxter!', ['dim', 'italic']))
+        print('Cyan bright italic: ', simple_colors.cyan('Welcome Finxter!', ['bright', 'italic']))
+        print('Black bright: ', simple_colors.black('Welcome Finxter!', ['bright']))
+        print('Black bold: ', simple_colors.black('Welcome Finxter!', ['bold']))
+        print('Black dim: ', simple_colors.black('Welcome Finxter!', ['dim']))
+        print('Black: ', simple_colors.black('Welcome Finxter!'))
 
 
 if __name__ == '__main__':

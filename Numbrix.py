@@ -1,5 +1,6 @@
 import logging
 import copy
+import simple_colors
 
 from termcolor import colored
 
@@ -20,7 +21,7 @@ class Numbrix(GridPuzzle):
     def __init__(self, puzzle_definition, interactive=False, matching_message=None):
         self.last_cell_changed = None
         self.paths = []
-        # This is the stack of guessed routes
+        # This is the stack of (descriptive_text, list_of_guess_route_cells) tuples
         self.guessed_routes = []
         self.debug_matching_message = matching_message
         super().__init__(puzzle_definition, interactive)
@@ -56,43 +57,29 @@ class Numbrix(GridPuzzle):
 
     @staticmethod
     def print_color_legend():
-        print('Latest guessed cell:', colored('RED', 'red', attrs=['underline']))
-        print('Guessed cell:', colored('YELLOW', 'yellow', attrs=['bold']))
-        print('Link endpoint:', colored('BLUE', 'blue'))
-        print('Given cell:', colored('WHITE', 'white', attrs=['dark']))
-        print('Cell is dead end:', colored('MAGENTA', 'magenta'))
-        print('Calculated cell:', colored('GREEN', 'green'))
-        print('! indicates last cell value set.')
+        print('Given cell:', simple_colors.black('BLACK'))
+        print('Latest cell updated:', simple_colors.red('RED', ['reverse']))
+        print('Link endpoint:', simple_colors.blue('BLUE', ['reverse']))
+        print('Guessed cell:', simple_colors.cyan('CYAN', ['underlined']))
+        print('Cell is dead end:', simple_colors.magenta('MAGENTA'))
+        print('Calculated cell:', simple_colors.green('GREEN'))
 
     def get_display_cell(self, cell):
-        attributes = []
-        cell_string = cell.candidates_string()
-        # The last cell in the latest is the latest guessed cell
-        if len(self.guessed_cells) > 0 and cell == self.guessed_cells[-1]:
-            cell_color = 'red'
-            attributes.append('underline')
-        elif cell in self.guessed_cells:
-            cell_color = 'yellow'
-            attributes.append('bold')
-        elif cell in self.given_cells:
-            cell_color = 'grey'
-            if self.is_link_endpoint(cell):
-                cell_color = 'white'
-            attributes.append('bold')
-        elif self.is_link_endpoint(cell):
-            cell_color = 'blue'
-            attributes.append('blink')
-        elif cell.is_empty() and self.empty_cell_is_possible_final_cell(cell):
-            cell_color = 'magenta'
-            cell_string = '++'
-        elif cell.is_empty() and self.empty_cell_is_a_dead_end_or_hole(cell):
-            cell_color = 'magenta'
-            cell_string = '**'
-        else:
-            cell_color = 'green'
+        cell_string = cell.candidates_string().center(self.get_display_cell_width())
         if cell is self.last_cell_changed:
-            cell_string = f'{cell_string}!'
-        return colored(cell_string.center(self.get_display_cell_width()), cell_color, attrs=attributes)
+            return simple_colors.red(cell_string, ['bold', 'bright', 'reverse'])
+        elif cell in self.given_cells:
+            return simple_colors.black(cell_string, ['bold', 'bright'])
+        elif cell in self.get_all_guessed_cells():
+            return simple_colors.cyan(cell_string, ['bold', 'bright', 'underlined'])
+        elif self.is_link_endpoint(cell):
+            return simple_colors.blue(cell_string, ['bold', 'bright', 'reverse'])
+        elif cell.is_empty() and self.empty_cell_is_possible_final_cell(cell):
+            return simple_colors.magenta('++'.center(self.get_display_cell_width()), ['bold', 'bright'])
+        elif cell.is_empty() and self.empty_cell_is_a_dead_end_or_hole(cell):
+            return simple_colors.magenta('**'.center(self.get_display_cell_width()), ['bold', 'bright'])
+
+        return simple_colors.green(cell_string)
 
     def get_display_row(self, row_name):
         """"Return a string representation of the specified row"""
@@ -115,14 +102,15 @@ class Numbrix(GridPuzzle):
             print(self.get_horizontal_puzzle_boundary())
             print(f'The current puzzle count is {self.get_current_puzzle_count()}')
             print(f'Guessed routes are:')
-            for guess in self.guessed_routes:
-                print(f'     {guess}')
+            for (description, guessed_route) in self.guessed_routes:
+                print(f'     Length {len(guessed_route)} ({description}): {guessed_route}')
             print(f'Guessed cells are:')
             for guess in self.guessed_cells:
                 print(f'     {guess}')
             print(f'Number of guesses: {GridPuzzle.number_of_guesses}')
             print(f'Number of backtracks: {GridPuzzle.number_of_backtracks}')
             self.print_paths()
+            self.print_color_legend()
             # if Numbrix.interactive_mode:
             #     continue_interactive = input(
             #         "\nPress enter to continue interactive mode. Press any other key and enter to exit interactive mode:\n>>> ")
@@ -366,7 +354,7 @@ class Numbrix(GridPuzzle):
         # which are populated Numbrix instances.
         for index, (puzzle_with_guess, route_guess) in enumerate(path_to_guess.routes, start=1):
             GridPuzzle.number_of_guesses += 1
-            puzzle_with_guess.guessed_routes.append(route_guess)
+            puzzle_with_guess.guessed_routes.append((f'{index} out of {path_to_guess.num_routes()}', route_guess))
             logging.debug(
                 f"I'm guessing route: {route_guess} ({index} out of {path_to_guess.num_routes()} possible guesses)")
             GridPuzzle.number_of_guesses += 1
@@ -531,7 +519,8 @@ class Numbrix(GridPuzzle):
             for route in path.routes:
                 count_difference = route[0].get_current_puzzle_count() - current_count
                 if count_difference != (path.value_distance - 1):
-                    print(f'Found invalid (puzzle,route) tuple for path {path}. Count increase is only {count_difference}')
+                    print(
+                        f'Found invalid (puzzle,route) tuple for path {path}. Count increase is only {count_difference}')
                 assert count_difference == (path.value_distance - 1)
 
     # This method always returns a list of (puzzle, route) tuples. The puzzle is a possibly deep-copied
@@ -690,7 +679,8 @@ class Numbrix(GridPuzzle):
         return neighbor_values
 
     def empty_cell_is_possible_final_cell(self, possible_final_cell):
-        connected_neighbors = [cell for cell in self.get_cell_neighbors(possible_final_cell) if self.cell_is_connected(cell)]
+        connected_neighbors = [cell for cell in self.get_cell_neighbors(possible_final_cell) if
+                               self.cell_is_connected(cell)]
         open_neighbors = [cell for cell in self.get_cell_neighbors(possible_final_cell) if cell.is_empty()]
 
         # If the cell is empty, with only one open neighbor and all other neighbors are connected,
@@ -806,3 +796,9 @@ class Numbrix(GridPuzzle):
             logging.debug("Puzzle is inconsistent. Here's the state:")
             self.display()
             raise Inconsistent_Puzzle_Exception()
+
+    def get_all_guessed_cells(self):
+        guessed_cells = self.guessed_cells.copy()
+        for (_, route_cells) in self.guessed_routes:
+            guessed_cells += route_cells
+        return guessed_cells
