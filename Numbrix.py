@@ -1,5 +1,8 @@
 import logging
 import copy
+
+# See this page for coloring text in Python:
+# https://blog.finxter.com/how-to-print-colored-text-in-python/#:~:text=The%20Most%20Pythonic%20way%20to,%3B5%3B4m%22)%20.
 import simple_colors
 
 from termcolor import colored
