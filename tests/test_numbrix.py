@@ -11,13 +11,14 @@ logging.basicConfig(format='%(message)s', filename='grid-puzzle.log', filemode='
 
 # Example puzzles here: https://www.mathinenglish.com/puzzlesnumbrix.php
 #
-# All-moves-forced puzzle. Just calling reduce_neighbors() repeatedly solves this puzzle
-all_moves_forced_6_by_6 = [None, 15, 10, 9, 8, None,
-                           17, None, None, None, None, 6,
-                           18, None, 12, 3, None, 1,
-                           19, None, 25, 26, None, 30,
-                           20, None, None, None, None, 31,
-                           None, 22, 35, 34, 33, None]
+# All-moves-forced puzzle. Just calling reduce() repeatedly solves this puzzle
+# TODO: Rename reduce() as fill_in_forced_cells()
+easy_6x6 = [None, 15, 10, 9, 8, None,
+            17, None, None, None, None, 6,
+            18, None, 12, 3, None, 1,
+            19, None, 25, 26, None, 30,
+            20, None, None, None, None, 31,
+            None, 22, 35, 34, 33, None]
 
 easy_4_forced_moves_one_gap_move = [None, None, None, None, None, None,
                                     31, None, 25, 22, 19, None,
@@ -331,6 +332,11 @@ oct_23_2022 = [55, None, None, None, 59, None, None, None, 75,
 # noinspection PyPep8Naming
 class TestNumbrix(unittest.TestCase):
 
+    def test_small_creation(self):
+        numbrix = Numbrix(easy_6x6)
+        self.assertIsNotNone(numbrix)
+        numbrix.display()
+
     def test_creation(self):
         numbrix = Numbrix(beginner_puzzle_9_by_9)
         self.assertIsNotNone(numbrix)
@@ -410,7 +416,7 @@ class TestNumbrix(unittest.TestCase):
 
     def test_forced(self):
         Numbrix.interactive_mode = False
-        numbrix = Numbrix(all_moves_forced_6_by_6)
+        numbrix = Numbrix(easy_6x6)
         numbrix.display()
         numbrix.populate_all_forced_cells()
         numbrix.display()
@@ -604,7 +610,7 @@ class TestNumbrix(unittest.TestCase):
 
     # @unittest.skip
     def test_solving_puzzles(self):
-        test_puzzles = [beginner_puzzle_9_by_9, very_hard_puzzle, all_moves_forced_6_by_6,
+        test_puzzles = [beginner_puzzle_9_by_9, very_hard_puzzle, easy_6x6,
                         easy_4_forced_moves_6_by_6, sept_18_puzzle, hard_6_by_6,
                         medium_6_by_6, may_23_puzzle, very_hard_6_by_6, apr_17_2022,
                         mar_20_2022, may_29_2022, oct_23_2022]

@@ -1,7 +1,7 @@
-from Cell import Cell
+from CandidatesCell import CandidatesCell
 
 
-class TicTacToe_Cell(Cell):
+class TicTacToe_Cell(CandidatesCell):
 
     def __init__(self, address, value):
         self.address = address

@@ -1,8 +1,8 @@
-from Cell import Cell
+from CandidatesCell import CandidatesCell
 from Blanking_Cell_Exception import Blanking_Cell_Exception
 
 
-class NumbrixCell(Cell):
+class NumbrixCell(CandidatesCell):
 
     def __init__(self, cell_address, candidates):
         self._candidates = []

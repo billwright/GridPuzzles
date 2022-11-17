@@ -1,16 +1,16 @@
 import unittest
 from Reducing_Group import Reducing_Group
-from Cell import Cell
+from CandidatesCell import CandidatesCell
 
 
 # noinspection PyPep8Naming
 class TestGroup(unittest.TestCase):
 
     def test_creation(self):
-        A1 = Cell('A1', '1234')
-        B1 = Cell('B1', '1234')
-        C1 = Cell('C1', '1234')
-        D1 = Cell('D1', '1234')
+        A1 = CandidatesCell('A1', '1234')
+        B1 = CandidatesCell('B1', '1234')
+        C1 = CandidatesCell('C1', '1234')
+        D1 = CandidatesCell('D1', '1234')
 
         group = Reducing_Group('Row 1', [A1, B1, C1, D1])
         print(group)
@@ -29,10 +29,10 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(D1 in associated_cells)
 
     def test_consistency(self):
-        A1 = Cell('A1', '1')
-        B1 = Cell('B1', '2')
-        C1 = Cell('C1', '2')
-        D1 = Cell('D1', '4')
+        A1 = CandidatesCell('A1', '1')
+        B1 = CandidatesCell('B1', '2')
+        C1 = CandidatesCell('C1', '2')
+        D1 = CandidatesCell('D1', '4')
 
         group = Reducing_Group('Row 1', [A1, B1, C1, D1])
         with self.assertRaises(Exception):

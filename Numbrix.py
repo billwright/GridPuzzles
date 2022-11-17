@@ -71,12 +71,12 @@ class Numbrix(GridPuzzle):
         cell_string = cell.candidates_string().center(self.get_display_cell_width())
         if cell is self.last_cell_changed:
             return simple_colors.red(cell_string, ['bold', 'bright', 'reverse'])
+        elif self.is_link_endpoint(cell):
+            return simple_colors.blue(cell_string, ['bold', 'bright', 'reverse'])
         elif cell in self.given_cells:
             return simple_colors.black(cell_string, ['bold', 'bright'])
         elif cell in self.get_all_guessed_cells():
             return simple_colors.cyan(cell_string, ['bold', 'bright', 'underlined'])
-        elif self.is_link_endpoint(cell):
-            return simple_colors.blue(cell_string, ['bold', 'bright', 'reverse'])
         elif cell.is_empty() and self.empty_cell_is_possible_final_cell(cell):
             return simple_colors.magenta('++'.center(self.get_display_cell_width()), ['bold', 'bright'])
         elif cell.is_empty() and self.empty_cell_is_a_dead_end_or_hole(cell):

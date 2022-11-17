@@ -4,7 +4,7 @@ from GridPuzzle import GridPuzzle
 from math import sqrt
 from termcolor import colored
 
-from Cell import Cell
+from CandidatesCell import CandidatesCell
 from Reducing_Group import Reducing_Group
 from grid_utils import cross
 
@@ -49,7 +49,7 @@ class Sudoku(GridPuzzle):
 
         puzzle_dictionary = {}
         for (address, candidates) in zip(addresses, candidates):
-            puzzle_dictionary[address] = Cell(address, candidates)
+            puzzle_dictionary[address] = CandidatesCell(address, candidates)
         return puzzle_dictionary
 
     def get_horizontal_grid_line(self):

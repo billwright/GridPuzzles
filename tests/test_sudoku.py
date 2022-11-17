@@ -3,7 +3,7 @@ import unittest
 
 from Blanking_Cell_Exception import Blanking_Cell_Exception
 from Duplicate_Cell_Value_In_Group_Exception import Duplicate_Cell_Value_In_Group_Exception
-from Cell import Cell
+from CandidatesCell import CandidatesCell
 from Reducing_Group import Reducing_Group
 from Sudoku import Sudoku
 
@@ -566,17 +566,17 @@ class TestSudoku(unittest.TestCase):
         # To test this code, we'll pass in a pre-populated, with candidates, group.
         # This simplifies setup for testing and we don't have to setup entire boards.
 
-        cell_to_be_reduced = Cell('B7', '359')
+        cell_to_be_reduced = CandidatesCell('B7', '359')
         exclusion_group = Reducing_Group('Column B', [
-            Cell('B1', '7'),
-            Cell('B2', '2358'),
-            Cell('B3', '238'),
-            Cell('B4', '23'),
-            Cell('B5', '6'),
-            Cell('B6', '1'),
+            CandidatesCell('B1', '7'),
+            CandidatesCell('B2', '2358'),
+            CandidatesCell('B3', '238'),
+            CandidatesCell('B4', '23'),
+            CandidatesCell('B5', '6'),
+            CandidatesCell('B6', '1'),
             cell_to_be_reduced,  # This is the only cell in this group with a '9' and should be reduced to a '9'
-            Cell('B8', '58'),
-            Cell('B9', '4')
+            CandidatesCell('B8', '58'),
+            CandidatesCell('B9', '4')
         ])
 
         # The puzzle string passed to this constructor doesn't matter and will not affect this test
@@ -588,10 +588,10 @@ class TestSudoku(unittest.TestCase):
         self.assertEqual(cell_to_be_reduced.candidates_string(), '9')
 
         # Now let's test a simpler case, but check every cell for consistency
-        A1 = Cell('A1', '1')
-        B1 = Cell('B1', '24')  # The only exclusion cell is here, for candidate 4
-        C1 = Cell('C1', '3')
-        D1 = Cell('D1', '23')
+        A1 = CandidatesCell('A1', '1')
+        B1 = CandidatesCell('B1', '24')  # The only exclusion cell is here, for candidate 4
+        C1 = CandidatesCell('C1', '3')
+        D1 = CandidatesCell('D1', '23')
         exclusion_group = Reducing_Group('Row 1', [A1, B1, C1, D1])
 
         exclusion_group.search_and_reduce_exclusions()

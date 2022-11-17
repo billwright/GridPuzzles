@@ -1,14 +1,14 @@
 import unittest
 
-from Cell import Cell
+from CandidatesCell import CandidatesCell
 from Matchlet import Matchlet
 
 
 class TestMatchlet(unittest.TestCase):
-    singlet_cell = Cell('A1', '1')
-    A2 = Cell('A2', '12')
-    A3 = Cell('A3', '123')
-    A4 = Cell('A4', '1234')
+    singlet_cell = CandidatesCell('A1', '1')
+    A2 = CandidatesCell('A2', '12')
+    A3 = CandidatesCell('A3', '123')
+    A4 = CandidatesCell('A4', '1234')
     group = [singlet_cell, A2, A3, A4]
 
     def test_creation(self):

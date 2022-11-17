@@ -1,4 +1,4 @@
-from Cell import Cell
+from CandidatesCell import CandidatesCell
 from Group import Group
 from grid_utils import super_cross
 
@@ -17,7 +17,7 @@ class Calculation_Group(Group):
 
         # Create the cells for this group
         all_candidates = [str(i + 1) for i in range(0, puzzle_size)]
-        cells = [Cell(address, all_candidates) for address in cell_addresses]
+        cells = [CandidatesCell(address, all_candidates) for address in cell_addresses]
 
         # Now call superclass initialization, which will set superclass instance variables
         name = 'Calculation - ' + ''.join(cell_addresses)
