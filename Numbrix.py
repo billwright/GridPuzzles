@@ -20,6 +20,21 @@ MAX_PATH_LENGTH_TO_SEARCH_FOR_ROUTES = 8
 
 class Numbrix(GridPuzzle):
     debug_cell_count: int = 0
+    number_of_guess_branches = 0
+    number_of__guesses_in_each_branch = []
+    maximum_guess_depth = 0
+    maximum_guesses_available = 0
+
+    @staticmethod
+    def create_definition_from_string(string_definition):
+        list_definition = []
+        for cell_def in string_definition.split(','):
+            if cell_def is '':
+                list_definition.append(None)
+            else:
+                list_definition.append(int(cell_def))
+
+        return list_definition
 
     def __init__(self, puzzle_definition, interactive=False, matching_message=None):
         self.last_cell_changed = None
@@ -52,6 +67,12 @@ class Numbrix(GridPuzzle):
             raise ValueError("Puzzle definition did not map correctly!")
         return cell_dictionary
 
+    def get_raw_dictionary(self):
+        raw_dictionary = {}
+        for (address, numbrix_cell) in self.puzzle_dict.items():
+            raw_dictionary[address] = numbrix_cell.get_value()
+        return raw_dictionary
+
     def set_cell_value(self, cell: NumbrixCell, new_value: int):
         """Sets the value of a cell, but also records the cell as the last cell changed.
         This is helpful in debugging and display of the puzzle."""
@@ -66,6 +87,15 @@ class Numbrix(GridPuzzle):
         print('Guessed cell:', simple_colors.cyan('CYAN', ['underlined']))
         print('Cell is dead end:', simple_colors.magenta('MAGENTA'))
         print('Calculated cell:', simple_colors.green('GREEN'))
+
+    def get_raw_display_cell(self, cell):
+        cell_string = cell.candidates_string().center(self.get_display_cell_width())
+        if cell.is_empty() and self.empty_cell_is_possible_final_cell(cell):
+            return '++'.center(self.get_display_cell_width())
+        elif cell.is_empty() and self.empty_cell_is_a_dead_end_or_hole(cell):
+            return '**'.center(self.get_display_cell_width())
+
+        return cell_string
 
     def get_display_cell(self, cell):
         cell_string = cell.candidates_string().center(self.get_display_cell_width())
@@ -84,6 +114,16 @@ class Numbrix(GridPuzzle):
 
         return simple_colors.green(cell_string)
 
+    def get_raw_display_row(self, row_name):
+        """"Return a string representation of the specified row"""
+        row_string = ''
+        for col_name in self.column_names:
+            cell_address = col_name + row_name
+            cell = self.get_cell(cell_address)
+            row_string += self.get_raw_display_cell(cell)
+            row_string += '|'
+        return row_name.rjust(3) + ' |' + row_string
+
     def get_display_row(self, row_name):
         """"Return a string representation of the specified row"""
         row_string = ''
@@ -93,6 +133,14 @@ class Numbrix(GridPuzzle):
             row_string += self.get_display_cell(cell)
             row_string += '|'
         return row_name.rjust(3) + ' |' + row_string
+
+    def get_raw_display_string(self):
+        puzzle_string = self.get_display_header() + '\n'
+        puzzle_string += self.get_horizontal_puzzle_boundary() + '\n'
+        for row_name in self.row_names:
+            puzzle_string += self.get_raw_display_row(row_name) + '\n'
+        puzzle_string += self.get_horizontal_puzzle_boundary() + '\n'
+        return puzzle_string
 
     def display(self, force_display=False):
         if (logging.getLogger().level == logging.DEBUG) or force_display or self.interactive_mode:

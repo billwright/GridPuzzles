@@ -614,7 +614,7 @@ class TestNumbrix(unittest.TestCase):
                         easy_4_forced_moves_6_by_6, sept_18_puzzle, hard_6_by_6,
                         medium_6_by_6, may_23_puzzle, very_hard_6_by_6, apr_17_2022,
                         mar_20_2022, may_29_2022, oct_23_2022]
-        puzzles = [very_hard_puzzle]
+        puzzles = [medium_6_by_6]
 
         for puzzle in puzzles:
             numbrix = Numbrix(puzzle, False)
@@ -627,6 +627,8 @@ class TestNumbrix(unittest.TestCase):
                 self.assertTrue(False)
             else:
                 solved_puzzle.display()
+                solved_puzzle.display_as_code()
+                print(solved_puzzle.get_raw_dictionary())
                 self.assertTrue(solved_puzzle.is_solved())
 
     def test_logging(self):
@@ -712,6 +714,20 @@ class TestNumbrix(unittest.TestCase):
         print('Black bold: ', simple_colors.black('Welcome Finxter!', ['bold']))
         print('Black dim: ', simple_colors.black('Welcome Finxter!', ['dim']))
         print('Black: ', simple_colors.black('Welcome Finxter!'))
+
+    def test_string_definition_creation(self):
+        string_def = '4,,,,,29,,2,33,26,27,,,,,,24,,,36,,,21,,,11,12,19,18,,9,,,,,16'
+        list_def = Numbrix.create_definition_from_string(string_def)
+        print(list_def)
+        numbrix = Numbrix(list_def)
+        numbrix.display()
+
+    def test_display_raw_string_display(self):
+        string_def = '4,,,,,29,,2,33,26,27,,,,,,24,,,36,,,21,,,11,12,19,18,,9,,,,,16'
+        list_def = Numbrix.create_definition_from_string(string_def)
+        print(list_def)
+        numbrix = Numbrix(list_def)
+        print(numbrix.get_raw_display_string())
 
 
 if __name__ == '__main__':
