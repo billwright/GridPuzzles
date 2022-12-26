@@ -29,7 +29,7 @@ class Numbrix(GridPuzzle):
     def create_definition_from_string(string_definition):
         list_definition = []
         for cell_def in string_definition.split(','):
-            if cell_def is '':
+            if cell_def == '':
                 list_definition.append(None)
             else:
                 list_definition.append(int(cell_def))
@@ -390,9 +390,13 @@ class Numbrix(GridPuzzle):
                         "Puzzle became inconsistent. Must have been an incorrect guess. Trying a different one...")
 
         if len(puzzle_with_one_route_paths_solved.paths) == 0:
-            print('We should never be here, unless the puzzle is solved...I should check for that.')
+            print('We should never be here, unless the puzzle is solved...I should check for that. Here is the puzzle:')
+            if puzzle_with_one_route_paths_solved.is_solved():
+                return None
+
+            puzzle_with_one_route_paths_solved.display_as_code()
             puzzle_with_one_route_paths_solved.display()
-            return None
+            raise Inconsistent_Puzzle_Exception
 
         path_to_guess = puzzle_with_one_route_paths_solved.paths[0]
         if path_to_guess.routes is None:

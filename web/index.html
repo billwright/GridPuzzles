@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="style.css"/>
+    <title>My Puzzle Solver</title>
+</head>
+<body>
+<div><h1>Bill Wright's Grid Puzzle Solver</h1></div>
+<div class="flex-container">
+    <label for="puzzle_type">Puzzle Type</label>
+    <select datatype="string" id="puzzle_type" name="puzzle_type">
+        <option id="sudoku" name="sudoku">Sudoku</option>
+        <option id="kenken" name="kenken">Kenken</option>
+        <option id="numbrix" name="numbrix">Numbrix</option>
+    </select>
+    <label for="dimension">Dimension</label>
+    <select datatype="string" id="dimension" name="dimension">
+        <option id="6x6" name="6x6">6x6</option>
+        <option id="9x9" name="9x9">9x9</option>
+    </select>
+    <form class="form" id="form">
+        <h2>Enter the puzzle's given values:</h2>
+        <div class="flex-container" id="row">
+            <table>
+                <tr>
+                    <td>
+                        <input type="number" min="1" max="36" id="A1" class="cell" value="4"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="B1" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="C1" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="D1" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="E1" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="F6" class="cell" value="29"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="number" min="1" max="36" id="A2" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="B2" class="cell"  value="2"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="C2" class="cell" value="33"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="D2" class="cell" value="26"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="E2" class="cell" value="27"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="F2" class="cell"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="number" min="1" max="36" id="A3" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="B3" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="C3" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="D3" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="E3" class="cell" value="24"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="F3" class="cell"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="number" min="1" max="36" id="A4" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="B4" class="cell" value="36"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="C4" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="D4" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="E4" class="cell" value="21"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="F4" class="cell"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="number" min="1" max="36" id="A5" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="B5" class="cell" value="11"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="C5" class="cell" value="12"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="D5" class="cell" value="19"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="E5" class="cell" value="18"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="F5" class="cell"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="number" min="1" max="36" id="A6" class="cell" value="9"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="B6" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="C6" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="D6" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="E6" class="cell"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="36" id="F6" class="cell" value="16"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <button type="submit" onclick="onSubmitGivenPuzzle()">Solve</button>
+    </form>
+    <button type="button" onclick="onClickExample()">Get Example</button>
+    <button type="button" onclick="onClickPuzzleServer()">Solve Puzzle</button>
+</div>
+<script>
+        // API for get requests
+        let fetchRes = fetch("https://jsonplaceholder.typicode.com/todos/1");
+        // fetchRes is the promise to resolve it by using.then() method
+        fetchRes.then(res =>
+            res.json()).then(d => {
+                console.log(d)
+            })
+
+
+
+</script>
+<script src="script.js"></script>
+</body>
+</html>
