@@ -43,7 +43,10 @@ function onClickPuzzleServer()  {
             .then(response => {
                 if (response.ok) {
                     response.json().then(
-                        puzzle_solution => console.log('Puzzled returned: ', puzzle_solution)
+                        puzzle_solution => {
+                            console.log('Puzzled returned: ', puzzle_solution)
+                            populateTableWithSolution(puzzle_solution.solution)
+                        }
                     )
                 } else {
                     alert(`HTTP return code: ${response.status}`)
@@ -62,4 +65,11 @@ function collectGivenData() {
         puzzle_def += cell.value + ','
     })
     return puzzle_def;
+}
+
+function populateTableWithSolution(solution_dictionary) {
+    Object.entries(solution_dictionary).forEach(addressValueArray => {
+        cell = document.querySelector(`#${addressValueArray[0]}`)
+        cell.value = addressValueArray[1]
+    })
 }
