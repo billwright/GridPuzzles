@@ -1,12 +1,14 @@
 from flask import Flask, request
 from Numbrix import Numbrix
+from Sudoku import Sudoku
 from flask import send_from_directory
 import json
+import math
 from Already_Solved_Exception import Already_Solved_Exception
 
 # Start the flask service with this command (in the same directory as this file):  flask --app puzzle_service run
 
-PUZZLE_FILE_NAME = "puzzles.json"
+PUZZLE_FILE_NAME_SUFFIX = "_puzzles.json"
 
 app = Flask(__name__,
             static_url_path='',
@@ -27,7 +29,7 @@ def welcome():
 @app.route('/solve/numbrix', methods=['GET'])
 def solve_numbrix():
     if 'definition' not in request.args:
-        return 'To solve numbrix, pass me a puzzle definition.'
+        return 'To solve numbrix, pass me a puzzle definition.', 400
 
     puzzle_def = request.args['definition']
     if puzzle_def[-1] == ',':
@@ -44,7 +46,7 @@ def solve_numbrix():
         results['solution'] = solved_puzzle
 
         print('Storing this puzzle definition and the solution for future use', puzzle_def, solved_puzzle)
-        store_puzzle_in_puzzle_file(puzzle_def, results, PUZZLE_FILE_NAME)
+        store_puzzle_in_puzzle_file(puzzle_def, results, 'numbrix' + PUZZLE_FILE_NAME_SUFFIX)
 
         return results
 
@@ -57,7 +59,33 @@ def solve_numbrix():
 
 @app.route('/solve/sudoku', methods=['GET'])
 def solve_sudoku():
-    return 'Solving sudoku...not yet implemented', 400
+    if 'definition' not in request.args:
+        return 'To solve numbrix, pass me a puzzle definition.', 400
+
+    puzzle_def = request.args['definition']
+    if puzzle_def[-1] == ',':
+        puzzle_def = puzzle_def[0:-1]
+        print('Adjusting the puzzle definition by trimming a trailing comma...')
+
+    print('In solve_sudoku and trying to solve this puzzle definition:', puzzle_def)
+
+    try:
+        list_def = Sudoku.create_definition_from_string(puzzle_def)
+        sudoku = Sudoku(list_def)
+        results = {'given': sudoku.get_raw_dictionary()}
+        solved_puzzle = sudoku.search().get_raw_dictionary()
+        results['solution'] = solved_puzzle
+
+        print('Storing this puzzle definition and the solution for future use', puzzle_def, solved_puzzle)
+        store_puzzle_in_puzzle_file(puzzle_def, results, 'numbrix' + PUZZLE_FILE_NAME_SUFFIX)
+
+        return results
+
+    except Already_Solved_Exception as e:
+        return 'Already solved', 200
+    except Exception as e:
+        print('Error! The error was:', e)
+        return 'Inconsistent Puzzle', 500
 
 
 @app.route('/solve/kenken', methods=['GET'])
@@ -85,13 +113,18 @@ def solve_kenken():
 #
 # We'll name the file puzzles.json and just store it in this directory for now
 
-def store_puzzle_in_puzzle_file(definition, solution, puzzle_file_name):
+def store_puzzle_in_puzzle_file(definition, results, puzzle_file_name):
     with open(puzzle_file_name, 'r') as puzzle_file:
         # This file contains a dictionary of puzzles, keyed by the definition with a value of the solution
         puzzle_map = json.load(puzzle_file)
 
-    if definition not in puzzle_map.keys():
-        puzzle_map[definition] = solution
+    dimension = int(math.sqrt(len(results['solution'])))
+    if dimension not in puzzle_map.keys():
+        puzzle_map[dimension] = {}
+    dim_map = puzzle_map[dimension]
+
+    if definition not in dim_map.keys():
+        dim_map[definition] = results
         with open(puzzle_file_name, "w") as new_puzzle_file:
             json.dump(puzzle_map, new_puzzle_file)
     else:

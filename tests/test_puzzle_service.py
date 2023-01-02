@@ -1,7 +1,9 @@
+import math
+
 import pytest
 from puzzle_service import *
 import json
-
+import math
 
 def generate_results_dictionary(puzzle_def):
     list_def = Numbrix.create_definition_from_string(puzzle_def)
@@ -66,3 +68,34 @@ def generate_results_dictionary(puzzle_def):
     solved_puzzle = numbrix.search().get_raw_dictionary()
     results['solution'] = solved_puzzle
     return results
+
+
+def test_puzzle_retrieval():
+    puzzle_type = 'numbrix'
+    dimension = 6
+    # puzzle_map = retrieve_random_puzzle(puzzle_type, dimension)
+    # assert puzzle_map is not None
+
+
+def reorg_puzzle_file(puzzle_type, file_to_reorg):
+    # I want a separate file for each puzzle type. It will contain a dictionary keyed by dimension
+    # and then by puzzle definition string.
+    with open(file_to_reorg, 'r') as puzzle_file:
+        # Reading from json file
+        # This file contains a dictionary of puzzles, keyed by the definition with a value of the solution
+        puzzle_maps = json.load(puzzle_file)
+
+    new_map = {}
+    for key in puzzle_maps.keys():
+        puzzle_map = puzzle_maps[key]
+        curr_dim = int(math.sqrt(len(puzzle_map['solution'])))
+        dim_map = {}
+        if curr_dim in new_map.keys():
+            dim_map = new_map[curr_dim]
+        dim_map[key] = puzzle_map
+        new_map[curr_dim] = dim_map
+
+    with open(f'{puzzle_type}_puzzles.json', "w") as new_puzzle_file:
+        json.dump(new_map, new_puzzle_file)
+
+reorg_puzzle_file('numbrix', 'puzzles.json')

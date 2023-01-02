@@ -10,6 +10,12 @@ console.log('running javascript');
 //      https://maximorlov.com/async-await-better-than-chaining-promises/
 //      https://mockend.com/
 
+puzzle_dimensions = {
+    'numbrix': [6, 7, 8, 9, 10, 12, 15],
+    'sudoku': [6, 9],
+    'kenken': [4, 6, 8
+    ]
+}
 function onSubmitGivenPuzzle()  {
     console.log('In onSubmitGivenPuzzle')
     fetch('https://jsonplaceholder.typicode.com/todos/1')
@@ -76,18 +82,26 @@ function populateTableWithSolution(solution_dictionary) {
     })
 }
 
-function onPuzzleTypeChange(event) {
-    console.debug('In onPuzzleTypeChange. event is', event)
-}
+const selectPuzzleTypeElement = document.getElementById('puzzle_type');
 
-function onDimensionChange(event) {
-    console.debug('In onPuzzleTypeChange. event is', event)
-}
+selectPuzzleTypeElement.addEventListener('change', (event) => {
+    const puzzle_type = event.srcElement.value
+
+    const dimension_dropdown = document.getElementById('dimension')
+    dimension_dropdown.innerHTML = ''
+    availableDimensions = puzzle_dimensions[puzzle_type]
+    for (let dim of availableDimensions) {
+        const newOptionElement = document.createElement('option')
+        newOptionElement.setAttribute('id', `${dim}x${dim}`)
+        newOptionElement.setAttribute('value', `${dim}`)
+        newOptionElement.text = `${dim}x${dim}`
+        dimension_dropdown.appendChild(newOptionElement)
+    }
+});
 
 const selectDimensionElement = document.getElementById('dimension');
 
 selectDimensionElement.addEventListener('change', (event) => {
-    console.debug('In onPuzzleTypeChange event listener. new value is', event.srcElement.value)
     const puzzle_size = Number(event.srcElement.value)
 
     const puzzle_table = document.getElementById('puzzleTable')
