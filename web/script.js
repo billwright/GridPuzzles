@@ -1,17 +1,14 @@
-
 console.log('running javascript');
-//for (cell in cells) {
-//  console.debug(cell);
-//}
 
-//async function onSubmitGivenPuzzle()  {
-//    console.debug('In onSubmitGivenPuzzle')
-//    fetch('https://jsonplaceholder.typicode.com/todos/1')
-//      .then(response => response.json())
-//      .then(json => console.log(json))
-//}
 
 // Can use promise chaining or use async (research more on this)
+// Some references:
+//      https://javascript.info/promise-error-handling
+//      https://www.javascripttutorial.net/javascript-fetch-api/
+//      https://afteracademy.com/blog/migrating-from-promise-chains-to-async-await/
+//      https://afteracademy.com/blog/migrating-from-promise-chains-to-async-await/
+//      https://maximorlov.com/async-await-better-than-chaining-promises/
+//      https://mockend.com/
 
 function onSubmitGivenPuzzle()  {
     console.log('In onSubmitGivenPuzzle')

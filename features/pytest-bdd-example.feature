@@ -8,9 +8,8 @@ Feature: Example usage
   # The lines immediately after the feature title are just comments
 
   @example
-  Scenario: Say Hi
-    Given I say hi
-    Given I print the world
-    Given I say "sup"
+  Scenario: I test passing state between steps
+    Given I put "Bill" into the world
+    Then the world contains "Bill"
 
 

@@ -70,7 +70,8 @@ class Numbrix(GridPuzzle):
     def get_raw_dictionary(self):
         raw_dictionary = {}
         for (address, numbrix_cell) in self.puzzle_dict.items():
-            raw_dictionary[address] = numbrix_cell.get_value()
+            if numbrix_cell.get_value() is not None:
+                raw_dictionary[address] = numbrix_cell.get_value()
         return raw_dictionary
 
     def set_cell_value(self, cell: NumbrixCell, new_value: int):
