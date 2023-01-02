@@ -4,6 +4,7 @@ from Blanking_Cell_Exception import Blanking_Cell_Exception
 from Duplicate_Cell_Value_In_Group_Exception import Duplicate_Cell_Value_In_Group_Exception
 from Inconsistent_Puzzle_Exception import Inconsistent_Puzzle_Exception
 from Duplicate_Cell_Value_Exception import Duplicate_Cell_Value_Exception
+from Already_Solved_Exception import Already_Solved_Exception
 
 from math import sqrt
 
@@ -290,7 +291,7 @@ class GridPuzzle(object):
     def reduce(self):
         current_puzzle_size = self.get_current_puzzle_count()
         if self.is_solved():
-            raise Exception('We should never get here. The puzzle is already solved or invalid')
+            raise Already_Solved_Exception('We should never get here. The puzzle is already solved or invalid')
 
         while True:
             self.search_and_reduce_exclusive_cells()

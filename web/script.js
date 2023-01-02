@@ -34,7 +34,12 @@ function onClickPuzzleServer()  {
         const puzzle_def = collectGivenData()
         console.log('Puzzle def is', puzzle_def)
 
-        let fetchRes = fetch("http://127.0.0.1:5000/solve/numbrix?definition=" + puzzle_def);
+        const puzzle_type = document.getElementById('puzzle_type').value.toLowerCase()
+
+        url = `http://127.0.0.1:5000/solve/${puzzle_type}?definition=${puzzle_def}`
+        console.log('Hitting this URL:', url)
+
+        let fetchRes = fetch(url);
         // fetchRes is the promise to resolve it by using.then() method
         fetchRes
             .then(response => {
@@ -70,3 +75,38 @@ function populateTableWithSolution(solution_dictionary) {
         cell.value = addressValueArray[1]
     })
 }
+
+function onPuzzleTypeChange(event) {
+    console.debug('In onPuzzleTypeChange. event is', event)
+}
+
+function onDimensionChange(event) {
+    console.debug('In onPuzzleTypeChange. event is', event)
+}
+
+const selectDimensionElement = document.getElementById('dimension');
+
+selectDimensionElement.addEventListener('change', (event) => {
+    console.debug('In onPuzzleTypeChange event listener. new value is', event.srcElement.value)
+    const newDimension = event.srcElement.value
+    const puzzle_size = Number(newDimension[0])
+
+    const puzzle_table = document.getElementById('puzzleTable')
+    puzzle_table.innerHTML = ''
+    for (let row = 1; row <= puzzle_size; row++) {
+        const newRowElement = document.createElement('tr')
+        for (let col = 0; col < puzzle_size; col++) {
+            colLetter = String.fromCharCode(65 + col)   // 65 is character 'A'
+            const newCellElement = document.createElement('td')
+            const newInputBox = document.createElement('input')
+            newInputBox.setAttribute('type', 'number')
+            newInputBox.setAttribute('min', '1')
+            newInputBox.setAttribute('max', puzzle_size*puzzle_size)
+            newInputBox.setAttribute('class', 'cell')
+            newInputBox.setAttribute('id', colLetter+row)
+            newCellElement.appendChild(newInputBox)
+            newRowElement.appendChild(newCellElement)
+        }
+        puzzle_table.appendChild(newRowElement)
+    }
+});

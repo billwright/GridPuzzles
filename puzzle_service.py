@@ -2,8 +2,7 @@ from flask import Flask, request
 from Numbrix import Numbrix
 from flask import send_from_directory
 import json
-
-from Inconsistent_Puzzle_Exception import Inconsistent_Puzzle_Exception
+from Already_Solved_Exception import Already_Solved_Exception
 
 # Start the flask service with this command (in the same directory as this file):  flask --app puzzle_service run
 
@@ -49,6 +48,8 @@ def solve_numbrix():
 
         return results
 
+    except Already_Solved_Exception as e:
+        return 'Already solved', 200
     except Exception as e:
         print('Error! The error was:', e)
         return 'Inconsistent Puzzle', 500
@@ -56,12 +57,12 @@ def solve_numbrix():
 
 @app.route('/solve/sudoku', methods=['GET'])
 def solve_sudoku():
-    return 'Solving sudoku...not yet implemented'
+    return 'Solving sudoku...not yet implemented', 400
 
 
 @app.route('/solve/kenken', methods=['GET'])
 def solve_kenken():
-    return 'Solving kenken...not yet implemented'
+    return 'Solving kenken...not yet implemented', 400
 
     # response = app.response_class(
     #         response=json.dumps(data),

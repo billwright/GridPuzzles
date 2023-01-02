@@ -11,6 +11,7 @@ from GridPuzzle import GridPuzzle
 from NumbrixCell import NumbrixCell
 from Inconsistent_Puzzle_Exception import Inconsistent_Puzzle_Exception
 from Duplicate_Cell_Value_Exception import Duplicate_Cell_Value_Exception
+from Already_Solved_Exception import Already_Solved_Exception
 from RoutesIsNoneException import RoutesIsNoneException
 from grid_utils import flatten_and_de_dup, tuple_cross
 from Path import Path
@@ -231,7 +232,7 @@ class Numbrix(GridPuzzle):
 
     def reduce_forced_cells_only(self):
         if self.is_solved():
-            raise Exception('We should never get here. The puzzle is already solved or invalid')
+            raise Already_Solved_Exception('In reduced_forced_cell_only and puzzle is already solved. We should never get here. The puzzle is already solved or invalid')
 
         before_puzzle_size = self.get_current_puzzle_count()
         progress_made = True
@@ -244,7 +245,7 @@ class Numbrix(GridPuzzle):
 
     def reduce(self):
         if self.is_solved():
-            raise Exception('We should never get here. The puzzle is already solved or invalid')
+            raise Already_Solved_Exception('In reduce and puzzle is already solved. We should never get here. The puzzle is already solved or invalid')
 
         before_puzzle_size = self.get_current_puzzle_count()
         progress_made = True

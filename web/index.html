@@ -9,35 +9,37 @@
 </head>
 <!--
     TODO: Fix ugly display of UI
-    TODO: Use code to generate the table elements
-    TODO: Make dimension section work to resize table
+    TODO: ✔︎ Use code to generate the table elements
+    TODO: ✔︎ Make dimension section work to resize table
     TODO: Make puzzle-type selection work to select the type of puzzle to enter (and solve)
     TODO: Put API on Sudoku solver
     TODO: Put API on KenKen solver
     TODO: Create HTML UI for KenKen puzzle
     TODO: Add interactive features for puzzle solving, maybe stopping after each guess and backtrack?
-    TODO: Add endpoint to UI to serve up a puzzle of a requested size and type (buid out a small library of these)
-    TODO: Save all unique games entered to file
-    TODO: ✔︎ Allow option in UI to display one of the stored puzzles
-    TODO: Fix issue of submitting a solved puzzle returns an error
+    TODO: Add endpoint to UI to serve up a puzzle of a requested size and type (build out a small library of these)
+    TODO: ✔︎ Save all unique games entered to file
+    TODO: Allow option in UI to display one of the stored puzzles
+    TODO: ✔︎ Fix issue of submitting a solved puzzle returns an error
 -->
 <body>
-    <div><h1>Bill Wright's Grid Puzzle Solver</h1></div>
+    <div><header><h1>Bill Wright's Grid Puzzle Solver</h1></header></div>
     <div class="flex-container">
         <label for="puzzle_type">Puzzle Type</label>
-        <select datatype="string" id="puzzle_type" name="puzzle_type">
-            <option id="sudoku" name="sudoku">Sudoku</option>
-            <option id="kenken" name="kenken">Kenken</option>
-            <option id="numbrix" name="numbrix">Numbrix</option>
+        <select datatype="string" id="puzzle_type" name="puzzle_type"">
+            <option id="numbrix" value="numbrix">Numbrix</option>
+            <option id="sudoku" value="sudoku">Sudoku</option>
+            <option id="kenken" value="kenken">Kenken</option>
         </select>
         <label for="dimension">Dimension</label>
-        <select datatype="string" id="dimension" name="dimension">
+        <select datatype="string" id="dimension" name="dimension"">
             <option id="6x6" name="6x6">6x6</option>
+            <option id="6x6" name="6x6">7x7</option>
+            <option id="6x6" name="6x6">8x8</option>
             <option id="9x9" name="9x9">9x9</option>
         </select>
         <h2>Enter the puzzle's given values:</h2>
         <div class="flex-container" id="row">
-            <table>
+            <table id="puzzleTable">
                 <tr>
                     <td>
                         <input type="number" min="1" max="36" id="A1" class="cell" value="4"/>
