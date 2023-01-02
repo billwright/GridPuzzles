@@ -88,8 +88,7 @@ const selectDimensionElement = document.getElementById('dimension');
 
 selectDimensionElement.addEventListener('change', (event) => {
     console.debug('In onPuzzleTypeChange event listener. new value is', event.srcElement.value)
-    const newDimension = event.srcElement.value
-    const puzzle_size = Number(newDimension[0])
+    const puzzle_size = Number(event.srcElement.value)
 
     const puzzle_table = document.getElementById('puzzleTable')
     puzzle_table.innerHTML = ''
