@@ -1,3 +1,5 @@
+import random
+
 from flask import Flask, request
 from Numbrix import Numbrix
 from Sudoku import Sudoku
@@ -24,6 +26,18 @@ def home():
 @app.route('/welcome')
 def welcome():
     return "My Puzzle-Solving Server"
+
+
+@app.route('/new_puzzle', methods=['GET'])
+def get_new_puzzle():
+    if 'puzzle_type' not in request.args:
+        return 'To get a new puzzle, you must pass the puzzle type.', 400
+    if 'dimension' not in request.args:
+        return 'To get a new puzzle, you must pass the dimension.', 400
+    puzzle_type = request.args['puzzle_type']
+    dimension = request.args['dimension']
+
+    return retrieve_random_puzzle(dimension, puzzle_type + PUZZLE_FILE_NAME_SUFFIX)
 
 
 @app.route('/solve/numbrix', methods=['GET'])
@@ -130,3 +144,15 @@ def store_puzzle_in_puzzle_file(definition, results, puzzle_file_name):
     else:
         print('I am not saving this puzzle, as I have seen it before.')
 
+
+def retrieve_random_puzzle(dimension, puzzle_file_name):
+    with open(puzzle_file_name, 'r') as puzzle_file:
+        # This file contains a dictionary of puzzles, keyed by the definition with a value of the solution
+        puzzle_map = json.load(puzzle_file)
+        if dimension in puzzle_map.keys():
+            possible_puzzles = puzzle_map[dimension]
+            random_index = random.randrange(0, len(possible_puzzles))
+            return list(possible_puzzles.values())[random_index]
+
+        # Return a completely blank puzzle and let the UI deal with it
+        return {'given': {}}

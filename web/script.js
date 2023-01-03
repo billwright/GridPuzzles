@@ -12,7 +12,7 @@ console.log('running javascript');
 
 puzzle_dimensions = {
     'numbrix': [6, 7, 8, 9, 10, 12, 15],
-    'sudoku': [6, 9],
+    'sudoku': [4, 9],
     'kenken': [4, 6, 8
     ]
 }
@@ -53,7 +53,7 @@ function onClickPuzzleServer()  {
                     response.json().then(
                         puzzle_solution => {
                             console.log('Puzzled returned: ', puzzle_solution)
-                            populateTableWithSolution(puzzle_solution.solution)
+                            populateTable(puzzle_solution.solution)
                         }
                     )
                 } else {
@@ -75,7 +75,7 @@ function collectGivenData() {
     return puzzle_def;
 }
 
-function populateTableWithSolution(solution_dictionary) {
+function populateTable(solution_dictionary) {
     Object.entries(solution_dictionary).forEach(addressValueArray => {
         cell = document.querySelector(`#${addressValueArray[0]}`)
         cell.value = addressValueArray[1]
@@ -97,13 +97,18 @@ selectPuzzleTypeElement.addEventListener('change', (event) => {
         newOptionElement.text = `${dim}x${dim}`
         dimension_dropdown.appendChild(newOptionElement)
     }
+
+    updatePuzzleDisplayToMatchDimensions(dimension_dropdown.value)
 });
 
 const selectDimensionElement = document.getElementById('dimension');
 
 selectDimensionElement.addEventListener('change', (event) => {
     const puzzle_size = Number(event.srcElement.value)
+    updatePuzzleDisplayToMatchDimensions(puzzle_size)
+});
 
+function updatePuzzleDisplayToMatchDimensions(puzzle_size) {
     const puzzle_table = document.getElementById('puzzleTable')
     puzzle_table.innerHTML = ''
     for (let row = 1; row <= puzzle_size; row++) {
@@ -122,4 +127,37 @@ selectDimensionElement.addEventListener('change', (event) => {
         }
         puzzle_table.appendChild(newRowElement)
     }
-});
+}
+
+function getNewPuzzle() {
+    const puzzle_type = document.getElementById('puzzle_type').value
+    const dimension = document.getElementById('dimension').value
+
+    url = `http://127.0.0.1:5000/new_puzzle?puzzle_type=${puzzle_type}&dimension=${dimension}`
+    console.log('Hitting this URL:', url)
+
+    let fetchRes = fetch(url);
+    // fetchRes is the promise to resolve it by using.then() method
+    fetchRes
+        .then(response => {
+            if (response.ok) {
+                response.json().then(
+                    puzzle_solution => {
+                        console.log('Puzzled returned: ', puzzle_solution)
+                        const status_area = document.getElementById('status')
+                        if (!("given" in puzzle_solution)) {
+                            status_area.text = 'No puzzles of this type and dimension were found in our library. Enter one, please.'
+                        } else {
+                            populateTable(puzzle_solution.given)
+                            status_area.text = 'Have at it!'
+                        }
+                    }
+                )
+            } else {
+                alert(`HTTP return code: ${response.status}`)
+                throw new Error('rethrowing error...')
+            }
+        })
+        .catch(error => console.error(error))   // 400 Error did got go here... Why not?
+        // See: https://javascript.plainenglish.io/js-fetch-are-you-handling-responses-correctly-1df3246b85af
+}

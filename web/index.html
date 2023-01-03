@@ -15,24 +15,25 @@
     TODO: ✔︎ Save all unique games entered to file
     TODO: ✔︎ Make puzzle-type selection work to select the type of puzzle to enter (and solve)
     TODO: ✔︎ Make the dimension list change when I select the puzzle type
-    TODO: Add endpoint to UI to serve up a puzzle of a requested size and type (build out a small library of these)
-    TODO: Add interactive features for puzzle solving, maybe stopping after each guess and backtrack?
+    TODO: ✔︎ Update the puzzle's table to reflect the dimension shown in the dropdown when changing puzzle type
+    TODO: ✔︎ Add endpoint to UI to serve up a puzzle of a requested size and type (build out a small library of these)
     TODO: Put API on Sudoku solver
     TODO: Create HTML UI for Sudoku puzzle
+    TODO: Add interactive features for puzzle solving, maybe stopping after each guess and backtrack?
     TODO: Put API on KenKen solver
     TODO: Create HTML UI for KenKen puzzle
 -->
 <body>
 <div>
     <header><h1>Bill Wright's Grid Puzzle Solver</h1></header>
-        <div class="puzzle_controls">
-        <label for="puzzle_type">Puzzle Type</label>
+    <div class="puzzle_controls">
+        <label for="puzzle_type">Puzzle Type:</label>
         <select datatype="string" id="puzzle_type" name="puzzle_type">
-        <option id="numbrix" value="numbrix">Numbrix</option>
-        <option id="sudoku" value="sudoku">Sudoku</option>
-        <option id="kenken" value="kenken">Kenken</option>
+            <option id="numbrix" value="numbrix">Numbrix</option>
+            <option id="sudoku" value="sudoku">Sudoku</option>
+            <option id="kenken" value="kenken">Kenken</option>
         </select>
-        <label for="dimension">Dimension</label>
+        <label for="dimension">Dimension:</label>
         <select datatype="string" id="dimension" name="dimension"">
         <option id="6x6" value="6">6x6</option>
         <option id="7x7" value="7">7x7</option>
@@ -42,6 +43,11 @@
         <option id="12x12" value="12">12x12</option>
         <option id="15x15" value="15">15x15</option>
         </select>
+        <button type="button" class="newPuzzleButton" onclick="getNewPuzzle()">New Puzzle</button>
+    </div>
+    <div>
+        <textarea readonly id="status">
+        </textarea>
     </div>
 </div>
 <div class="flex-container">

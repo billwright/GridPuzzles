@@ -25,7 +25,7 @@ body {
 .puzzle_controls {
   display: flex;
   justify-content: center;
-    margin: 0 0 12px;
+  margin: 0 0 12px;
 }
 
 .puzzle_table {
@@ -39,6 +39,27 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   justify-content: center;
   align: center
+}
+
+textarea {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 12px;
+}
+
+label {
+  margin: 10 10 10 10px;
+  padding: 10 10 10 10px;
+}
+
+select {
+  margin: 10 10 10 10px;
+  padding: 10 10 10 10px;
+}
+
+.newPuzzleButton {
+  margin: 10 10 10 10px;
+  padding: 10 10 10 10px;
 }
 
 h1 {

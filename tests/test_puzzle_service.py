@@ -5,6 +5,7 @@ from puzzle_service import *
 import json
 import math
 
+
 def generate_results_dictionary(puzzle_def):
     list_def = Numbrix.create_definition_from_string(puzzle_def)
     numbrix = Numbrix(list_def)
@@ -21,6 +22,7 @@ definition_2 = ",,,,,,,28,25,22,19,,,27,26,21,20,,,34,35,12,13,,,3,36,11,10,,,,,
 solution_2 = generate_results_dictionary(definition_2)
 
 PUZZLE_FILE_NAME = "../puzzles_test.json"
+PUZZLE_FILE_NAME_SUFFIX = "_puzzles.json"
 
 
 @pytest.fixture(autouse=True)
@@ -72,9 +74,12 @@ def generate_results_dictionary(puzzle_def):
 
 def test_puzzle_retrieval():
     puzzle_type = 'numbrix'
-    dimension = 6
-    # puzzle_map = retrieve_random_puzzle(puzzle_type, dimension)
-    # assert puzzle_map is not None
+    dimension = '6'
+    puzzle_file_name = puzzle_type + PUZZLE_FILE_NAME_SUFFIX
+    puzzle_map = retrieve_random_puzzle(dimension, puzzle_file_name)
+    print(puzzle_map)
+    assert puzzle_map is not None
+    assert puzzle_map['given'] is not None
 
 
 def reorg_puzzle_file(puzzle_type, file_to_reorg):
@@ -97,5 +102,3 @@ def reorg_puzzle_file(puzzle_type, file_to_reorg):
 
     with open(f'{puzzle_type}_puzzles.json', "w") as new_puzzle_file:
         json.dump(new_map, new_puzzle_file)
-
-reorg_puzzle_file('numbrix', 'puzzles.json')
