@@ -85,3 +85,9 @@ class CandidatesCell(object):
     def get_guesses(self):
         """Returning the candidates in reverse order. Why? Because our hardest Sudoku was 10x as fast."""
         return self._candidates[::-1]
+
+    def get_value(self):
+        if self.is_singlet():
+            return self._candidates[0]
+        else:
+            return None

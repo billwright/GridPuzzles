@@ -35,6 +35,13 @@ class GridPuzzle(object):
         self.row_groups = self.create_row_groups()
         self.column_groups = self.create_column_groups()
 
+    def get_raw_dictionary(self):
+        raw_dictionary = {}
+        for (address, cell) in self.puzzle_dict.items():
+            if cell.get_value() is not None:
+                raw_dictionary[address] = cell.get_value()
+        return raw_dictionary
+
     def validate(self):
         puzzle_square_root = sqrt(len(self.definition))
         if puzzle_square_root != int(puzzle_square_root):

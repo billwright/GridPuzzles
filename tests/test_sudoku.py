@@ -600,6 +600,18 @@ class TestSudoku(unittest.TestCase):
         self.assertEqual(['3'], C1.candidates)
         self.assertEqual(['2', '3'], D1.candidates)
 
+    def test_converting_URL_string_to_puzzle_def(self):
+        input_string = '1,,,,,,,4,,,2,,,3,,'
+        expected_output = '1......4..2..3..'
+        actual_output = Sudoku.create_definition_from_string(input_string)
+        assert actual_output == expected_output
+
+    def test_generating_raw_dictionary(self):
+        puzzle = Sudoku(self.sudoku_4x4_string)
+        raw_dict = puzzle.get_raw_dictionary()
+        print(raw_dict)
+        assert raw_dict is not None
+
 
 if __name__ == '__main__':
     unittest.main()

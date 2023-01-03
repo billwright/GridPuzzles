@@ -91,7 +91,7 @@ def solve_sudoku():
         results['solution'] = solved_puzzle
 
         print('Storing this puzzle definition and the solution for future use', puzzle_def, solved_puzzle)
-        store_puzzle_in_puzzle_file(puzzle_def, results, 'numbrix' + PUZZLE_FILE_NAME_SUFFIX)
+        store_puzzle_in_puzzle_file(puzzle_def, results, 'sudoku' + PUZZLE_FILE_NAME_SUFFIX)
 
         return results
 

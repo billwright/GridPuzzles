@@ -68,13 +68,6 @@ class Numbrix(GridPuzzle):
             raise ValueError("Puzzle definition did not map correctly!")
         return cell_dictionary
 
-    def get_raw_dictionary(self):
-        raw_dictionary = {}
-        for (address, numbrix_cell) in self.puzzle_dict.items():
-            if numbrix_cell.get_value() is not None:
-                raw_dictionary[address] = numbrix_cell.get_value()
-        return raw_dictionary
-
     def set_cell_value(self, cell: NumbrixCell, new_value: int):
         """Sets the value of a cell, but also records the cell as the last cell changed.
         This is helpful in debugging and display of the puzzle."""

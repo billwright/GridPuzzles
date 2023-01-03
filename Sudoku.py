@@ -11,6 +11,17 @@ from grid_utils import cross
 
 class Sudoku(GridPuzzle):
 
+    @staticmethod
+    def create_definition_from_string(input_string):
+        parts = input_string.split(',')
+        output_string = ''
+        for x in parts:
+            if x == '':
+                output_string += '.'
+            else:
+                output_string += x
+        return output_string
+
     def __init__(self, puzzle_string):
         super().__init__(puzzle_string)
         self.box_group_size = int(sqrt(self.size))
