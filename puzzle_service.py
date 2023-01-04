@@ -132,15 +132,16 @@ def store_puzzle_in_puzzle_file(definition, results, puzzle_file_name):
         # This file contains a dictionary of puzzles, keyed by the definition with a value of the solution
         puzzle_map = json.load(puzzle_file)
 
-    dimension = int(math.sqrt(len(results['solution'])))
+    dimension = str(int(math.sqrt(len(results['solution']))))
     if dimension not in puzzle_map.keys():
         puzzle_map[dimension] = {}
     dim_map = puzzle_map[dimension]
 
     if definition not in dim_map.keys():
         dim_map[definition] = results
-        with open(puzzle_file_name, "w") as new_puzzle_file:
-            json.dump(puzzle_map, new_puzzle_file)
+        with open(puzzle_file_name, "w") as puzzle_file:
+            json.dump(puzzle_map, puzzle_file)
+        print(f'I saved a new puzzle. We now have {len(dim_map)} puzzles for a dimension of {dimension}')
     else:
         print('I am not saving this puzzle, as I have seen it before.')
 
@@ -155,4 +156,4 @@ def retrieve_random_puzzle(dimension, puzzle_file_name):
             return list(possible_puzzles.values())[random_index]
 
         # Return a completely blank puzzle and let the UI deal with it
-        return {'given': {}}
+        return {}

@@ -31,7 +31,7 @@
         <select datatype="string" id="puzzle_type" name="puzzle_type">
             <option id="numbrix" value="numbrix">Numbrix</option>
             <option id="sudoku" value="sudoku">Sudoku</option>
-            <option id="kenken" value="kenken">Kenken</option>
+<!--            <option id="kenken" value="kenken">Kenken</option>-->
         </select>
         <label for="dimension">Dimension:</label>
         <select datatype="string" id="dimension" name="dimension"">
@@ -44,10 +44,10 @@
         <option id="15x15" value="15">15x15</option>
         </select>
         <button type="button" class="newPuzzleButton" onclick="getNewPuzzle()">New Puzzle</button>
+        <button type="button" class="clearGridButton" onclick="clearGrid()">Clear Grid</button>
     </div>
     <div>
-        <textarea readonly id="status">
-        </textarea>
+        <textarea readonly id="status" placeholder="Status will show here"></textarea>
     </div>
 </div>
 <div class="flex-container">

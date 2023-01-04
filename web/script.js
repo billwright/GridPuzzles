@@ -129,7 +129,17 @@ function updatePuzzleDisplayToMatchDimensions(puzzle_size) {
     }
 }
 
+function clearGrid() {
+    const tableCells = document.getElementsByClassName('cell')
+    for (const cell of tableCells) {
+        cell.value = ''
+    }
+}
+
 function getNewPuzzle() {
+    // First we need to clear the grid, as loading a new puzzle only loads the cells specified
+    clearGrid()
+
     const puzzle_type = document.getElementById('puzzle_type').value
     const dimension = document.getElementById('dimension').value
 
@@ -146,10 +156,10 @@ function getNewPuzzle() {
                         console.log('Puzzled returned: ', puzzle_solution)
                         const status_area = document.getElementById('status')
                         if (!("given" in puzzle_solution)) {
-                            status_area.text = 'No puzzles of this type and dimension were found in our library. Enter one, please.'
+                            status_area.value = 'No puzzles of this type and dimension were found in our library. Enter one, please.'
                         } else {
                             populateTable(puzzle_solution.given)
-                            status_area.text = 'Have at it!'
+                            status_area.value = 'Have at it!'
                         }
                     }
                 )
