@@ -28,6 +28,11 @@ body {
   margin: 0 0 12px;
 }
 
+.puzzle_control {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
 .puzzle_table {
     margin-left:auto;
     margin-right:auto;
@@ -45,6 +50,7 @@ textarea {
   display: block;
   margin-left: auto;
   margin-right: auto;
+  margin-top: 5px;
   border: none;
   width: 80%;
   text-align: center;
@@ -61,8 +67,9 @@ select {
 }
 
 .newPuzzleButton {
-  margin: 10 10 10 10px;
   padding: 10 10 10 10px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 h1 {
