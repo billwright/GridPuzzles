@@ -16,6 +16,8 @@ from RoutesIsNoneException import RoutesIsNoneException
 from grid_utils import flatten_and_de_dup, tuple_cross
 from Path import Path
 
+from multiprocessing import Process
+
 MAX_PATH_LENGTH_TO_SEARCH_FOR_ROUTES = 8
 
 
@@ -439,6 +441,83 @@ class Numbrix(GridPuzzle):
         puzzle_with_one_route_paths_solved.display()
         GridPuzzle.number_of_backtracks += 1
         return None
+
+    @staticmethod
+    def static_search(puzzle):
+        """
+        TODO: Implement me so that it I can pass this function to the Process...
+        Args:
+            puzzle:
+
+        Returns:
+
+        """
+
+    @staticmethod
+    def search_all_routes_of_path(path_to_guess):
+        """
+        Args:
+            path_to_guess:
+
+        Returns:
+            Either a solved puzzle or None, if it couldn't solve the puzzle
+        """
+        for index, (puzzle_with_guess, route_guess) in enumerate(path_to_guess.routes, start=1):
+            GridPuzzle.number_of_guesses += 1
+            puzzle_with_guess.guessed_routes.append((f'{index} out of {path_to_guess.num_routes()}', route_guess))
+            logging.debug(
+                f"I'm guessing route: {route_guess} ({index} out of {path_to_guess.num_routes()} possible guesses)")
+            GridPuzzle.number_of_guesses += 1
+
+            # Check that our guess is consistent, otherwise, let's continue to a different guess
+            if not puzzle_with_guess.is_consistent():
+                logging.debug("Current guess is inconsistent, so moving on to the next guess...")
+                continue
+
+            # Next, check if the guessed puzzle is already solved
+            if puzzle_with_guess.is_solved():
+                return puzzle_with_guess
+
+            # Here's the tricky part, recursively call this same method, but we're calling it on a different object
+            # Note that this is NOT self.search(), but puzzle_with_guess.search().
+            try:
+                solved_puzzle = puzzle_with_guess.search()
+                if solved_puzzle is not None:
+                    return solved_puzzle
+                else:
+                    logging.debug(
+                        f'Our guess of {route_guess} for Path {path_to_guess} was wrong.')
+            except Inconsistent_Puzzle_Exception:
+                logging.debug(
+                    "Puzzle became inconsistent. Must have been an incorrect guess. Trying a different one...")
+            except Duplicate_Cell_Value_Exception as error:
+                logging.debug(error.message)
+
+    @staticmethod
+    def parallel_search_all_routes_of_path(path_to_guess):
+        """
+        TODO: Implement me
+        Args:
+            path_to_guess:
+
+        Returns:
+            Either a solved puzzle or None, if it couldn't solve the puzzle
+        """
+
+        processes = []
+        for (puzzle_with_guess, _) in path_to_guess.routes:
+            process = Process(target=Numbrix.static_search, args=(puzzle_with_guess, ))
+            process.start()
+            processes.append(process)
+
+        # wait for all processes to complete
+        for process in processes:
+            process.join()
+
+        # TODO: Figure out how to return the solution...
+        # Make sure to fully test static_search before parallelizing it
+        # Use: print('my message', flush=True)
+
 
     def generate_guesses_for_final_cells(self):
         extended_holes = self.get_extended_holes()
