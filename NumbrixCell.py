@@ -3,7 +3,7 @@ from Blanking_Cell_Exception import Blanking_Cell_Exception
 
 
 class NumbrixCell(CandidatesCell):
-
+# TODO: NumbrixCell should not be a subclass of CandidatesCell. It has no candidates concept
     def __init__(self, cell_address, candidates):
         self._candidates = []
         super().__init__(cell_address, candidates)

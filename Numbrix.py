@@ -87,10 +87,10 @@ class Numbrix(GridPuzzle):
 
     def get_raw_display_cell(self, cell):
         cell_string = cell.candidates_string().center(self.get_display_cell_width())
-        if cell.is_empty() and self.empty_cell_is_possible_final_cell(cell):
-            return '++'.center(self.get_display_cell_width())
-        elif cell.is_empty() and self.empty_cell_is_a_dead_end_or_hole(cell):
+        if cell.is_empty() and self.empty_cell_is_a_dead_end_or_hole(cell):
             return '**'.center(self.get_display_cell_width())
+        elif cell.is_empty() and self.empty_cell_is_possible_final_cell(cell):
+            return '++'.center(self.get_display_cell_width())
 
         return cell_string
 
@@ -376,6 +376,8 @@ class Numbrix(GridPuzzle):
                 puzzle_with_guess.set_cell_value(final_cell, guessed_end_value)
                 puzzle_with_guess.guessed_cells.append(final_cell)
                 try:
+                    if puzzle_with_guess is not None:
+                        return puzzle_with_guess
                     solved_puzzle = puzzle_with_guess.search()
                     if solved_puzzle is not None:
                         return solved_puzzle
@@ -387,7 +389,7 @@ class Numbrix(GridPuzzle):
                         "Puzzle became inconsistent. Must have been an incorrect guess. Trying a different one...")
 
         if len(puzzle_with_one_route_paths_solved.paths) == 0:
-            print('We should never be here, unless the puzzle is solved...I should check for that. Here is the puzzle:')
+            print('The puzzle is invalid (probably too many holes). Backing up...')
             if puzzle_with_one_route_paths_solved.is_solved():
                 return None
 
@@ -518,13 +520,12 @@ class Numbrix(GridPuzzle):
         # Make sure to fully test static_search before parallelizing it
         # Use: print('my message', flush=True)
 
-
     def generate_guesses_for_final_cells(self):
         extended_holes = self.get_extended_holes()
         available_ending_values = self.get_remaining_well_bottoms_values()
         if len(extended_holes) != len(available_ending_values):
             # TODO: Shouldn't have called this method. Check for invalid earlier
-            print('Puzzle is invalid. Back-up.')
+            print('We should never be there. Puzzle is invalid. Back-up.')
             return []
 
         # Check if we have the matching number of well bottoms

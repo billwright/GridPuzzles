@@ -18,35 +18,40 @@
     TODO: ✔︎ Update the puzzle's table to reflect the dimension shown in the dropdown when changing puzzle type
     TODO: ✔︎ Add endpoint to UI to serve up a puzzle of a requested size and type (build out a small library of these)
     TODO: ✔︎ Put API on Sudoku solver
-    TODO: Create HTML UI for Sudoku puzzle
+    TODO: Create HTML UI for Sudoku puzzle -- use this as an introduction to React
+    TODO: Add ability to color code cells like I did with text UI
+    TODO: Add row and column labels and make them hide-able via a button
     TODO: Add interactive features for puzzle solving, maybe stopping after each guess and backtrack?
     TODO: Put API on KenKen solver
     TODO: Create HTML UI for KenKen puzzle
+    TODO: Add a hint button to progress the puzzle one tiny step
 -->
 <body>
 <div>
     <header><h1>Bill Wright's Grid Puzzle Solver</h1></header>
     <div class="puzzle_controls">
-        <label for="puzzle_type">Puzzle Type:</label>
-        <select datatype="string" id="puzzle_type" name="puzzle_type" class="puzzle_control">
-            <option id="numbrix" value="numbrix">Numbrix</option>
-            <option id="sudoku" value="sudoku">Sudoku</option>
-<!--            <option id="kenken" value="kenken">Kenken</option>-->
-        </select>
+        <div class="puzzle_type">
+            <label for="puzzle_type">Puzzle Type:</label>
+            <select datatype="string" id="puzzle_type" name="puzzle_type" class="puzzle_control">
+                <option id="numbrix" value="numbrix">Numbrix</option>
+                <option id="sudoku" value="sudoku">Sudoku</option>
+                <!--            <option id="kenken" value="kenken">Kenken</option>-->
+            </select>
+        </div>
         <label for="dimension">Dimension:</label>
         <select datatype="string" id="dimension" name="dimension" class="puzzle_control">
-        <option id="6x6" value="6">6x6</option>
-        <option id="7x7" value="7">7x7</option>
-        <option id="8x8" value="8">8x8</option>
-        <option id="9x9" value="8">9x9</option>
-        <option id="10x10" value="10">10x10</option>
-        <option id="12x12" value="12">12x12</option>
-        <option id="15x15" value="15">15x15</option>
+            <option id="6x6" value="6">6x6</option>
+            <option id="7x7" value="7">7x7</option>
+            <option id="8x8" value="8">8x8</option>
+            <option id="9x9" value="8">9x9</option>
+            <option id="10x10" value="10">10x10</option>
+            <option id="12x12" value="12">12x12</option>
+            <option id="15x15" value="15">15x15</option>
         </select>
         <button type="button" class="newPuzzleButton" onclick="getNewPuzzle()">New Puzzle</button>
         <button type="button" class="clearGridButton" onclick="clearGrid()">Clear Grid</button>
     </div>
-    <div>
+    <div class="status_area">
         <textarea readonly id="status" placeholder="Status will show here"></textarea>
     </div>
 </div>
@@ -176,7 +181,7 @@
             </tr>
         </table>
     </div>
-    <button type="button" class="solveButton" onclick="onClickPuzzleServer()">Solve Puzzle</button>
+    <button type="button" class="solveButton" onclick="onClickSolvePuzzle()">Solve Puzzle</button>
 </div>
 <script src="script.js"></script>
 </body>

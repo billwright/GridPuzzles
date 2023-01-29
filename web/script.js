@@ -13,15 +13,7 @@ console.log('running javascript');
 puzzle_dimensions = {
     'numbrix': [6, 7, 8, 9, 10, 12, 15],
     'sudoku': [4, 9],
-    'kenken': [4, 6, 8
-    ]
-}
-function onSubmitGivenPuzzle()  {
-    console.log('In onSubmitGivenPuzzle')
-    fetch('https://jsonplaceholder.typicode.com/todos/1')
-      .then(response => response.json())
-      .catch(error => console.log('Error was', error))
-      .then(json => console.log(json))
+    'kenken': [4, 6, 8]
 }
 
 function onClickExample()  {
@@ -34,7 +26,8 @@ function onClickExample()  {
                 console.log('Data returned: ', d)
             })
 }
-function onClickPuzzleServer()  {
+
+function onClickSolvePuzzle()  {
         // API for get requests
         console.log('Running onClickPuzzleServer...')
         const puzzle_def = collectGivenData()
@@ -93,7 +86,7 @@ selectPuzzleTypeElement.addEventListener('change', (event) => {
     for (let dim of availableDimensions) {
         const newOptionElement = document.createElement('option')
         newOptionElement.setAttribute('id', `${dim}x${dim}`)
-        newOptionElement.setAttribute('value', `${dim}`)
+        newOptionElement.setAttribute('value', dim.toString())
         newOptionElement.text = `${dim}x${dim}`
         dimension_dropdown.appendChild(newOptionElement)
     }

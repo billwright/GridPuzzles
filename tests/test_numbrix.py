@@ -328,6 +328,18 @@ oct_23_2022 = [55, None, None, None, 59, None, None, None, 75,
                None, 41, None, None, 14, None, None, 25, None,
                43, None, None, None, 11, None, None, None, 23]
 
+# Program could NOT solve this puzzle. Nor could Sheri.
+# TODO: Fix solver
+jan_22_2023 = [None, None, None, None, None, None, None, None, None,
+               None, 1, 8, None, 34, None, 38, 73, None,
+               None, 2, None, None, None, None, None, 74, None,
+               None, None, None, None, None, None, None, None, None,
+               None, 26, None, None, None, None, None, 66, None,
+               None, None, None, None, None, None, None, None, None,
+               None, 24, None, None, None, None, None, 62, None,
+               None, 23, 22, None, 50, None, 54, 55, None,
+               None, None, None, None, None, None, None, None, None]
+
 
 # noinspection PyPep8Naming
 class TestNumbrix(unittest.TestCase):
@@ -613,11 +625,11 @@ class TestNumbrix(unittest.TestCase):
         test_puzzles = [beginner_puzzle_9_by_9, very_hard_puzzle, easy_6x6,
                         easy_4_forced_moves_6_by_6, sept_18_puzzle, hard_6_by_6,
                         medium_6_by_6, may_23_puzzle, very_hard_6_by_6, apr_17_2022,
-                        mar_20_2022, may_29_2022, oct_23_2022]
-        puzzles = [medium_6_by_6]
+                        mar_20_2022, may_29_2022, oct_23_2022, jan_22_2023]
+        puzzles = [jan_22_2023]
 
         for puzzle in puzzles:
-            numbrix = Numbrix(puzzle, False)
+            numbrix = Numbrix(puzzle, interactive=False)
             print('The initial puzzle is:')
             numbrix.display()
 
