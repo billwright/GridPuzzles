@@ -1,6 +1,6 @@
 name: 'Test'
 on: #rebuild on PRs and main branch changes
-  workflow_dispath:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
