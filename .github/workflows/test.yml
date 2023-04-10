@@ -5,7 +5,7 @@ on: #rebuild on PRs and main branch changes
   push:
     branches:
       - main
-      - 'releases/*'
+      - 'pipeline*'
 jobs:
   test:
     runs-on:
