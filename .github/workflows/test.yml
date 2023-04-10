@@ -1,0 +1,17 @@
+name: 'Test'
+on: #rebuild on PRs and main branch changes
+  workflow_dispath:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'releases/*'
+jobs:
+  test:
+    runs-on:
+      labels:
+    steps:
+      - uses: actions/checkout@v3
+      - id: pytest
+        uses: ./
+      - run: echo 'Running pytest...'
