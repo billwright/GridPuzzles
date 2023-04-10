@@ -8,8 +8,7 @@ on: #rebuild on PRs and main branch changes
       - 'pipeline*'
 jobs:
   test:
-    runs-on:
-      labels:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - id: pytest
