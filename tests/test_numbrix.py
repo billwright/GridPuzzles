@@ -638,7 +638,7 @@ class TestNumbrix(unittest.TestCase):
                 logging.critical('Puzzle was not solved!')
                 self.assertTrue(False)
             else:
-                solved_puzzle.display()
+                solved_puzzle.display(True)
                 solved_puzzle.display_as_code()
                 print(solved_puzzle.get_raw_dictionary())
                 self.assertTrue(solved_puzzle.is_solved())

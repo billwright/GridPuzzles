@@ -182,7 +182,6 @@ class Numbrix(GridPuzzle):
         open_neighbors = [neighbor for neighbor in neighbors if neighbor.is_empty()]
         if len(available_neighbor_values) == 1 and len(open_neighbors) == 1:
             self.set_cell_value(open_neighbors[0], available_neighbor_values[0])
-            # open_neighbors[0].set_candidates(available_neighbor_values)
 
     def get_available_neighbor_values(self, cell):
         neighbors = self.get_cell_neighbors(cell)
@@ -227,7 +226,8 @@ class Numbrix(GridPuzzle):
 
     def reduce_forced_cells_only(self):
         if self.is_solved():
-            raise Already_Solved_Exception('In reduced_forced_cell_only and puzzle is already solved. We should never get here. The puzzle is already solved or invalid')
+            raise Already_Solved_Exception(
+                'In reduced_forced_cell_only and puzzle is already solved. We should never get here. The puzzle is already solved or invalid')
 
         before_puzzle_size = self.get_current_puzzle_count()
         progress_made = True
@@ -240,13 +240,14 @@ class Numbrix(GridPuzzle):
 
     def reduce(self):
         if self.is_solved():
-            raise Already_Solved_Exception('In reduce and puzzle is already solved. We should never get here. The puzzle is already solved or invalid')
+            raise Already_Solved_Exception(
+                'In reduce and puzzle is already solved. We should never get here. The puzzle is already solved or invalid')
 
         before_puzzle_size = self.get_current_puzzle_count()
         progress_made = True
         while not self.is_solved() and progress_made:
             # TODO: Leaving this here now, but I don't think I need this. I think path
-            # solving is sufficient.
+            # solving is sufficient. -- it was NOT sufficient for jan_22_2023 puzzle
             self.populate_all_forced_cells()
             # self.reduce_paths_with_one_route_option()
             if self.get_current_puzzle_count() == before_puzzle_size:
@@ -335,26 +336,35 @@ class Numbrix(GridPuzzle):
         logging.debug("State of the puzzle before reduce:")
         self.display()
 
+        # Let's generate a puzzle with all the one-route paths solved.
+        self.debug_pause('Moving on to path generation and solving...')
+        puzzle_with_one_route_paths_solved = self.solve_one_path_routes(0)
+
+        if puzzle_with_one_route_paths_solved.is_solved():
+            print("Puzzle is solved after one-route paths!")
+            return puzzle_with_one_route_paths_solved
+
         # Solve as much as we can with simple forcing of cells and paths
         # This code, which just fills in forced cells, is not required to solve
         # puzzles, but for the very hard puzzle it made a huge difference. Without
         # the reduce call (just this one line), the puzzle was solved with 3117
         # backtracks. With it, the puzzled was solved with just 27 backtracks.
-        self.reduce()
+        # self.reduce()
+        puzzle_with_one_route_paths_solved.reduce()
 
-        current_puzzle_size = self.get_current_puzzle_count()
-        logging.debug(f"Checking for a solved puzzle. The current count is {current_puzzle_size}")
-
-        if self.is_solved():
-            print("Puzzle is solved after reduce!")
-            return self
-
-        # Log puzzle size for plotting later
-        logging.info(current_puzzle_size)
-
-        # Let's generate a puzzle with all the one-route paths solved.
-        self.debug_pause('Moving on to path generation and solving...')
-        puzzle_with_one_route_paths_solved = self.solve_one_path_routes(0)
+        # current_puzzle_size = self.get_current_puzzle_count()
+        # logging.debug(f"Checking for a solved puzzle. The current count is {current_puzzle_size}")
+        #
+        # if self.is_solved():
+        #     print("Puzzle is solved after reduce!")
+        #     return self
+        #
+        # # Log puzzle size for plotting later
+        # logging.info(current_puzzle_size)
+        #
+        # # Let's generate a puzzle with all the one-route paths solved.
+        # self.debug_pause('Moving on to path generation and solving...')
+        # puzzle_with_one_route_paths_solved = self.solve_one_path_routes(0)
 
         if puzzle_with_one_route_paths_solved.is_solved():
             print("Puzzle is solved after one-route paths!")
@@ -508,7 +518,7 @@ class Numbrix(GridPuzzle):
 
         processes = []
         for (puzzle_with_guess, _) in path_to_guess.routes:
-            process = Process(target=Numbrix.static_search, args=(puzzle_with_guess, ))
+            process = Process(target=Numbrix.static_search, args=(puzzle_with_guess,))
             process.start()
             processes.append(process)
 
@@ -653,20 +663,17 @@ class Numbrix(GridPuzzle):
                         f'Found invalid (puzzle,route) tuple for path {path}. Count increase is only {count_difference}')
                 assert count_difference == (path.value_distance - 1)
 
-    # This method always returns a list of (puzzle, route) tuples. The puzzle is a possibly deep-copied
-    # instance Numbrix that contains the populated, generated route. The route is the second element in
-    # the tuple and only used for reporting.
     def generate_possible_routes_for_path(self, path):
-        # Test whether the path is already connected. If so, return the route
-        # TODO: Is it possible to do this test BEFORE the recursion? Instead of check for a connected
-        # path, maybe check for a 1-cell gap?
+        """This method always returns a list of (puzzle, route) tuples. The puzzle is a deep-copied
+           instance of Numbrix that contains the populated route. The route is the second element in
+           the tuple and only used for reporting."""
+
         if path.is_already_connected():
-            # logging.debug('This path is already connected')
             # Remember, this method returns a list of tuples, so here we return a list that contains just
             # one tuples, which has the puzzle (self) and the list of two cells
             new_routes = [(self, [path.start, path.end])]
             path.set_routes(new_routes)
-            self.verify_routes_for_path(path)
+            # self.verify_routes_for_path(path)
             return new_routes
 
         # Test whether it is possible to get from one cell to the other
@@ -674,7 +681,7 @@ class Numbrix(GridPuzzle):
             # logging.debug('This path is not possible')
             return None
 
-        # 2. Start from start cell and iterate over all open neighbors
+        # Start from start cell and iterate over all open neighbors
         routes = []
         for cell in self.get_empty_neighbors(path.start):
             # Before we set any values in our numbrix puzzle, we need to make a copy so
@@ -751,16 +758,8 @@ class Numbrix(GridPuzzle):
 
     def puzzle_has_repeated_values(self):
         all_values = self.get_all_values()
-        counts = {}
-        for curr_value in all_values:
-            if curr_value in counts:
-                counts[curr_value] = counts[curr_value] + 1
-                logging.debug(f'Found duplicate value: {curr_value}')
-            else:
-                counts[curr_value] = 1
-
         if len(all_values) != len(set(all_values)):
-            return True
+            return True     # meaning there are repeated values
         return False
 
     def puzzle_has_trapped_cells(self):
